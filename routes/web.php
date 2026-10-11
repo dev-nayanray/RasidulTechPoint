@@ -15,6 +15,7 @@ use App\Controllers\Admin\BrandController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
+use App\Controllers\Admin\InspectionController;
 use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\LocationController;
 use App\Controllers\Admin\NotificationController;
@@ -152,6 +153,24 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:inventory.adjust');
     $router->post('/inventory/photos/{photoId}/delete', [InventoryController::class, 'deletePhoto'])
         ->middleware('permission:inventory.adjust');
+
+    // Quality inspections
+    $router->get('/inspections', [InspectionController::class, 'index'])
+        ->middleware('permission:inspections.manage');
+    $router->get('/inspections/create', [InspectionController::class, 'createForm'])
+        ->middleware('permission:inspections.manage');
+    $router->post('/inspections', [InspectionController::class, 'store'])
+        ->middleware('permission:inspections.manage');
+    $router->get('/inspections/{id}', [InspectionController::class, 'show'])
+        ->middleware('permission:inspections.manage');
+    $router->post('/inspections/{id}/approve', [InspectionController::class, 'approve'])
+        ->middleware('permission:inventory.approve');
+    $router->post('/inspections/checklist/add', [InspectionController::class, 'addChecklistItem'])
+        ->middleware('permission:inspections.manage');
+    $router->post('/inspections/checklist/{id}/toggle', [InspectionController::class, 'toggleChecklistItem'])
+        ->middleware('permission:inspections.manage');
+    $router->post('/inspections/checklist/{id}/delete', [InspectionController::class, 'deleteChecklistItem'])
+        ->middleware('permission:inspections.manage');
 
     // Locations & branches
     $router->get('/locations', [LocationController::class, 'index'])->middleware('permission:inventory.view');

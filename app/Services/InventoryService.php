@@ -57,6 +57,9 @@ final class InventoryService
             'returned' => ['written_off'],
             'awaiting_inspection' => ['written_off'],
         ],
+        'transfer' => [
+            'available' => ['available'],
+        ],
     ];
 
     public const STATUSES = [
@@ -207,6 +210,44 @@ final class InventoryService
     public function writeOff(int $unitId, string $reason, int $userId): array
     {
         return $this->transition($unitId, 'write_off', 'written_off', $reason, $userId);
+    }
+
+    public function transfer(int $unitId, int $toLocationId, string $reason, int $userId): array
+    {
+        return Connection::transaction(function (PDO $pdo) use ($unitId, $toLocationId, $reason, $userId) {
+            $unit = $this->lockUnit($pdo, $unitId);
+            $from = $unit['status'];
+            $allowed = self::TRANSITIONS['transfer'][$from] ?? [];
+            if (!in_array('available', $allowed, true)) {
+                throw new ValidationException([
+                    'status' => "Cannot transfer a unit in status '{$from}'. Only available units can be transferred.",
+                ]);
+            }
+            $fromLocationId = $unit['location_id'] !== null ? (int) $unit['location_id'] : null;
+            $fromLocationName = null;
+            if ($fromLocationId !== null) {
+                $stmt = $pdo->prepare('SELECT name FROM locations WHERE id = ?');
+                $stmt->execute([$fromLocationId]);
+                $fromLocationName = $stmt->fetchColumn() ?: null;
+            }
+            $stmt = $pdo->prepare('SELECT name FROM locations WHERE id = ?');
+            $stmt->execute([$toLocationId]);
+            $toLocationName = $stmt->fetchColumn();
+            if ($toLocationName === false) {
+                throw new ValidationException(['location' => 'Target location does not exist.']);
+            }
+            $update = $pdo->prepare('UPDATE inventory_units SET location_id = ?, version = version + 1 WHERE id = ?');
+            $update->execute([$toLocationId, $unitId]);
+            $this->insertMovement($pdo, $unitId, 'transfer', $from, 'available', $reason, $userId, [
+                'from_location_id' => $fromLocationId,
+                'from_location_name' => $fromLocationName,
+                'to_location_id' => $toLocationId,
+                'to_location_name' => $toLocationName,
+            ]);
+            $unit['location_id'] = $toLocationId;
+            $unit['status'] = 'available';
+            return $unit;
+        });
     }
 
     /**

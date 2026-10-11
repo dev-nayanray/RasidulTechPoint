@@ -135,6 +135,7 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
 
     // Inventory
     $router->get('/inventory', [InventoryController::class, 'index'])->middleware('permission:inventory.view');
+    $router->get('/inventory/movements', [InventoryController::class, 'movements'])->middleware('permission:inventory.view');
     $router->get('/inventory/create', [InventoryController::class, 'create'])
         ->middleware('permission:inventory.receive');
     $router->post('/inventory', [InventoryController::class, 'store'])->middleware('permission:inventory.receive');
@@ -142,6 +143,8 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/inventory/{id}/transition', [InventoryController::class, 'transition'])
         ->middleware('permission:inventory.view');
     $router->post('/inventory/{id}/price', [InventoryController::class, 'adjustPrice'])
+        ->middleware('permission:inventory.adjust');
+    $router->post('/inventory/{id}/transfer', [InventoryController::class, 'transfer'])
         ->middleware('permission:inventory.adjust');
     $router->post('/inventory/{id}/photos', [InventoryController::class, 'uploadPhoto'])
         ->middleware('permission:inventory.adjust');

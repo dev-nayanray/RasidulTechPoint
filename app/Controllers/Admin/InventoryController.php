@@ -164,6 +164,7 @@ final class InventoryController
             'sale' => 'orders.manage',
             'inspection' => 'inspections.manage|inventory.approve',
             'adjustment', 'write_off' => 'inventory.adjust',
+            'transfer' => 'inventory.adjust',
             default => 'inventory.adjust',
         };
         $granted = false;
@@ -213,6 +214,83 @@ final class InventoryController
 
         flash_success('Selling price updated.');
         return Response::redirect(url('/admin/inventory/' . $id));
+    }
+
+    public function transfer(string $id, Request $request): Response
+    {
+        $id = (int) $id;
+        $repo = new InventoryRepository();
+        $unit = $repo->find($id);
+        if ($unit === null) {
+            throw new NotFoundException('Inventory unit not found.');
+        }
+        $toLocationId = (int) $request->input('to_location_id', 0);
+        $reason = trim((string) $request->input('reason', ''));
+        if ($toLocationId <= 0) {
+            flash_error('A target location is required.');
+            return Response::redirect(url('/admin/inventory/' . $id));
+        }
+        if ($reason === '') {
+            flash_error('A reason is required for every transfer.');
+            return Response::redirect(url('/admin/inventory/' . $id));
+        }
+        if (!AuthService::can('inventory.adjust')) {
+            throw new \App\Exceptions\ForbiddenException('Missing permission: inventory.adjust');
+        }
+        (new InventoryService())->transfer($id, $toLocationId, $reason, current_user_id());
+        AuditService::record('inventory.transfer', 'inventory_unit', $id, [
+            'to_location_id' => $toLocationId,
+        ], $request);
+        flash_success('Unit transferred.');
+        return Response::redirect(url('/admin/inventory/' . $id));
+    }
+
+    public function movements(Request $request): Response
+    {
+        [$page, $perPage] = paginate($request->query('page', 1), $request->query('per_page', 50));
+        $pdo = \App\Support\Database\Connection::pdo();
+        $where = ' WHERE 1=1';
+        $params = [];
+        $q = trim((string) $request->query('q', ''));
+        $movementType = trim((string) $request->query('type', ''));
+        if ($q !== '') {
+            $where .= ' AND (iu.sku LIKE ? OR u.name LIKE ? OR sm.reason LIKE ?)';
+            $params[] = '%' . $q . '%';
+            $params[] = '%' . $q . '%';
+            $params[] = '%' . $q . '%';
+        }
+        if ($movementType !== '') {
+            $where .= ' AND sm.movement_type = ?';
+            $params[] = $movementType;
+        }
+        $countStmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM stock_movements sm
+             LEFT JOIN inventory_units iu ON iu.id = sm.inventory_unit_id
+             LEFT JOIN users u ON u.id = sm.performed_by{$where}"
+        );
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+        $offset = ($page - 1) * $perPage;
+        $stmt = $pdo->prepare(
+            "SELECT sm.*, iu.sku AS unit_sku, u.name AS user_name
+             FROM stock_movements sm
+             LEFT JOIN inventory_units iu ON iu.id = sm.inventory_unit_id
+             LEFT JOIN users u ON u.id = sm.performed_by
+             {$where}
+             ORDER BY sm.id DESC
+             LIMIT {$perPage} OFFSET {$offset}"
+        );
+        $stmt->execute($params);
+        return Response::html(View::render('admin/inventory/movements', [
+            'pageTitle' => 'Stock movements',
+            'movements' => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+            'total' => $total,
+            'page' => $page,
+            'pages' => max(1, (int) ceil($total / $perPage)),
+            'q' => $q,
+            'typeFilter' => $movementType,
+            'movementTypes' => array_keys(InventoryService::TRANSITIONS),
+        ]));
     }
 
     /**

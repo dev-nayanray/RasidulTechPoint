@@ -136,8 +136,36 @@ $transitionLabels = [
             <?php endif; ?>
         </div>
 
+        <!-- Transfer between locations -->
+        <?php if ($unit['status'] === 'available' && \App\Services\AuthService::can('inventory.adjust')): ?>
+        <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <h2 class="text-sm font-semibold text-slate-900">Transfer to location</h2>
+            <p class="mt-1 text-xs text-slate-500">Move this unit to a different branch. The status stays 'available' but the location changes. Requires a reason.</p>
+            <form method="post" action="<?= e(url('/admin/inventory/' . $unit['id'] . '/transfer')) ?>" class="mt-4 flex flex-wrap items-end gap-3" data-loading-form data-confirm="Transfer this unit?">
+                <?= csrf_field() ?>
+                <div class="flex-1 space-y-1.5">
+                    <label for="transfer-location" class="block text-xs font-medium text-slate-500">Target location</label>
+                    <select id="transfer-location" name="to_location_id" class="input" required>
+                        <option value="">— select —</option>
+                        <?php foreach (\App\Support\Database\Connection::pdo()->query('SELECT id, name FROM locations WHERE is_active = 1 AND id != ' . (int) ($unit['location_id'] ?? 0) . ' ORDER BY name')->fetchAll(\PDO::FETCH_ASSOC) as $loc): ?>
+                            <option value="<?= (int) $loc['id'] ?>"><?= e($loc['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="flex-1 space-y-1.5">
+                    <label for="transfer-reason" class="block text-xs font-medium text-slate-500">Reason</label>
+                    <input id="transfer-reason" name="reason" class="input" placeholder="e.g. Relocating stock to Chittagong branch" required>
+                </div>
+                <button type="submit" class="btn-secondary">Transfer</button>
+            </form>
+        </div>
+        <?php endif; ?>
+
         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <h2 class="border-b border-slate-200 px-5 py-4 text-sm font-semibold text-slate-900">Movement history (append-only)</h2>
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <h2 class="text-sm font-semibold text-slate-900">Movement history (append-only)</h2>
+                <a href="<?= e(url('/admin/inventory/movements')) ?>" class="text-xs font-medium text-blue-700 hover:text-blue-800">View all movements →</a>
+            </div>
             <?php if ($unit['movements'] === []): ?>
                 <p class="px-5 py-8 text-center text-sm text-slate-400">No movements recorded.</p>
             <?php else: ?>

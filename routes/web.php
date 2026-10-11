@@ -106,6 +106,7 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/brands', [BrandController::class, 'index'])->middleware('permission:products.view');
     $router->post('/brands', [BrandController::class, 'store'])->middleware('permission:products.create');
     $router->post('/brands/{id}/update', [BrandController::class, 'update'])->middleware('permission:products.update');
+    $router->post('/brands/{id}/delete', [BrandController::class, 'destroy'])->middleware('permission:products.delete');
 
     $router->get('/categories', [CategoryController::class, 'index'])->middleware('permission:products.view');
     $router->post('/categories', [CategoryController::class, 'store'])->middleware('permission:products.create');

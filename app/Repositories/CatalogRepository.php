@@ -26,8 +26,34 @@ final class CatalogRepository
     {
         return $this->pdo->query(
             'SELECT b.*, (SELECT COUNT(*) FROM product_models pm WHERE pm.brand_id = b.id AND pm.deleted_at IS NULL) AS model_count
-             FROM brands b' . ($onlyActive ? ' WHERE b.is_active = 1' : '') . ' ORDER BY b.name'
+             FROM brands b' . ($onlyActive ? ' WHERE b.is_active = 1' : '') . ' ORDER BY b.sort_order ASC, b.name ASC'
         )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Paginated search by name or slug. */
+    public function searchBrands(string $q, int $page, int $perPage): array
+    {
+        $where = ' WHERE 1=1';
+        $params = [];
+        if ($q !== '') {
+            $where .= ' AND (b.name LIKE ? OR b.slug LIKE ?)';
+            $params[] = '%' . $q . '%';
+            $params[] = '%' . $q . '%';
+        }
+
+        $countStmt = $this->pdo->prepare("SELECT COUNT(*) FROM brands b{$where}");
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $offset = ($page - 1) * $perPage;
+        $stmt = $this->pdo->prepare(
+            "SELECT b.*, (SELECT COUNT(*) FROM product_models pm WHERE pm.brand_id = b.id AND pm.deleted_at IS NULL) AS model_count
+             FROM brands b{$where}
+             ORDER BY b.sort_order ASC, b.name ASC
+             LIMIT {$perPage} OFFSET {$offset}"
+        );
+        $stmt->execute($params);
+        return ['rows' => $stmt->fetchAll(PDO::FETCH_ASSOC), 'total' => $total];
     }
 
     public function findBrand(int $id): ?array
@@ -46,17 +72,112 @@ final class CatalogRepository
         return $row === false ? null : $row;
     }
 
-    public function createBrand(string $name, string $slug, ?string $description): int
+    /** Full create with sort_order and logo_path. */
+    public function createBrandFull(array $d): int
     {
-        $stmt = $this->pdo->prepare('INSERT INTO brands (name, slug, description) VALUES (?, ?, ?)');
-        $stmt->execute([$name, $slug, $description]);
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO brands (name, slug, description, logo_path, sort_order, is_active)
+             VALUES (?, ?, ?, ?, ?, 1)'
+        );
+        $stmt->execute([
+            $d['name'], $d['slug'], $d['description'] ?? null,
+            $d['logo_path'] ?? null, (int) ($d['sort_order'] ?? 0),
+        ]);
         return (int) $this->pdo->lastInsertId();
     }
 
+    /** Full update with sort_order and logo_path. */
+    public function updateBrandFull(int $id, array $d): void
+    {
+        $stmt = $this->pdo->prepare(
+            'UPDATE brands SET name = ?, slug = ?, description = ?, logo_path = ?, sort_order = ?, is_active = ?
+             WHERE id = ?'
+        );
+        $stmt->execute([
+            $d['name'], $d['slug'], $d['description'] ?? null,
+            $d['logo_path'] ?? null, (int) ($d['sort_order'] ?? 0),
+            !empty($d['is_active']) ? 1 : 0, $id,
+        ]);
+    }
+
+    /** Backward-compat wrapper. */
+    public function createBrand(string $name, string $slug, ?string $description): int
+    {
+        return $this->createBrandFull(['name' => $name, 'slug' => $slug, 'description' => $description]);
+    }
+
+    /** Backward-compat wrapper. */
     public function updateBrand(int $id, string $name, string $slug, ?string $description, bool $isActive): void
     {
-        $stmt = $this->pdo->prepare('UPDATE brands SET name = ?, slug = ?, description = ?, is_active = ? WHERE id = ?');
-        $stmt->execute([$name, $slug, $description, $isActive ? 1 : 0, $id]);
+        $this->updateBrandFull($id, [
+            'name' => $name, 'slug' => $slug, 'description' => $description, 'is_active' => $isActive,
+        ]);
+    }
+
+    /** Count product_models referencing this brand (non-deleted). */
+    public function countModelsInBrand(int $brandId): int
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM product_models WHERE brand_id = ? AND deleted_at IS NULL'
+        );
+        $stmt->execute([$brandId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /** Whether a slug is already used by a different brand. */
+    public function brandSlugExists(string $slug, ?int $excludeId = null): bool
+    {
+        if ($excludeId !== null) {
+            $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM brands WHERE slug = ? AND id != ?');
+            $stmt->execute([$slug, $excludeId]);
+        } else {
+            $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM brands WHERE slug = ?');
+            $stmt->execute([$slug]);
+        }
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Delete a brand. If it has product_models, they must be reassigned
+     * to $reassignTo first. Preserves historical references by moving
+     * models to the target brand in a single transaction. If no
+     * reassignment target is provided and there are models, throws.
+     */
+    public function deleteBrand(int $id, ?int $reassignTo = null): void
+    {
+        $brand = $this->findBrand($id);
+        if ($brand === null) {
+            throw new \App\Exceptions\NotFoundException('Brand not found.');
+        }
+
+        $modelCount = $this->countModelsInBrand($id);
+        if ($modelCount > 0 && ($reassignTo === null || $reassignTo === 0)) {
+            throw new \App\Exceptions\ValidationException([
+                'brand' => "Cannot delete a brand with {$modelCount} product model(s). Choose a reassignment target or remove the models first.",
+            ]);
+        }
+
+        if ($reassignTo !== null && $reassignTo > 0) {
+            $target = $this->findBrand($reassignTo);
+            if ($target === null) {
+                throw new \App\Exceptions\ValidationException([
+                    'reassign_to' => 'Reassignment target brand does not exist.',
+                ]);
+            }
+            if ($reassignTo === $id) {
+                throw new \App\Exceptions\ValidationException([
+                    'reassign_to' => 'Cannot reassign models to the brand being deleted.',
+                ]);
+            }
+        }
+
+        \App\Support\Database\Connection::transaction(function (PDO $pdo) use ($id, $reassignTo) {
+            if ($reassignTo !== null && $reassignTo > 0) {
+                $pdo->prepare('UPDATE product_models SET brand_id = ? WHERE brand_id = ?')
+                    ->execute([$reassignTo, $id]);
+            }
+            $pdo->prepare('DELETE FROM brands WHERE id = ?')->execute([$id]);
+        });
     }
 
     // ---- Categories ----------------------------------------------------------

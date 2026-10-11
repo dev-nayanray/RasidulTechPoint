@@ -76,7 +76,8 @@ final class ProductModelController
 
     public function show(string $id): Response
     {
-        $model = (new CatalogRepository())->findModel((int) $id);
+        $catalog = new CatalogRepository();
+        $model = $catalog->findModel((int) $id);
         if ($model === null) {
             throw new NotFoundException('Product model not found.');
         }
@@ -85,6 +86,7 @@ final class ProductModelController
             'pageTitle' => $model['name'],
             'model' => $model,
             'units' => (new \App\Repositories\InventoryRepository())->search('', '', (int) $id, 1, 50)['rows'],
+            'priceRange' => $catalog->priceRange((int) $id),
         ]));
     }
 
@@ -184,6 +186,7 @@ final class ProductModelController
             $data['slug'] = $this->uniqueSlug('product_models', $data['slug'], $ignoreId);
         }
         $data['is_published'] = $request->input('is_published') === '1';
+        $data['show_price'] = $request->input('show_price') !== '0';
 
         return $data;
     }

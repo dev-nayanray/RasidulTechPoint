@@ -46,10 +46,27 @@
         <h2 class="text-sm font-semibold text-slate-900">Record</h2>
         <dl class="mt-3 space-y-2">
             <div><dt class="text-slate-500">Slug</dt><dd class="font-mono text-xs text-slate-700"><?= e($model['slug']) ?></dd></div>
+            <div><dt class="text-slate-500">Price display</dt><dd><?= (int) ($model['show_price'] ?? 1) === 1
+                ? '<span class="font-medium text-green-700">Visible</span>'
+                : '<span class="font-medium text-amber-700">Hidden ("Contact for price")</span>' ?></dd></div>
             <div><dt class="text-slate-500">Created</dt><dd class="font-medium text-slate-900"><?= e(local_datetime($model['created_at'])) ?></dd></div>
             <div><dt class="text-slate-500">Updated</dt><dd class="font-medium text-slate-900"><?= e(local_datetime($model['updated_at'])) ?></dd></div>
         </dl>
     </div>
+    <?php
+    $pr = $priceRange ?? ['min' => null, 'max' => null, 'avg' => null, 'count' => 0];
+    if ($pr['count'] > 0):
+    ?>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <h2 class="text-sm font-semibold text-slate-900">Price range (available units)</h2>
+        <dl class="mt-3 space-y-2">
+            <div><dt class="text-slate-500">From</dt><dd class="font-bold text-green-700"><?= e(money($pr['min'])) ?></dd></div>
+            <div><dt class="text-slate-500">To</dt><dd class="font-bold text-slate-900"><?= e(money($pr['max'])) ?></dd></div>
+            <div><dt class="text-slate-500">Average</dt><dd class="font-medium text-slate-700"><?= e(money($pr['avg'])) ?></dd></div>
+            <div><dt class="text-slate-500">Available units</dt><dd class="font-medium text-slate-900"><?= (int) $pr['count'] ?></dd></div>
+        </dl>
+    </div>
+    <?php endif; ?>
 </div>
 
 <section class="mt-6">

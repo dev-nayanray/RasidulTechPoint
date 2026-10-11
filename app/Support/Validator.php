@@ -20,6 +20,8 @@ final class Validator
 {
     private array $data;
     private array $errors = [];
+    /** @var array<string,list<string>> field => rule list (for numeric detection in min/max) */
+    private array $fieldRules = [];
 
     public function __construct(array $data, private readonly array $rules, private readonly array $labels = [])
     {
@@ -38,6 +40,7 @@ final class Validator
     {
         foreach ($this->rules as $field => $ruleString) {
             $rules = is_array($ruleString) ? $ruleString : explode('|', $ruleString);
+            $this->fieldRules[$field] = $rules;
             $value = $this->data[$field] ?? null;
             $label = $this->labels[$field] ?? ucwords(str_replace('_', ' ', $field));
             $nullable = in_array('nullable', $rules, true);
@@ -110,14 +113,20 @@ final class Validator
                 }
                 break;
             case 'min':
-                if (is_string($value) && mb_strlen($value) < (int) $arg) {
+                $isNum = $this->isNumericField($field);
+                if (is_string($value) && $isNum && is_numeric($value) && (float) $value < (int) $arg) {
+                    $this->addError($field, "{$label} must be at least {$arg}.");
+                } elseif (is_string($value) && !$isNum && mb_strlen($value) < (int) $arg) {
                     $this->addError($field, "{$label} must be at least {$arg} characters.");
                 } elseif ((is_int($value) || is_float($value)) && $value < (int) $arg) {
                     $this->addError($field, "{$label} must be at least {$arg}.");
                 }
                 break;
             case 'max':
-                if (is_string($value) && mb_strlen($value) > (int) $arg) {
+                $isNum = $this->isNumericField($field);
+                if (is_string($value) && $isNum && is_numeric($value) && (float) $value > (int) $arg) {
+                    $this->addError($field, "{$label} must be at most {$arg}.");
+                } elseif (is_string($value) && !$isNum && mb_strlen($value) > (int) $arg) {
                     $this->addError($field, "{$label} may not exceed {$arg} characters.");
                 } elseif ((is_int($value) || is_float($value)) && $value > (int) $arg) {
                     $this->addError($field, "{$label} may not exceed {$arg}.");
@@ -173,6 +182,22 @@ final class Validator
                 }
                 break;
         }
+    }
+
+    /**
+     * Check if the field's rule list contains 'integer', 'decimal',
+     * or 'numeric' — indicating that min/max should compare
+     * numerically instead of by string length.
+     */
+    private function isNumericField(string $field): bool
+    {
+        $rules = $this->fieldRules[$field] ?? [];
+        foreach ($rules as $r) {
+            if (str_starts_with($r, 'integer') || str_starts_with($r, 'decimal') || str_starts_with($r, 'numeric')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function valueTaken(string $table, string $column, mixed $value, ?string $ignoreId): bool

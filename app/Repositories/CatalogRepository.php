@@ -421,15 +421,18 @@ final class CatalogRepository
             'INSERT INTO product_models
                 (brand_id, category_id, name, slug, processor, ram_gb, storage_type, storage_capacity_gb,
                  graphics, display_size_inches, resolution, operating_system, description,
-                 seo_title, seo_description, is_published, created_by)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+                 seo_title, seo_description, is_published, show_price, created_by)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
         );
         $stmt->execute([
             $d['brand_id'], $d['category_id'], $d['name'], $d['slug'],
             $d['processor'] ?? null, $d['ram_gb'] ?? null, $d['storage_type'] ?? null, $d['storage_capacity_gb'] ?? null,
             $d['graphics'] ?? null, $d['display_size_inches'] ?? null, $d['resolution'] ?? null,
             $d['operating_system'] ?? null, $d['description'] ?? null,
-            $d['seo_title'] ?? null, $d['seo_description'] ?? null, !empty($d['is_published']) ? 1 : 0, $userId,
+            $d['seo_title'] ?? null, $d['seo_description'] ?? null,
+            !empty($d['is_published']) ? 1 : 0,
+            !isset($d['show_price']) || $d['show_price'] ? 1 : 0,
+            $userId,
         ]);
         return (int) $this->pdo->lastInsertId();
     }
@@ -441,7 +444,7 @@ final class CatalogRepository
                 brand_id = ?, category_id = ?, name = ?, slug = ?, processor = ?, ram_gb = ?,
                 storage_type = ?, storage_capacity_gb = ?, graphics = ?, display_size_inches = ?,
                 resolution = ?, operating_system = ?, description = ?, seo_title = ?,
-                seo_description = ?, is_published = ?
+                seo_description = ?, is_published = ?, show_price = ?
              WHERE id = ?'
         );
         $stmt->execute([
@@ -449,9 +452,38 @@ final class CatalogRepository
             $d['processor'] ?? null, $d['ram_gb'] ?? null, $d['storage_type'] ?? null, $d['storage_capacity_gb'] ?? null,
             $d['graphics'] ?? null, $d['display_size_inches'] ?? null, $d['resolution'] ?? null,
             $d['operating_system'] ?? null, $d['description'] ?? null,
-            $d['seo_title'] ?? null, $d['seo_description'] ?? null, !empty($d['is_published']) ? 1 : 0,
+            $d['seo_title'] ?? null, $d['seo_description'] ?? null,
+            !empty($d['is_published']) ? 1 : 0,
+            !isset($d['show_price']) || $d['show_price'] ? 1 : 0,
             $id,
         ]);
+    }
+
+    /**
+     * Price range for a model: min, max, average selling_price of
+     * available inventory units. Returns nulls when no available
+     * units exist.
+     *
+     * @return array{min:?float,max:?float,avg:?float,count:int}
+     */
+    public function priceRange(int $modelId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT MIN(selling_price) AS mn, MAX(selling_price) AS mx, AVG(selling_price) AS av, COUNT(*) AS cnt
+             FROM inventory_units
+             WHERE product_model_id = ? AND status = 'available'"
+        );
+        $stmt->execute([$modelId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row === false || (int) $row['cnt'] === 0) {
+            return ['min' => null, 'max' => null, 'avg' => null, 'count' => 0];
+        }
+        return [
+            'min' => (float) $row['mn'],
+            'max' => (float) $row['mx'],
+            'avg' => round((float) $row['av'], 2),
+            'count' => (int) $row['cnt'],
+        ];
     }
 
     public function softDeleteModel(int $id): void

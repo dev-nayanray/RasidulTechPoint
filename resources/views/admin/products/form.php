@@ -49,6 +49,11 @@ $categoryOptions = array_column($categories, 'name', 'id');
             <input type="checkbox" name="is_published" value="1" <?= !empty($model['is_published']) ? 'checked' : '' ?> class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
             Published (visible in storefront)
         </label>
+        <label class="flex items-center gap-2.5 text-sm">
+            <input type="hidden" name="show_price" value="0">
+            <input type="checkbox" name="show_price" value="1" <?= !isset($model['show_price']) || (int) $model['show_price'] === 1 ? 'checked' : '' ?> class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+            Show prices in storefront (otherwise displays "Contact for price")
+        </label>
     </section>
 
     <div class="flex gap-3">

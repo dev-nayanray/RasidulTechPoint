@@ -23,6 +23,7 @@ use App\Controllers\Admin\OrderController;
 use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\PurchaseOrderController;
+use App\Controllers\Admin\PosController;
 use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\SettingsController;
 use App\Controllers\Admin\SupplierController;
@@ -216,6 +217,32 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:purchases.view');
     $router->post('/purchase-orders/{id}/allocate', [PurchaseOrderController::class, 'allocateLandedCost'])
         ->middleware('permission:inventory.adjust');
+
+    // POS & cashier panel
+    $router->get('/pos', [PosController::class, 'index'])->middleware('permission:pos.access');
+    $router->get('/pos/shift', [PosController::class, 'shiftStatus'])->middleware('permission:pos.access');
+    $router->post('/pos/shift/open', [PosController::class, 'openShift'])
+        ->middleware('permission:pos.access');
+    $router->post('/pos/shift/close', [PosController::class, 'closeShift'])
+        ->middleware('permission:pos.access');
+    $router->get('/pos/search', [PosController::class, 'search'])
+        ->middleware('permission:pos.access');
+    $router->get('/pos/customers', [PosController::class, 'searchCustomers'])
+        ->middleware('permission:pos.access');
+    $router->post('/pos/quick-customer', [PosController::class, 'quickCustomer'])
+        ->middleware('permission:customers.create|customers.manage');
+    $router->get('/pos/held', [PosController::class, 'heldList'])
+        ->middleware('permission:pos.access');
+    $router->post('/pos/hold', [PosController::class, 'hold'])
+        ->middleware('permission:pos.access');
+    $router->post('/pos/resume/{id}', [PosController::class, 'resume'])
+        ->middleware('permission:pos.access');
+    $router->post('/pos/cancel-held/{id}', [PosController::class, 'cancelHeld'])
+        ->middleware('permission:pos.access');
+    $router->post('/pos/checkout', [PosController::class, 'checkout'])
+        ->middleware('permission:pos.access');
+    $router->get('/pos/receipt/{orderId}', [PosController::class, 'receipt'])
+        ->middleware('permission:pos.access');
 
     // Orders & payments
     $router->get('/orders', [OrderController::class, 'index'])->middleware('permission:orders.view');

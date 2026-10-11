@@ -51,7 +51,7 @@ final class OrderService
      * Create an order for specific inventory units.
      *
      * @param int[] $unitIds
-     * @param array{discount?:float,notes?:string} $options
+     * @param array{discount?:float,notes?:string,discount_authorized_by?:int} $options
      * @return array{id:int,reference:string,total:string}
      */
     public function createOrder(
@@ -129,11 +129,15 @@ final class OrderService
             $reference = $this->generateReference($pdo);
             $isCompleted = $initialStatus === 'completed';
             $isConfirmed = in_array($initialStatus, ['confirmed', 'processing', 'completed'], true);
+            $discountAuthorizer = isset($options['discount_authorized_by'])
+                && $discount > 0
+                ? (int) $options['discount_authorized_by']
+                : null;
 
             $stmt = $pdo->prepare(
                 'INSERT INTO orders
-                    (reference, customer_id, channel, status, payment_status, subtotal, discount, total, notes, placed_by, confirmed_at, completed_at)
-                 VALUES (?, ?, ?, ?, "unpaid", ?, ?, ?, ?, ?, '
+                    (reference, customer_id, channel, status, payment_status, subtotal, discount, total, notes, placed_by, discount_authorized_by, confirmed_at, completed_at)
+                 VALUES (?, ?, ?, ?, "unpaid", ?, ?, ?, ?, ?, ?, '
                  . ($isConfirmed ? 'UTC_TIMESTAMP()' : 'NULL') . ', '
                  . ($isCompleted ? 'UTC_TIMESTAMP()' : 'NULL') . ')'
             );
@@ -147,6 +151,7 @@ final class OrderService
                 number_format($total, 2, '.', ''),
                 $options['notes'] ?? null,
                 $staffUserId,
+                $discountAuthorizer,
             ]);
             $orderId = (int) $pdo->lastInsertId();
 

@@ -36,6 +36,7 @@ const RTP_PERMISSIONS = [
     'inspections.manage',
     // POS
     'pos.access',
+    'pos.authorize_discount',
     // Orders
     'orders.view',
     'orders.manage',
@@ -78,7 +79,7 @@ const RTP_ROLE_PERMISSIONS = [
         'dashboard.view', 'users.view',
         'products.view', 'products.create', 'products.update',
         'inventory.view', 'inventory.receive', 'inventory.adjust', 'inventory.approve',
-        'purchases.view', 'purchases.manage', 'inspections.manage', 'pos.access',
+        'purchases.view', 'purchases.manage', 'inspections.manage', 'pos.access', 'pos.authorize_discount',
         'orders.view', 'orders.manage', 'customers.view', 'customers.manage',
         'payments.view', 'payments.manage', 'finance.view', 'expenses.manage',
         'warranty.manage', 'service.manage', 'delivery.manage', 'crm.view',
@@ -144,7 +145,7 @@ const RTP_ADMIN_NAV = [
         ['inspections.manage', 'QA Inspections', '/admin/inspections', 'check-circle', true],
     ],
     'POS' => [
-        ['pos.access', 'Point of Sale', '/admin/pos', 'shopping-cart', false],
+        ['pos.access', 'Point of Sale', '/admin/pos', 'shopping-cart', true],
     ],
     'Orders' => [
         ['orders.view', 'Orders', '/admin/orders', 'clipboard', true],

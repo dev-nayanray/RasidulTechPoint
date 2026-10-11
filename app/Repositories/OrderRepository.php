@@ -99,10 +99,11 @@ final class OrderRepository
         $stmt = $this->pdo->prepare(
             'SELECT o.*, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
                     c.address AS customer_address, c.city AS customer_city,
-                    u.name AS placed_by_name
+                    u.name AS placed_by_name, au.name AS discount_authorizer_name
              FROM orders o
              JOIN customers c ON c.id = o.customer_id
              LEFT JOIN users u ON u.id = o.placed_by
+             LEFT JOIN users au ON au.id = o.discount_authorized_by
              WHERE o.id = ?'
         );
         $stmt->execute([$id]);

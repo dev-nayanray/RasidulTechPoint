@@ -83,6 +83,7 @@ Demo staff accounts (only with `--demo`, local env): `manager@rtp.local`,
 | `php bin/seed.php --demo` | Local-only demo data; refuses outside `APP_ENV=local`. |
 | `php bin/create-admin.php` | Interactive secure first-admin setup (`--name= --email= --password=` supported). Requires a ≥10-char password with letters and numbers; refuses when an active owner exists unless `--force`. |
 | `php bin/test.php` | Runs the test suite against `rasidul_tech_point_test` (created automatically). |
+| `php bin/check.php` | Structural self-check (no DB needed): every route maps to an existing controller method, every view/component target exists, JS imports resolve, built assets and critical files are present. Exits non-zero on any gap — suitable for CI. |
 
 No installation or admin-creation route is exposed over HTTP.
 

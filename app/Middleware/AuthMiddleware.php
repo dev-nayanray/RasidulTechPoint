@@ -26,7 +26,11 @@ final class AuthMiddleware extends Middleware
         $checking = AuthService::check();
 
         if ($this->guest && $checking) {
-            return Response::redirect(url('/admin/dashboard'));
+            // Already signed in: staff land on the console, customers on their account.
+            $target = AuthService::can('dashboard.view')
+                ? url('/admin/dashboard')
+                : url('/account');
+            return Response::redirect($target);
         }
         if (!$this->guest && !$checking) {
             if ($request->wantsJson()) {

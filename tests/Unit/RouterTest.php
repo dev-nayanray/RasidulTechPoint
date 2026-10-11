@@ -90,6 +90,37 @@ final class RouterTest extends TestCase
         $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
     }
 
+    public function testGuestMiddlewareRoutesStaffToConsole(): void
+    {
+        $r = $this->router();
+        $r->group(['middleware' => ['guest']], function (Router $r): void {
+            $r->get('/login', fn () => Response::html('FORM'));
+        });
+
+        $staffId = $this->makeUser('router-staff@test.local', roleSlugs: ['manager']);
+        $this->actingAs($staffId);
+
+        $response = $r->dispatch(Request::synthetic('GET', '/login'), $this->resolver());
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/admin/dashboard$#', $response->headers()['Location'] ?? '');
+    }
+
+    public function testGuestMiddlewareRoutesCustomerToAccount(): void
+    {
+        $r = $this->router();
+        $r->group(['middleware' => ['guest']], function (Router $r): void {
+            $r->get('/login', fn () => Response::html('FORM'));
+        });
+
+        $customerId = $this->makeUser('router-customer@test.local', roleSlugs: ['customer']);
+        $this->actingAs($customerId);
+
+        $response = $r->dispatch(Request::synthetic('GET', '/login'), $this->resolver());
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/account$#', $response->headers()['Location'] ?? '',
+            'customers must never be bounced into the admin console');
+    }
+
     public function testPathSanitizationRejectsTraversal(): void
     {
         $request = Request::synthetic('GET', '/..%2f..%2fsecret');

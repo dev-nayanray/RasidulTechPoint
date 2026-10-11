@@ -22,9 +22,6 @@
         </h1>
         <p class="mt-2 text-slate-500"><?= e($message ?? '') ?></p>
         <a href="<?= e(url('/')) ?>" class="mt-6 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Back to homepage</a>
-        <?php if (!empty($debug) && empty($isProd)): ?>
-            <pre class="mt-6 text-left text-xs bg-slate-50 border border-slate-200 rounded-lg p-4 overflow-x-auto text-slate-600"><?= e($debug['exception'] ?? '') ?>: <?= e($debug['message'] ?? '') ?> @ <?= e($debug['file'] ?? '') ?></pre>
-        <?php endif; ?>
     </main>
 </body>
 </html>

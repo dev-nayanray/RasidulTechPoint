@@ -1,0 +1,35 @@
+# Environment & secrets
+.env
+.env.*.local
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Storage runtime data (keep structure, ignore contents)
+/storage/logs/*
+/storage/cache/*
+/storage/sessions/*
+/storage/private/*
+!/storage/logs/.gitkeep
+!/storage/cache/.gitkeep
+!/storage/sessions/.gitkeep
+!/storage/private/.gitkeep
+
+# Public uploads (user content)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Built assets are committed for deploy convenience, but can be ignored:
+# /public/assets/css/app.css
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Test artifacts
+.phpunit.result.cache
+/tests/.phpunit.result.cache

@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers\Storefront;
+
+use App\Exceptions\NotFoundException;
+use App\Repositories\CatalogRepository;
+use App\Repositories\InventoryRepository;
+use App\Support\Request;
+use App\Support\Response;
+use App\Support\View;
+
+final class ShopController
+{
+    public function index(Request $request): Response
+    {
+        [$page] = paginate($request->query('page', 1), 24, 24, 24);
+        $catalog = new CatalogRepository();
+
+        $q = trim((string) $request->query('q', ''));
+        $brandId = (int) $request->query('brand', 0);
+        $categoryId = (int) $request->query('category', 0);
+
+        $perPage = 24;
+        $products = $catalog->publishedForStore($q, $brandId, $categoryId, $perPage, ($page - 1) * $perPage);
+        $total = $catalog->countPublishedForStore($q, $brandId, $categoryId);
+        $pages = max(1, (int) ceil($total / $perPage));
+
+        return Response::html(View::render('storefront/shop', [
+            'pageTitle' => 'Shop',
+            'products' => $products,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'q' => $q,
+            'brandId' => $brandId,
+            'categoryId' => $categoryId,
+            'brands' => $catalog->brands(onlyActive: true),
+            'categories' => $catalog->categories(onlyActive: true),
+            'metaTitle' => 'Shop Used Laptops — Rasidul Tech Point',
+        ]));
+    }
+
+    public function show(string $slug): Response
+    {
+        $catalog = new CatalogRepository();
+        $model = $catalog->findModelBySlug($slug);
+        if ($model === null) {
+            throw new NotFoundException('Product not found.');
+        }
+
+        $units = (new InventoryRepository())->availableUnitsForModel((int) $model['id']);
+
+        return Response::html(View::render('storefront/product', [
+            'pageTitle' => $model['name'],
+            'model' => $model,
+            'units' => $units,
+            'metaTitle' => $model['seo_title'] ?: $model['name'] . ' — Rasidul Tech Point',
+            'metaDescription' => $model['seo_description'] ?: 'Buy authentic used ' . $model['name'] . ' imported from Dubai.',
+        ]));
+    }
+
+    public function brand(string $slug, Request $request): Response
+    {
+        $catalog = new CatalogRepository();
+        $brand = $catalog->findBrandBySlug($slug);
+        if ($brand === null) {
+            throw new NotFoundException('Brand not found.');
+        }
+        return $this->filteredListing($catalog, (int) $brand['id'], 0, 'brand', $brand['name']);
+    }
+
+    public function category(string $slug, Request $request): Response
+    {
+        $catalog = new CatalogRepository();
+        $category = $catalog->findCategoryBySlug($slug);
+        if ($category === null) {
+            throw new NotFoundException('Category not found.');
+        }
+        return $this->filteredListing($catalog, 0, (int) $category['id'], 'category', $category['name']);
+    }
+
+    private function filteredListing(CatalogRepository $catalog, int $brandId, int $categoryId, string $filterKey, string $filterLabel): Response
+    {
+        $products = $catalog->publishedForStore('', $brandId, $categoryId, 24, 0);
+        $total = $catalog->countPublishedForStore('', $brandId, $categoryId);
+
+        return Response::html(View::render('storefront/shop', [
+            'pageTitle' => $filterLabel,
+            'products' => $products,
+            'total' => $total,
+            'page' => 1,
+            'pages' => max(1, (int) ceil($total / 24)),
+            'q' => '',
+            'brandId' => $brandId,
+            'categoryId' => $categoryId,
+            'brands' => $catalog->brands(onlyActive: true),
+            'categories' => $catalog->categories(onlyActive: true),
+            'metaTitle' => $filterLabel . ' — Rasidul Tech Point',
+        ]));
+    }
+}

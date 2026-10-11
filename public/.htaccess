@@ -1,0 +1,18 @@
+# Rasidul Tech Point — Apache configuration for the public directory.
+# DocumentRoot MUST point here; nothing outside public/ should be served.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Send everything that is not a real file/directory to the front controller.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Never serve dotfiles, backup files or SQL dumps even if accidentally placed here.
+<FilesMatch "^\.|\.(sql|log|ini|env|bak|dist)$">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes

@@ -110,6 +110,7 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/categories', [CategoryController::class, 'index'])->middleware('permission:products.view');
     $router->post('/categories', [CategoryController::class, 'store'])->middleware('permission:products.create');
     $router->post('/categories/{id}/update', [CategoryController::class, 'update'])->middleware('permission:products.update');
+    $router->post('/categories/{id}/delete', [CategoryController::class, 'destroy'])->middleware('permission:products.delete');
 
     $router->get('/products', [ProductModelController::class, 'index'])->middleware('permission:products.view');
     $router->get('/products/create', [ProductModelController::class, 'create'])

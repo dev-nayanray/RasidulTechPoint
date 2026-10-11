@@ -66,9 +66,10 @@ final class CatalogRepository
     {
         return $this->pdo->query(
             'SELECT c.*, p.name AS parent_name,
-                    (SELECT COUNT(*) FROM product_models pm WHERE pm.category_id = c.id AND pm.deleted_at IS NULL) AS model_count
+                    (SELECT COUNT(*) FROM product_models pm WHERE pm.category_id = c.id AND pm.deleted_at IS NULL) AS model_count,
+                    (SELECT COUNT(*) FROM categories ch WHERE ch.parent_id = c.id) AS child_count
              FROM categories c LEFT JOIN categories p ON p.id = c.parent_id'
-                . ($onlyActive ? ' WHERE c.is_active = 1' : '') . ' ORDER BY c.name'
+                . ($onlyActive ? ' WHERE c.is_active = 1' : '') . ' ORDER BY c.sort_order ASC, c.name ASC'
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -88,19 +89,140 @@ final class CatalogRepository
         return $row === false ? null : $row;
     }
 
-    public function createCategory(string $name, string $slug, ?int $parentId, ?string $description): int
+    public function createCategory(array $d): int
     {
-        $stmt = $this->pdo->prepare('INSERT INTO categories (name, slug, parent_id, description) VALUES (?, ?, ?, ?)');
-        $stmt->execute([$name, $slug, $parentId, $description]);
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO categories (name, slug, parent_id, description, seo_title, seo_description, sort_order, image_path, is_active)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)'
+        );
+        $stmt->execute([
+            $d['name'], $d['slug'], $d['parent_id'] ?? null,
+            $d['description'] ?? null, $d['seo_title'] ?? null, $d['seo_description'] ?? null,
+            (int) ($d['sort_order'] ?? 0), $d['image_path'] ?? null,
+        ]);
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function updateCategory(int $id, string $name, string $slug, ?int $parentId, ?string $description, bool $isActive): void
+    public function updateCategoryFull(int $id, array $d): void
     {
         $stmt = $this->pdo->prepare(
-            'UPDATE categories SET name = ?, slug = ?, parent_id = ?, description = ?, is_active = ? WHERE id = ?'
+            'UPDATE categories SET name = ?, slug = ?, parent_id = ?, description = ?,
+                seo_title = ?, seo_description = ?, sort_order = ?, image_path = ?, is_active = ?
+             WHERE id = ?'
         );
-        $stmt->execute([$name, $slug, $parentId, $description, $isActive ? 1 : 0, $id]);
+        $stmt->execute([
+            $d['name'], $d['slug'], $d['parent_id'] ?? null,
+            $d['description'] ?? null, $d['seo_title'] ?? null, $d['seo_description'] ?? null,
+            (int) ($d['sort_order'] ?? 0), $d['image_path'] ?? null,
+            !empty($d['is_active']) ? 1 : 0, $id,
+        ]);
+    }
+
+    /** Backward-compat wrapper for the old signature. */
+    public function updateCategory(int $id, string $name, string $slug, ?int $parentId, ?string $description, bool $isActive): void
+    {
+        $this->updateCategoryFull($id, [
+            'name' => $name, 'slug' => $slug, 'parent_id' => $parentId,
+            'description' => $description, 'is_active' => $isActive,
+        ]);
+    }
+
+    /** Count product_models in this category (non-deleted). */
+    public function countModelsInCategory(int $categoryId): int
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COUNT(*) FROM product_models WHERE category_id = ? AND deleted_at IS NULL'
+        );
+        $stmt->execute([$categoryId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /** Count direct child categories. */
+    public function countChildren(int $categoryId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM categories WHERE parent_id = ?');
+        $stmt->execute([$categoryId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Check if setting parentId would create a circular reference.
+     * Walks up the parent chain from parentId; if we reach $id, it's circular.
+     */
+    public function wouldCreateCycle(int $categoryId, ?int $parentId): bool
+    {
+        if ($parentId === null || $parentId === 0) {
+            return false;
+        }
+        $visited = [$categoryId];
+        $current = $parentId;
+        $maxDepth = 20; // safety valve
+        while ($current !== null && $current > 0 && $maxDepth-- > 0) {
+            if (in_array($current, $visited, true)) {
+                return true;
+            }
+            $visited[] = $current;
+            $stmt = $this->pdo->prepare('SELECT parent_id FROM categories WHERE id = ?');
+            $stmt->execute([$current]);
+            $current = $stmt->fetchColumn();
+            if ($current === false) {
+                break;
+            }
+            $current = (int) $current;
+        }
+        return false;
+    }
+
+    /**
+     * Delete a category. If it has product_models, they must be
+     * reassigned to $reassignTo first. If $reassignTo is null and
+     * there are models, throws. Children are reparented to the
+     * deleted category's parent (or null if it was a root).
+     */
+    public function deleteCategory(int $id, ?int $reassignTo = null): void
+    {
+        $category = $this->findCategory($id);
+        if ($category === null) {
+            throw new \App\Exceptions\NotFoundException('Category not found.');
+        }
+
+        $modelCount = $this->countModelsInCategory($id);
+        if ($modelCount > 0 && ($reassignTo === null || $reassignTo === 0)) {
+            throw new \App\Exceptions\ValidationException([
+                'category' => "Cannot delete a category with {$modelCount} product model(s). Choose a reassignment target or remove the models first.",
+            ]);
+        }
+
+        if ($reassignTo !== null && $reassignTo > 0) {
+            // Verify the reassignment target exists and isn't the same category.
+            $target = $this->findCategory($reassignTo);
+            if ($target === null) {
+                throw new \App\Exceptions\ValidationException([
+                    'reassign_to' => 'Reassignment target category does not exist.',
+                ]);
+            }
+            if ($reassignTo === $id) {
+                throw new \App\Exceptions\ValidationException([
+                    'reassign_to' => 'Cannot reassign models to the category being deleted.',
+                ]);
+            }
+        }
+
+        \App\Support\Database\Connection::transaction(function (PDO $pdo) use ($id, $reassignTo, $category) {
+            // Reassign models to the target category.
+            if ($reassignTo !== null && $reassignTo > 0) {
+                $pdo->prepare('UPDATE product_models SET category_id = ? WHERE category_id = ?')
+                    ->execute([$reassignTo, $id]);
+            }
+
+            // Reassign children to the deleted category's parent (or null).
+            $grandparent = $category['parent_id'] ?? null;
+            $pdo->prepare('UPDATE categories SET parent_id = ? WHERE parent_id = ?')
+                ->execute([$grandparent, $id]);
+
+            // Delete the category.
+            $pdo->prepare('DELETE FROM categories WHERE id = ?')->execute([$id]);
+        });
     }
 
     // ---- Product models --------------------------------------------------------

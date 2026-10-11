@@ -195,6 +195,8 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:purchases.manage');
     $router->post('/purchase-orders/{id}/status', [PurchaseOrderController::class, 'changeStatus'])
         ->middleware('permission:purchases.view');
+    $router->post('/purchase-orders/{id}/allocate', [PurchaseOrderController::class, 'allocateLandedCost'])
+        ->middleware('permission:inventory.adjust');
 
     // Orders & payments
     $router->get('/orders', [OrderController::class, 'index'])->middleware('permission:orders.view');

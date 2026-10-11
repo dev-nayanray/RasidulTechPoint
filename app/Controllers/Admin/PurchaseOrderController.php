@@ -11,6 +11,7 @@ use App\Repositories\PurchaseOrderRepository;
 use App\Repositories\SupplierRepository;
 use App\Services\AuditService;
 use App\Services\AuthService;
+use App\Services\LandedCostService;
 use App\Support\Request;
 use App\Support\Response;
 use App\Support\Session;
@@ -105,10 +106,64 @@ final class PurchaseOrderController
             throw new NotFoundException('Purchase order not found.');
         }
 
+        $landedCostService = new LandedCostService();
+        $allocations = $landedCostService->allocationsFor((int) $id);
+
+        // Get units received against this PO.
+        $units = \App\Support\Database\Connection::pdo()->prepare(
+            'SELECT iu.id, iu.sku, iu.condition_grade, iu.status, iu.purchase_cost, iu.landed_cost,
+                    iu.selling_price, iu.created_at
+             FROM inventory_units iu
+             WHERE iu.purchase_order_id = ?
+             ORDER BY iu.id ASC'
+        );
+        $units->execute([$id]);
+
         return Response::html(View::render('admin/purchase-orders/show', [
             'pageTitle' => $order['reference'],
             'order' => $order,
+            'allocations' => $allocations,
+            'units' => $units->fetchAll(\PDO::FETCH_ASSOC),
         ]));
+    }
+
+    public function allocateLandedCost(string $id, Request $request): Response
+    {
+        $repo = new PurchaseOrderRepository();
+        $order = $repo->find((int) $id);
+        if ($order === null) {
+            throw new NotFoundException('Purchase order not found.');
+        }
+
+        $expenseType = (string) $request->input('expense_type', 'other');
+        $totalAmount = (float) $request->input('total_amount', 0);
+        $method = (string) $request->input('method', 'equal');
+        $description = trim((string) $request->input('description', ''));
+
+        if ($totalAmount <= 0) {
+            flash_error('Total amount must be positive.');
+            return Response::redirect(url('/admin/purchase-orders/' . $id));
+        }
+
+        try {
+            $allocationId = (new LandedCostService())->allocate(
+                (int) $id, $expenseType, $totalAmount, $method,
+                current_user_id(), $description ?: null,
+            );
+        } catch (\App\Exceptions\ValidationException $e) {
+            flash_error(implode(' ', $e->errors));
+            return Response::redirect(url('/admin/purchase-orders/' . $id));
+        }
+
+        AuditService::record('po.landed_cost_allocated', 'purchase_order', (int) $id, [
+            'allocation_id' => $allocationId,
+            'expense_type' => $expenseType,
+            'total_amount' => $totalAmount,
+            'method' => $method,
+        ], $request);
+
+        flash_success('Landed cost allocated across received units.');
+        return Response::redirect(url('/admin/purchase-orders/' . $id));
     }
 
     public function edit(string $id): Response

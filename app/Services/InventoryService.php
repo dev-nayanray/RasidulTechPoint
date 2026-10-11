@@ -89,23 +89,26 @@ final class InventoryService
                 'INSERT INTO inventory_units
                     (sku, serial_number, product_model_id, condition_grade, status,
                      purchase_cost, landed_cost, selling_price, min_selling_price,
-                     location_id, supplier_ref, purchase_ref, received_at, notes)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)'
+                     location_id, supplier_ref, purchase_ref, purchase_order_id,
+                     purchase_order_item_id, received_at, notes)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), ?)'
             );
             $stmt->execute([
                 $data['sku'],
-                $data['serial_number'] ?: null,
+                ($data['serial_number'] ?? '') ?: null,
                 (int) $data['product_model_id'],
                 $data['condition_grade'],
                 $initialState,
                 number_format((float) $data['purchase_cost'], 2, '.', ''),
-                number_format((float) $data['landed_cost'], 2, '.', ''),
+                number_format((float) ($data['landed_cost'] ?? 0), 2, '.', ''),
                 number_format((float) $data['selling_price'], 2, '.', ''),
                 isset($data['min_selling_price']) && $data['min_selling_price'] !== ''
                     ? number_format((float) $data['min_selling_price'], 2, '.', '') : null,
                 $data['location_id'] ?? null,
                 $data['supplier_ref'] ?? null,
                 $data['purchase_ref'] ?? null,
+                isset($data['purchase_order_id']) && $data['purchase_order_id'] !== '' ? (int) $data['purchase_order_id'] : null,
+                isset($data['purchase_order_item_id']) && $data['purchase_order_item_id'] !== '' ? (int) $data['purchase_order_item_id'] : null,
                 $data['notes'] ?? null,
             ]);
             $unitId = (int) $pdo->lastInsertId();
@@ -113,6 +116,7 @@ final class InventoryService
             $this->insertMovement($pdo, $unitId, 'receipt', null, $initialState, 'Stock received', $userId, [
                 'sku' => $data['sku'],
                 'purchase_ref' => $data['purchase_ref'] ?? null,
+                'purchase_order_id' => $data['purchase_order_id'] ?? null,
             ]);
 
             return $unitId;

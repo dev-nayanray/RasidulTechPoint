@@ -13,7 +13,7 @@ final class MigrationTest extends TestCase
         $expected = [
             'users', 'roles', 'permissions', 'user_roles', 'role_permissions',
             'password_reset_tokens', 'login_attempts', 'audit_logs',
-            'business_profiles', 'locations', 'settings', 'notifications',
+            'business_profiles', 'locations', 'settings', 'notifications', 'business_hours',
             'brands', 'categories', 'product_models', 'product_images',
             'inventory_units', 'stock_movements',
             'customers', 'orders', 'order_items', 'payments',
@@ -28,7 +28,7 @@ final class MigrationTest extends TestCase
     public function testMigrationRunnerTracksBatches(): void
     {
         $count = (int) $this->pdo()->query('SELECT COUNT(*) FROM migrations')->fetchColumn();
-        $this->assertSame(5, $count, 'five migration files should be recorded');
+        $this->assertSame(6, $count, 'six migration files should be recorded');
 
         // Re-running is a no-op.
         $migrator = new \App\Support\Database\Migrator($this->pdo(), BASE_PATH . '/database/migrations');

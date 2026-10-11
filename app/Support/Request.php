@@ -42,7 +42,8 @@ final class Request
         array $get = [],
         array $post = [],
         array $server = [],
-        array $cookies = []
+        array $cookies = [],
+        array $files = [],
     ): self {
         $server = array_merge([
             'REQUEST_METHOD' => $method,
@@ -57,7 +58,20 @@ final class Request
             'REQUEST_TIME' => time(),
         ], $server);
 
-        return new self($server, $get, $post, [], $cookies);
+        return new self($server, $get, $post, $files, $cookies);
+    }
+
+    /**
+     * Access a single uploaded file by its field name.
+     * Returns the standard $_FILES structure or null if not present.
+     */
+    public function file(string $key): ?array
+    {
+        $file = $this->files[$key] ?? null;
+        if (!is_array($file) || !isset($file['tmp_name'])) {
+            return null;
+        }
+        return $file;
     }
 
     public function method(): string

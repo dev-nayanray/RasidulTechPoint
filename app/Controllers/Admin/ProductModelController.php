@@ -82,11 +82,18 @@ final class ProductModelController
             throw new NotFoundException('Product model not found.');
         }
 
+        $images = \App\Support\Database\Connection::pdo()->prepare(
+            'SELECT * FROM product_images WHERE product_model_id = ? ORDER BY sort_order ASC, id ASC'
+        );
+        $images->execute([(int) $id]);
+        $imageRows = $images->fetchAll(\PDO::FETCH_ASSOC);
+
         return Response::html(View::render('admin/products/show', [
             'pageTitle' => $model['name'],
             'model' => $model,
             'units' => (new \App\Repositories\InventoryRepository())->search('', '', (int) $id, 1, 50)['rows'],
             'priceRange' => $catalog->priceRange((int) $id),
+            'images' => $imageRows,
         ]));
     }
 

@@ -1,0 +1,25 @@
+# Prevent script execution in upload directories.
+# Only image files should ever be served from here.
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Deny execution of any script file type.
+<FilesMatch "\.(php|phtml|phar|shtml|cgi|pl|py|sh|asp|aspx|jsp)$">
+    Require all denied
+</FilesMatch>
+
+# Force content-disposition for non-image files (download, don't execute).
+<FilesMatch "\.(?!jpg|jpeg|png|webp|gif|svg|ico$).+">
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
+</FilesMatch>
+
+Options -ExecCGI -Indexes

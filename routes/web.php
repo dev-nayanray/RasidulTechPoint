@@ -19,6 +19,7 @@ use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\LocationController;
 use App\Controllers\Admin\NotificationController;
 use App\Controllers\Admin\OrderController;
+use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\SettingsController;
@@ -121,6 +122,16 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/products/{id}/edit', [ProductModelController::class, 'edit'])->middleware('permission:products.update');
     $router->post('/products/{id}/update', [ProductModelController::class, 'update'])->middleware('permission:products.update');
     $router->post('/products/{id}/delete', [ProductModelController::class, 'destroy'])->middleware('permission:products.delete');
+
+    // Product images
+    $router->post('/products/{id}/images', [ProductImageController::class, 'upload'])
+        ->middleware('permission:products.update');
+    $router->post('/products/images/{imageId}/primary', [ProductImageController::class, 'setPrimary'])
+        ->middleware('permission:products.update');
+    $router->post('/products/images/{imageId}/delete', [ProductImageController::class, 'destroy'])
+        ->middleware('permission:products.delete');
+    $router->post('/products/images/{imageId}/reorder', [ProductImageController::class, 'reorder'])
+        ->middleware('permission:products.update');
 
     // Inventory
     $router->get('/inventory', [InventoryController::class, 'index'])->middleware('permission:inventory.view');

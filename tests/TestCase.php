@@ -291,6 +291,26 @@ abstract class TestCase
         }
     }
 
+    public function assertStringNotContainsString(string $needle, string $haystack, string $message = ''): void
+    {
+        $this->assertions++;
+        if (str_contains($haystack, $needle)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting that '" . $haystack . "' does NOT contain '" . $needle . "'"
+            );
+        }
+    }
+
+    public function assertStringEndsWith(string $suffix, string $value, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!str_ends_with($value, $suffix)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting that '" . $value . "' ends with '" . $suffix . "'"
+            );
+        }
+    }
+
     public function assertGreaterThanOrEqual(mixed $expected, mixed $actual, string $message = ''): void
     {
         $this->assertions++;

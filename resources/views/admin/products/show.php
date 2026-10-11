@@ -1,4 +1,4 @@
-<?php /** @var array $model @var list<array> $units */ ?>
+<?php /** @var array $model @var list<array> $units @var list<array> $images */ ?>
 <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
         <p class="text-sm text-slate-500"><a href="<?= e(url('/admin/products')) ?>" class="font-medium text-blue-700 hover:text-blue-800">← Laptop models</a></p>
@@ -68,6 +68,66 @@
     </div>
     <?php endif; ?>
 </div>
+
+<!-- Image gallery -->
+<section class="mt-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-900">Product images</h2>
+        <?php if (\App\Services\AuthService::can('products.update')): ?>
+            <form method="post" action="<?= e(url('/admin/products/' . $model['id'] . '/images')) ?>" enctype="multipart/form-data" data-loading-form>
+                <?= csrf_field() ?>
+                <input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="text-sm text-slate-600 file:mr-2 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-700">
+                <button type="submit" class="btn-primary text-xs">Upload</button>
+            </form>
+        <?php endif; ?>
+    </div>
+    <div class="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <?php if (($images ?? []) === []): ?>
+            <p class="col-span-full py-8 text-center text-sm text-slate-400">No images uploaded yet.</p>
+        <?php else: ?>
+            <?php foreach ($images as $img): ?>
+                <div class="relative overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <?php if (file_exists(BASE_PATH . '/public/' . $img['file_path'])): ?>
+                        <img src="<?= e(url($img['file_path'])) ?>" alt="" class="h-32 w-full object-cover">
+                    <?php else: ?>
+                        <div class="flex h-32 items-center justify-center text-xs text-slate-400">File missing</div>
+                    <?php endif; ?>
+                    <div class="flex items-center justify-between px-2 py-1.5 text-xs">
+                        <?php if ((int) $img['is_primary'] === 1): ?>
+                            <span class="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 font-medium text-blue-700">Primary</span>
+                        <?php else: ?>
+                            <span class="text-slate-400">#<?= (int) $img['sort_order'] ?></span>
+                        <?php endif; ?>
+                        <div class="flex gap-1">
+                            <?php if (\App\Services\AuthService::can('products.update')): ?>
+                                <?php if ((int) $img['is_primary'] !== 1): ?>
+                                    <form method="post" action="<?= e(url('/admin/products/images/' . $img['id'] . '/primary')) ?>">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="text-blue-700 hover:text-blue-800" title="Set as primary">★</button>
+                                    </form>
+                                    <form method="post" action="<?= e(url('/admin/products/images/' . $img['id'] . '/reorder')) ?>">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" name="direction" value="up" class="text-slate-500 hover:text-slate-700">↑</button>
+                                    </form>
+                                    <form method="post" action="<?= e(url('/admin/products/images/' . $img['id'] . '/reorder')) ?>">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" name="direction" value="down" class="text-slate-500 hover:text-slate-700">↓</button>
+                                    </form>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if (\App\Services\AuthService::can('products.delete')): ?>
+                                <form method="post" action="<?= e(url('/admin/products/images/' . $img['id'] . '/delete')) ?>" data-confirm="Delete this image?" data-loading-form>
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="text-red-600 hover:text-red-800" title="Delete">✕</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</section>
 
 <section class="mt-6">
     <div class="flex items-center justify-between">

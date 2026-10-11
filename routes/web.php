@@ -31,6 +31,7 @@ use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\SettingsController;
 use App\Controllers\Admin\SupplierController;
 use App\Controllers\Admin\UserController;
+use App\Controllers\Admin\WarrantyController;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\PasswordResetController;
 use App\Controllers\Auth\RegisterController;
@@ -347,6 +348,26 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/customers/{id}/notes', [CustomerController::class, 'addNote'])->middleware('permission:customers.manage');
     $router->post('/customers/{id}/delete', [CustomerController::class, 'destroy'])->middleware('permission:customers.manage');
     $router->post('/customers/{id}/restore', [CustomerController::class, 'restore'])->middleware('permission:customers.manage');
+
+    // Warranty management (Prompt 27)
+    $router->get('/warranty', [WarrantyController::class, 'index'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/policies', [WarrantyController::class, 'policyIndex'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/policies/create', [WarrantyController::class, 'policyCreate'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/policies', [WarrantyController::class, 'policyStore'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/policies/{id}/edit', [WarrantyController::class, 'policyEdit'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/policies/{id}/update', [WarrantyController::class, 'policyUpdate'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/registrations', [WarrantyController::class, 'registrationIndex'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/registrations/{id}', [WarrantyController::class, 'registrationShow'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/registrations', [WarrantyController::class, 'registrationStore'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/registrations/{id}/void', [WarrantyController::class, 'registrationVoid'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/claims', [WarrantyController::class, 'claimIndex'])->middleware('permission:warranty.manage');
+    $router->get('/warranty/claims/{id}', [WarrantyController::class, 'claimShow'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/claims', [WarrantyController::class, 'claimStore'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/claims/{id}/approve', [WarrantyController::class, 'claimApprove'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/claims/{id}/reject', [WarrantyController::class, 'claimReject'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
+    $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
 
     // Notifications
     $router->get('/notifications', [NotificationController::class, 'index'])

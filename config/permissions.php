@@ -159,7 +159,7 @@ const RTP_ADMIN_NAV = [
         ['finance.view', 'Expenses', '/admin/expenses', 'wallet', false],
     ],
     'Warranty & Service' => [
-        ['warranty.manage', 'Warranty & Repairs', '/admin/warranty', 'shield', false],
+        ['warranty.manage', 'Warranty & Repairs', '/admin/warranty', 'shield', true],
     ],
     'Delivery' => [
         ['delivery.manage', 'Courier & Delivery', '/admin/delivery', 'map-pin', true],

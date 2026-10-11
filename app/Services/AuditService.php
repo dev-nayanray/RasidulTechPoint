@@ -26,6 +26,7 @@ use App\Support\Database\Connection;
  *   orders      — order creation, status, payment recording
  *   permissions — permission.denied (middleware blocks)
  *   account     — customer self-service profile updates
+ *   customer    — admin-side customer CRUD (create/update/status/notes/delete)
  */
 final class AuditService
 {
@@ -48,6 +49,7 @@ final class AuditService
         'payment.' => 'orders',
         'permission.' => 'permissions',
         'account.' => 'account',
+        'customer.' => 'customer',
         'admin.' => 'system',
     ];
 

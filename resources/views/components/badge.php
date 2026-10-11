@@ -26,6 +26,10 @@ $map = [
     // users
     'active' => 'bg-green-50 text-green-700 border-green-200',
     'inactive' => 'bg-slate-100 text-slate-500 border-slate-200',
+    // customer account statuses (active is reused above)
+    'suspended' => 'bg-amber-50 text-amber-700 border-amber-200',
+    'blacklisted' => 'bg-red-50 text-red-700 border-red-200',
+    'vip' => 'bg-purple-50 text-purple-700 border-purple-200',
     // grades
     'A' => 'bg-green-50 text-green-700 border-green-200',
     'B' => 'bg-blue-50 text-blue-700 border-blue-200',

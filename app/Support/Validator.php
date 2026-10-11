@@ -203,7 +203,8 @@ final class Validator
     private function valueTaken(string $table, string $column, mixed $value, ?string $ignoreId): bool
     {
         $allowed = ['users', 'roles', 'permissions', 'brands', 'categories', 'product_models',
-            'inventory_units', 'customers', 'orders', 'locations', 'settings', 'product_images'];
+            'inventory_units', 'customers', 'orders', 'locations', 'settings', 'product_images',
+            'customer_notes'];
         if (!in_array($table, $allowed, true)) {
             throw new \RuntimeException("unique rule not allowed for table {$table}");
         }
@@ -222,7 +223,7 @@ final class Validator
     private function valueExists(string $table, string $column, mixed $value): bool
     {
         $allowed = ['users', 'roles', 'permissions', 'brands', 'categories', 'product_models',
-            'inventory_units', 'customers', 'orders', 'locations'];
+            'inventory_units', 'customers', 'orders', 'locations', 'customer_notes'];
         if (!in_array($table, $allowed, true)) {
             throw new \RuntimeException("exists rule not allowed for table {$table}");
         }

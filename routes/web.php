@@ -227,9 +227,19 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
 
     // Customers
     $router->get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.view');
-    $router->get('/customers/create', [CustomerController::class, 'create'])->middleware('permission:customers.manage');
-    $router->post('/customers', [CustomerController::class, 'store'])->middleware('permission:customers.manage');
+    $router->get('/customers/duplicates', [CustomerController::class, 'duplicates'])
+        ->middleware('permission:customers.manage');
+    $router->get('/customers/create', [CustomerController::class, 'create'])
+        ->middleware('permission:customers.create|customers.manage');
+    $router->post('/customers', [CustomerController::class, 'store'])
+        ->middleware('permission:customers.create|customers.manage');
     $router->get('/customers/{id}', [CustomerController::class, 'show'])->middleware('permission:customers.view');
+    $router->get('/customers/{id}/edit', [CustomerController::class, 'edit'])->middleware('permission:customers.manage');
+    $router->post('/customers/{id}/update', [CustomerController::class, 'update'])->middleware('permission:customers.manage');
+    $router->post('/customers/{id}/status', [CustomerController::class, 'updateStatus'])->middleware('permission:customers.manage');
+    $router->post('/customers/{id}/notes', [CustomerController::class, 'addNote'])->middleware('permission:customers.manage');
+    $router->post('/customers/{id}/delete', [CustomerController::class, 'destroy'])->middleware('permission:customers.manage');
+    $router->post('/customers/{id}/restore', [CustomerController::class, 'restore'])->middleware('permission:customers.manage');
 
     // Notifications
     $router->get('/notifications', [NotificationController::class, 'index'])

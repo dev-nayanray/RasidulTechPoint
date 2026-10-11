@@ -40,9 +40,9 @@ final class BusinessProfileSeeder
 
         $count = (int) $pdo->query('SELECT COUNT(*) FROM locations')->fetchColumn();
         if ($count === 0) {
-            $shop = $pdo->prepare('INSERT INTO locations (name, type, address, phone) VALUES (?, ?, ?, ?)');
-            $shop->execute(['Main Shop', 'shop', 'Example Road 1, Dhaka', '+8801700000000']);
-            $shop->execute(['Central Warehouse', 'warehouse', 'Dubai sourcing warehouse', null]);
+            $shop = $pdo->prepare('INSERT INTO locations (name, type, address, phone, is_primary) VALUES (?, ?, ?, ?, ?)');
+            $shop->execute(['Main Shop', 'shop', 'Example Road 1, Dhaka', '+8801700000000', 1]);
+            $shop->execute(['Central Warehouse', 'warehouse', 'Dubai sourcing warehouse', null, 0]);
         }
 
         $defaults = [

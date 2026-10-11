@@ -16,6 +16,7 @@ use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\InventoryController;
+use App\Controllers\Admin\LocationController;
 use App\Controllers\Admin\NotificationController;
 use App\Controllers\Admin\OrderController;
 use App\Controllers\Admin\ProductModelController;
@@ -128,6 +129,19 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/inventory/{id}/transition', [InventoryController::class, 'transition'])
         ->middleware('permission:inventory.view');
     $router->post('/inventory/{id}/price', [InventoryController::class, 'adjustPrice'])
+        ->middleware('permission:inventory.adjust');
+
+    // Locations & branches
+    $router->get('/locations', [LocationController::class, 'index'])->middleware('permission:inventory.view');
+    $router->get('/locations/create', [LocationController::class, 'create'])
+        ->middleware('permission:inventory.adjust');
+    $router->post('/locations', [LocationController::class, 'store'])
+        ->middleware('permission:inventory.adjust');
+    $router->get('/locations/{id}/edit', [LocationController::class, 'edit'])
+        ->middleware('permission:inventory.adjust');
+    $router->post('/locations/{id}/update', [LocationController::class, 'update'])
+        ->middleware('permission:inventory.adjust');
+    $router->post('/locations/{id}/delete', [LocationController::class, 'destroy'])
         ->middleware('permission:inventory.adjust');
 
     // Orders & payments

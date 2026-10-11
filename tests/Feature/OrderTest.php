@@ -112,8 +112,9 @@ final class OrderTest extends TestCase
         $this->assertSame('pending', (string) $fetched['status']);
         $this->assertSame('unpaid', (string) $fetched['payment_status']);
 
-        // Partial payment changes only payment state.
-        $result = $this->orders->recordPayment($order['id'], 400.00, 'bkash', 1);
+        // Partial payment with verified evidence (gateway txn id) changes
+        // only payment state — order status remains pending.
+        $result = $this->orders->recordPayment($order['id'], 400.00, 'bkash', 1, 'BKASH-TXN-PROOF-1');
         $this->assertSame('partial', $result['payment_status']);
 
         $fetched = (new OrderRepository())->find($order['id']);
@@ -123,6 +124,25 @@ final class OrderTest extends TestCase
         // Completing payment marks paid.
         $result = $this->orders->recordPayment($order['id'], 600.00, 'cash', 1);
         $this->assertSame('paid', $result['payment_status']);
+    }
+
+    public function testNonCashPaymentWithoutEvidenceStaysPending(): void
+    {
+        [, , $modelId] = $this->makeCatalog();
+        $unitId = $this->makeAvailableUnit($modelId, ['selling_price' => '1000.00']);
+        $customerId = $this->makeCustomer();
+
+        $order = $this->orders->createOrder($customerId, [$unitId], 'online', 1, [], 'pending');
+
+        // bkash payment with no reference and no evidence_ref → stays pending.
+        // The order payment_status must NOT move to 'paid' without evidence.
+        $result = $this->orders->recordPayment($order['id'], 1000.00, 'bkash', 1);
+        $this->assertSame('pending', $result['payment_state'], 'non-cash payment without evidence must be pending');
+        $this->assertSame('unpaid', $result['payment_status'], 'pending payment must not move order to paid');
+
+        // Confirm with evidence → payment promoted, order marked paid.
+        $confirm = $this->orders->confirmPayment($result['id'], 'BANK-SLIP-9', 1);
+        $this->assertSame('paid', $confirm['payment_status']);
     }
 
     public function testDuplicatePaymentReferenceRejected(): void

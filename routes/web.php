@@ -224,6 +224,10 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/orders/{id}', [OrderController::class, 'show'])->middleware('permission:orders.view');
     $router->post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware('permission:orders.manage');
     $router->post('/orders/{id}/payments', [OrderController::class, 'recordPayment'])->middleware('permission:payments.manage');
+    $router->post('/orders/{id}/payments/{paymentId}/confirm', [OrderController::class, 'confirmPayment'])
+        ->middleware('permission:payments.manage');
+    $router->post('/orders/{id}/fulfillment-notes', [OrderController::class, 'addFulfillmentNote'])
+        ->middleware('permission:orders.manage');
 
     // Customers
     $router->get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.view');

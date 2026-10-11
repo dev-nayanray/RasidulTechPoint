@@ -9,19 +9,43 @@ use App\Support\Database\Connection;
 use PDO;
 
 /**
- * Order creation and payment recording.
+ * Order creation, status transitions and payment recording.
  *
  * - Prices/totals are ALWAYS computed server-side from inventory_units.
  * - Order items snapshot product name, SKU and price at sale time.
  * - Every involved unit is locked (FOR UPDATE) so the same physical unit
  *   can never be sold twice, online or through POS.
- * - Order state and payment state are separate flows by design.
+ * - Order state and payment state are SEPARATE flows by design.
+ * - Status transitions are enforced by STATUS_TRANSITIONS — no jumps
+ *   like pending → completed are allowed; cancelled and refunded are
+ *   terminal.
+ * - Non-cash payments require verified evidence (gateway transaction
+ *   id / bank slip number) before they count toward order.payment_status.
+ *   Cash is verified at the till by nature.
  */
 final class OrderService
 {
     public const ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'completed', 'cancelled', 'refunded'];
     public const PAYMENT_STATUSES = ['unpaid', 'partial', 'paid', 'refunded'];
     public const PAYMENT_METHODS = ['cash', 'card', 'bank_transfer', 'bkash', 'nagad', 'other'];
+
+    /** Cash-equivalent methods that are verified at the till. */
+    public const VERIFIED_AT_TILL_METHODS = ['cash'];
+
+    /**
+     * Allowed status transitions: from_status => list of to_status values.
+     * Anything not listed here is rejected by assertTransitionAllowed().
+     * cancelled and refunded are terminal — once you cancel or refund,
+     * the order is immutable.
+     */
+    public const STATUS_TRANSITIONS = [
+        'pending' => ['confirmed', 'processing', 'cancelled'],
+        'confirmed' => ['processing', 'cancelled'],
+        'processing' => ['completed', 'cancelled'],
+        'completed' => ['refunded'],
+        'cancelled' => [],
+        'refunded' => [],
+    ];
 
     /**
      * Create an order for specific inventory units.
@@ -104,11 +128,14 @@ final class OrderService
 
             $reference = $this->generateReference($pdo);
             $isCompleted = $initialStatus === 'completed';
+            $isConfirmed = in_array($initialStatus, ['confirmed', 'processing', 'completed'], true);
 
             $stmt = $pdo->prepare(
                 'INSERT INTO orders
-                    (reference, customer_id, channel, status, payment_status, subtotal, discount, total, notes, placed_by, completed_at)
-                 VALUES (?, ?, ?, ?, "unpaid", ?, ?, ?, ?, ?, ' . ($isCompleted ? 'UTC_TIMESTAMP()' : 'NULL') . ')'
+                    (reference, customer_id, channel, status, payment_status, subtotal, discount, total, notes, placed_by, confirmed_at, completed_at)
+                 VALUES (?, ?, ?, ?, "unpaid", ?, ?, ?, ?, ?, '
+                 . ($isConfirmed ? 'UTC_TIMESTAMP()' : 'NULL') . ', '
+                 . ($isCompleted ? 'UTC_TIMESTAMP()' : 'NULL') . ')'
             );
             $stmt->execute([
                 $reference,
@@ -144,6 +171,10 @@ final class OrderService
                 $inventory->markSold($line['unit_id'], 'Sold on order ' . $reference, $staffUserId);
             }
 
+            // Seed the status history with the initial transition so the
+            // timeline has a "from nothing → pending/confirmed/..." row.
+            $this->recordStatusHistory($pdo, $orderId, null, $initialStatus, $staffUserId, 'Order created');
+
             app_audit('order.created', 'order', $orderId, [
                 'reference' => $reference,
                 'channel' => $channel,
@@ -159,6 +190,14 @@ final class OrderService
      * Record a payment against an order. Updates payment_status based on
      * the sum of completed payments vs. total. Duplicate external
      * references are rejected (idempotency guard for gateway callbacks).
+     *
+     * Payment evidence rules:
+     *  - cash: payment is 'completed' immediately (verified at the till)
+     *  - card / bank_transfer / bkash / nagad / other: payment is
+     *    'completed' only when $reference (the gateway transaction id /
+     *    bank slip number) is non-empty; otherwise the payment is recorded
+     *    as 'pending' and does NOT count toward order.payment_status until
+     *    confirmPayment() is called with verified evidence.
      */
     public function recordPayment(
         int $orderId,
@@ -166,6 +205,7 @@ final class OrderService
         string $method,
         int $receivedByUserId,
         ?string $reference = null,
+        ?string $evidenceRef = null,
     ): array {
         if (!in_array($method, self::PAYMENT_METHODS, true)) {
             throw new ValidationException(['method' => 'Invalid payment method.']);
@@ -174,7 +214,18 @@ final class OrderService
             throw new ValidationException(['amount' => 'Payment amount must be positive.']);
         }
 
-        return Connection::transaction(function (PDO $pdo) use ($orderId, $amount, $method, $receivedByUserId, $reference) {
+        // The 'reference' column is the human-visible receipt id (e.g.
+        // 'BKASH-TXN-777'); the 'evidence_ref' column is the verified
+        // gateway slip number that the operator pastes in AFTER manual
+        // reconciliation. Both are persisted, but only evidence_ref (or
+        // being a cash payment) unlocks the 'completed' state for non-cash.
+        $evidence = $evidenceRef ?? ($reference !== null && $reference !== '' ? $reference : null);
+
+        $isVerifiedAtTill = in_array($method, self::VERIFIED_AT_TILL_METHODS, true);
+        $isVerifiedNonCash = !$isVerifiedAtTill && $evidence !== null && $evidence !== '';
+        $isCompleted = $isVerifiedAtTill || $isVerifiedNonCash;
+
+        return Connection::transaction(function (PDO $pdo) use ($orderId, $amount, $method, $receivedByUserId, $reference, $evidence, $isCompleted) {
             $stmt = $pdo->prepare(
                 'SELECT id, reference, total, status, payment_status FROM orders WHERE id = ? FOR UPDATE'
             );
@@ -196,14 +247,16 @@ final class OrderService
             }
 
             $stmt = $pdo->prepare(
-                'INSERT INTO payments (order_id, amount, method, status, reference, received_by, paid_at)
-                 VALUES (?, ?, ?, "completed", ?, ?, UTC_TIMESTAMP())'
+                'INSERT INTO payments (order_id, amount, method, status, reference, evidence_ref, received_by, paid_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ' . ($isCompleted ? 'UTC_TIMESTAMP()' : 'NULL') . ')'
             );
             $stmt->execute([
                 $orderId,
                 number_format($amount, 2, '.', ''),
                 $method,
+                $isCompleted ? 'completed' : 'pending',
                 $reference,
+                $evidence,
                 $receivedByUserId,
             ]);
             $paymentId = (int) $pdo->lastInsertId();
@@ -225,56 +278,226 @@ final class OrderService
             app_audit('payment.recorded', 'order', $orderId, [
                 'amount' => number_format($amount, 2, '.', ''),
                 'method' => $method,
+                'status' => $isCompleted ? 'completed' : 'pending',
+                'payment_status' => $paymentStatus,
+                'has_evidence' => $evidence !== null,
+            ]);
+
+            return ['id' => $paymentId, 'payment_status' => $paymentStatus, 'paid' => $paid, 'payment_state' => $isCompleted ? 'completed' : 'pending'];
+        });
+    }
+
+    /**
+     * Promote a pending payment to 'completed' once verified evidence
+     * (a gateway transaction id or bank slip number) has been supplied.
+     * Recomputes the order payment_status after the promotion.
+     */
+    public function confirmPayment(int $paymentId, string $evidenceRef, int $actorUserId): array
+    {
+        $evidenceRef = trim($evidenceRef);
+        if ($evidenceRef === '') {
+            throw new ValidationException(['evidence_ref' => 'Evidence reference is required to confirm a payment.']);
+        }
+
+        return Connection::transaction(function (PDO $pdo) use ($paymentId, $evidenceRef, $actorUserId) {
+            $stmt = $pdo->prepare('SELECT * FROM payments WHERE id = ? FOR UPDATE');
+            $stmt->execute([$paymentId]);
+            $payment = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($payment === false) {
+                throw new ValidationException(['payment_id' => 'Payment does not exist.']);
+            }
+            if ($payment['status'] === 'completed') {
+                throw new ValidationException(['payment_id' => 'Payment is already completed.']);
+            }
+            if ($payment['status'] === 'refunded') {
+                throw new ValidationException(['payment_id' => 'Cannot confirm a refunded payment.']);
+            }
+
+            $stmt = $pdo->prepare(
+                'UPDATE payments SET status = "completed", evidence_ref = ?, paid_at = COALESCE(paid_at, UTC_TIMESTAMP()) WHERE id = ?'
+            );
+            $stmt->execute([$evidenceRef, $paymentId]);
+
+            $orderId = (int) $payment['order_id'];
+            $paid = (float) $pdo->query(
+                'SELECT COALESCE(SUM(amount), 0) FROM payments WHERE order_id = ' . $orderId . ' AND status = "completed"'
+            )->fetchColumn();
+
+            $orderStmt = $pdo->prepare('SELECT total FROM orders WHERE id = ?');
+            $orderStmt->execute([$orderId]);
+            $total = (float) $orderStmt->fetchColumn();
+
+            $paymentStatus = 'unpaid';
+            if ($paid >= $total - 0.001) {
+                $paymentStatus = 'paid';
+            } elseif ($paid > 0) {
+                $paymentStatus = 'partial';
+            }
+
+            $stmt = $pdo->prepare('UPDATE orders SET payment_status = ? WHERE id = ?');
+            $stmt->execute([$paymentStatus, $orderId]);
+
+            app_audit('payment.confirmed', 'order', $orderId, [
+                'payment_id' => $paymentId,
+                'evidence_ref' => mb_substr($evidenceRef, 0, 80),
                 'payment_status' => $paymentStatus,
             ]);
 
-            return ['id' => $paymentId, 'payment_status' => $paymentStatus, 'paid' => $paid];
+            return ['payment_id' => $paymentId, 'payment_status' => $paymentStatus, 'paid' => $paid];
         });
     }
 
     /**
      * Update order status along its own lifecycle (never payment state).
+     * The transition must be allowed by STATUS_TRANSITIONS — invalid
+     * jumps like pending → completed are rejected. The change is recorded
+     * in order_status_history (append-only).
      */
-    public function updateStatus(int $orderId, string $status, int $actorUserId): void
+    public function updateStatus(int $orderId, string $status, int $actorUserId, ?string $reason = null): void
     {
         if (!in_array($status, self::ORDER_STATUSES, true)) {
             throw new ValidationException(['status' => 'Invalid order status.']);
         }
 
-        Connection::transaction(function (PDO $pdo) use ($orderId, $status, $actorUserId) {
-            $stmt = $pdo->prepare('SELECT status FROM orders WHERE id = ? FOR UPDATE');
+        Connection::transaction(function (PDO $pdo) use ($orderId, $status, $actorUserId, $reason) {
+            $stmt = $pdo->prepare('SELECT status, payment_status FROM orders WHERE id = ? FOR UPDATE');
             $stmt->execute([$orderId]);
-            $current = $stmt->fetchColumn();
-            if ($current === false) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row === false) {
                 throw new ValidationException(['order_id' => 'Order does not exist.']);
+            }
+            $current = (string) $row['status'];
+
+            if ($current === $status) {
+                // No-op: still record a history entry so the audit trail
+                // shows the operator attempted the change.
+                $this->recordStatusHistory($pdo, $orderId, $current, $status, $actorUserId, $reason ?? 'No change (re-affirmed)');
+                return;
+            }
+
+            $this->assertTransitionAllowed($current, $status);
+
+            // Refund requires a prior completed state with collected money.
+            if ($status === 'refunded') {
+                if (!in_array($row['payment_status'], ['paid', 'partial', 'refunded'], true)) {
+                    throw new ValidationException([
+                        'status' => 'Cannot refund an order that has not collected any payment.',
+                    ]);
+                }
             }
 
             $timestamp = match ($status) {
+                'confirmed' => 'confirmed_at = UTC_TIMESTAMP(), ',
                 'completed' => 'completed_at = UTC_TIMESTAMP(), ',
                 'cancelled' => 'cancelled_at = UTC_TIMESTAMP(), ',
+                'refunded' => 'refunded_at = UTC_TIMESTAMP(), ',
                 default => '',
             };
 
             $stmt = $pdo->prepare("UPDATE orders SET {$timestamp}status = ? WHERE id = ?");
             $stmt->execute([$status, $orderId]);
 
-            // Cancelling releases sold units back into stock.
+            // Cancelling releases sold units back into stock as 'returned'
+            // (the same state used for customer-initiated returns). They can
+            // then be re-inspected and moved back to available via the
+            // inspection state machine.
             if ($status === 'cancelled' && $current !== 'cancelled') {
-                $units = $pdo->prepare(
-                    'SELECT inventory_unit_id FROM order_items WHERE order_id = ?'
-                );
-                $units->execute([$orderId]);
-                $inventory = new InventoryService();
-                foreach ($units->fetchAll(PDO::FETCH_COLUMN) as $unitId) {
-                    $inventory->markReturned((int) $unitId, 'Order cancelled', $actorUserId);
-                }
+                $this->releaseUnits($pdo, $orderId, $actorUserId, 'Order cancelled');
             }
+            // Refunding returns the units too (customer gets their money
+            // back, the stock comes back for re-sale).
+            if ($status === 'refunded' && $current !== 'refunded') {
+                $this->releaseUnits($pdo, $orderId, $actorUserId, 'Order refunded');
+            }
+
+            $this->recordStatusHistory($pdo, $orderId, $current, $status, $actorUserId, $reason);
 
             app_audit('order.status_updated', 'order', $orderId, [
                 'from' => $current,
                 'to' => $status,
             ]);
         });
+    }
+
+    /**
+     * Throw a ValidationException if $from → $to is not whitelisted by
+     * STATUS_TRANSITIONS. This is the central enforcement point — every
+     * caller (controller, service) goes through here.
+     */
+    public function assertTransitionAllowed(string $from, string $to): void
+    {
+        $allowed = self::STATUS_TRANSITIONS[$from] ?? [];
+        if (!in_array($to, $allowed, true)) {
+            throw new ValidationException([
+                'status' => "Status transition '{$from}' → '{$to}' is not allowed.",
+            ]);
+        }
+    }
+
+    /** @return list<array<string,mixed>> allowed transitions from $from */
+    public function allowedTransitions(string $from): array
+    {
+        $list = self::STATUS_TRANSITIONS[$from] ?? [];
+        $out = [];
+        foreach ($list as $to) {
+            $out[] = ['from' => $from, 'to' => $to, 'label' => ucfirst($to)];
+        }
+        return $out;
+    }
+
+    /**
+     * Append a fulfillment note (operator-facing, not customer-visible).
+     * The order_fulfillment_notes table is INSERT-only — there is no
+     * update or delete path in this service or any controller.
+     */
+    public function addFulfillmentNote(int $orderId, int $authorId, string $body): int
+    {
+        $body = trim($body);
+        if ($body === '') {
+            throw new ValidationException(['body' => 'Fulfillment note body cannot be empty.']);
+        }
+        if (mb_strlen($body) > 2000) {
+            throw new ValidationException(['body' => 'Fulfillment note may not exceed 2000 characters.']);
+        }
+
+        $stmt = Connection::pdo()->prepare(
+            'INSERT INTO order_fulfillment_notes (order_id, author_id, body) VALUES (?, ?, ?)'
+        );
+        $stmt->execute([$orderId, $authorId, $body]);
+        return (int) Connection::pdo()->lastInsertId();
+    }
+
+    /** Release all units attached to an order back to 'returned'. */
+    private function releaseUnits(PDO $pdo, int $orderId, int $actorUserId, string $reason): void
+    {
+        $units = $pdo->prepare('SELECT inventory_unit_id FROM order_items WHERE order_id = ?');
+        $units->execute([$orderId]);
+        $inventory = new InventoryService();
+        foreach ($units->fetchAll(PDO::FETCH_COLUMN) as $unitId) {
+            // markReturned transitions sold → returned. If the unit was
+            // already returned (idempotent), the state machine throws;
+            // swallow that so cancellations are re-entrant.
+            try {
+                $inventory->markReturned((int) $unitId, $reason, $actorUserId);
+            } catch (ValidationException) {
+                // already returned; nothing to do
+            }
+        }
+    }
+
+    private function recordStatusHistory(PDO $pdo, int $orderId, ?string $from, string $to, int $actorUserId, ?string $reason): void
+    {
+        $stmt = $pdo->prepare(
+            'INSERT INTO order_status_history (order_id, from_status, to_status, actor_id, reason)
+             VALUES (?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $orderId,
+            $from ?? 'new',
+            $to,
+            $actorUserId,
+            $reason !== null ? mb_substr($reason, 0, 255) : null,
+        ]);
     }
 
     /**

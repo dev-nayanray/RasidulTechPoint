@@ -1,6 +1,10 @@
-<?php /** @var list<array> $orders */ ?>
-<form method="get" action="<?= e(url('/admin/orders')) ?>" class="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-4" role="search">
-    <div class="sm:col-span-2 space-y-1.5">
+<?php /** @var list<array> $orders
+ *  @var list<string> $orderStatuses
+ *  @var list<string> $paymentStatuses
+ */
+?>
+<form method="get" action="<?= e(url('/admin/orders')) ?>" class="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-6" role="search">
+    <div class="sm:col-span-3 space-y-1.5">
         <label for="orders-q" class="block text-sm font-medium text-slate-700">Search</label>
         <input id="orders-q" name="q" value="<?= e($q) ?>" class="input" placeholder="Reference, customer or phone…">
     </div>
@@ -16,7 +20,19 @@
             fn ($s) => ucfirst($s), $paymentStatuses
         ))),
     ]) ?>
-    <div class="sm:col-span-4 flex gap-2">
+    <?= \App\Support\View::component('select', [
+        'name' => 'channel', 'label' => 'Channel', 'value' => $channel,
+        'options' => ['' => 'All channels', 'online' => 'Online', 'pos' => 'POS'],
+    ]) ?>
+    <div class="space-y-1.5">
+        <label for="orders-from" class="block text-sm font-medium text-slate-700">From</label>
+        <input id="orders-from" type="date" name="from" value="<?= e($from) ?>" class="input">
+    </div>
+    <div class="space-y-1.5">
+        <label for="orders-to" class="block text-sm font-medium text-slate-700">To</label>
+        <input id="orders-to" type="date" name="to" value="<?= e($to) ?>" class="input">
+    </div>
+    <div class="sm:col-span-6 flex flex-wrap gap-2">
         <button type="submit" class="btn-primary">Apply filters</button>
         <a href="<?= e(url('/admin/orders')) ?>" class="btn-secondary">Reset</a>
         <?php if (\App\Services\AuthService::can('orders.manage')): ?>
@@ -53,5 +69,5 @@
         </tbody>
     </table>
     <?php if ($orders === []): ?><p class="px-4 py-10 text-center text-sm text-slate-400">No orders match your filters.</p><?php endif; ?>
-    <?= \App\Support\View::component('pagination', ['page' => $page, 'pages' => $pages, 'baseUrl' => '/admin/orders', 'queryParams' => array_filter(['q' => $q, 'status' => $status, 'payment' => $payment])]) ?>
+    <?= \App\Support\View::component('pagination', ['page' => $page, 'pages' => $pages, 'baseUrl' => '/admin/orders', 'queryParams' => array_filter(['q' => $q, 'status' => $status, 'payment' => $payment, 'channel' => $channel, 'from' => $from, 'to' => $to])]) ?>
 </div>

@@ -281,6 +281,16 @@ abstract class TestCase
         }
     }
 
+    public function assertStringContainsString(string $needle, string $haystack, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!str_contains($haystack, $needle)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting that '" . $haystack . "' contains '" . $needle . "'"
+            );
+        }
+    }
+
     public function assertGreaterThanOrEqual(mixed $expected, mixed $actual, string $message = ''): void
     {
         $this->assertions++;

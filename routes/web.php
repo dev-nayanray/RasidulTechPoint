@@ -170,4 +170,6 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/settings', [SettingsController::class, 'edit'])->middleware('permission:settings.manage');
     $router->post('/settings', [SettingsController::class, 'update'])->middleware('permission:settings.manage');
     $router->get('/audit-logs', [AuditLogController::class, 'index'])->middleware('permission:audit_logs.view');
+    $router->get('/audit-logs/export', [AuditLogController::class, 'export'])
+        ->middleware('permission:audit_logs.view');
 });

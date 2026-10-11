@@ -21,6 +21,7 @@ use App\Controllers\Admin\NotificationController;
 use App\Controllers\Admin\OrderController;
 use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
+use App\Controllers\Admin\PurchaseOrderController;
 use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\SettingsController;
 use App\Controllers\Admin\SupplierController;
@@ -179,6 +180,21 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:purchases.manage');
     $router->post('/suppliers/{id}/delete', [SupplierController::class, 'destroy'])
         ->middleware('permission:purchases.manage');
+
+    // Purchase orders & import batches
+    $router->get('/purchase-orders', [PurchaseOrderController::class, 'index'])->middleware('permission:purchases.view');
+    $router->get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])
+        ->middleware('permission:purchases.manage');
+    $router->post('/purchase-orders', [PurchaseOrderController::class, 'store'])
+        ->middleware('permission:purchases.manage');
+    $router->get('/purchase-orders/{id}', [PurchaseOrderController::class, 'show'])
+        ->middleware('permission:purchases.view');
+    $router->get('/purchase-orders/{id}/edit', [PurchaseOrderController::class, 'edit'])
+        ->middleware('permission:purchases.manage');
+    $router->post('/purchase-orders/{id}/update', [PurchaseOrderController::class, 'update'])
+        ->middleware('permission:purchases.manage');
+    $router->post('/purchase-orders/{id}/status', [PurchaseOrderController::class, 'changeStatus'])
+        ->middleware('permission:purchases.view');
 
     // Orders & payments
     $router->get('/orders', [OrderController::class, 'index'])->middleware('permission:orders.view');

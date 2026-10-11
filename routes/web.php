@@ -83,6 +83,12 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/users/{id}/edit', [UserController::class, 'edit'])->middleware('permission:users.update');
     $router->post('/users/{id}/update', [UserController::class, 'update'])->middleware('permission:users.update');
     $router->post('/users/{id}/status', [UserController::class, 'deactivate'])->middleware('permission:users.deactivate');
+    $router->post('/users/{id}/reset-password', [UserController::class, 'initiatePasswordReset'])
+        ->middleware('permission:users.update');
+    $router->post('/users/{id}/delete', [UserController::class, 'destroy'])
+        ->middleware('permission:users.deactivate');
+    $router->post('/users/{id}/restore', [UserController::class, 'restore'])
+        ->middleware('permission:users.deactivate');
 
     // Roles & permissions
     $router->get('/roles', [RoleController::class, 'index'])->middleware('permission:roles.manage');

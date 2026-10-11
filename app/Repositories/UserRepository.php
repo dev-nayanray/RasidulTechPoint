@@ -49,8 +49,30 @@ final class UserRepository
     public function find(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT u.id, u.name, u.email, u.phone, u.is_active, u.last_login_at, u.created_at
+            'SELECT u.id, u.name, u.email, u.phone, u.is_active, u.last_login_at, u.created_at, u.deleted_at
              FROM users u WHERE u.id = ? AND u.deleted_at IS NULL'
+        );
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row === false) {
+            return null;
+        }
+        $row['id'] = (int) $row['id'];
+        $row['role_ids'] = array_map('intval', $this->pdo->query(
+            'SELECT role_id FROM user_roles WHERE user_id = ' . (int) $id
+        )->fetchAll(PDO::FETCH_COLUMN));
+        return $row;
+    }
+
+    /**
+     * Find a user including soft-deleted ones. Used by show() and
+     * restore() so an admin can view and reinstate a deleted account.
+     */
+    public function findWithTrashed(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT u.id, u.name, u.email, u.phone, u.is_active, u.last_login_at, u.created_at, u.deleted_at
+             FROM users u WHERE u.id = ?'
         );
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -144,6 +166,60 @@ final class UserRepository
         return (int) $this->pdo->query(
             'SELECT COUNT(*) FROM users WHERE deleted_at IS NULL'
         )->fetchColumn();
+    }
+
+    /**
+     * Login history for a user. Queries login_attempts by the user's
+     * email — the table already records every attempt (successful and
+     * failed) with IP and timestamp. Returns newest first.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function loginHistory(int $userId, int $limit = 20): array
+    {
+        // Look up the email first (the user might have been editing it).
+        $stmt = $this->pdo->prepare('SELECT email FROM users WHERE id = ? AND deleted_at IS NULL');
+        $stmt->execute([$userId]);
+        $email = $stmt->fetchColumn();
+        if ($email === false) {
+            return [];
+        }
+
+        $stmt = $this->pdo->prepare(
+            'SELECT email, ip, was_successful, attempted_at
+             FROM login_attempts
+             WHERE email = ?
+             ORDER BY attempted_at DESC
+             LIMIT ' . max(1, min(100, $limit))
+        );
+        $stmt->execute([$email]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Soft-delete a user (sets deleted_at). The row stays in the table
+     * for audit integrity; search() and find() exclude it.
+     */
+    public function softDelete(int $id): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE users SET deleted_at = UTC_TIMESTAMP() WHERE id = ? AND deleted_at IS NULL');
+        $stmt->execute([$id]);
+    }
+
+    /** Restore a soft-deleted user. */
+    public function restore(int $id): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE users SET deleted_at = NULL WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+
+    /** Whether the user is soft-deleted. */
+    public function isDeleted(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT deleted_at FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetchColumn();
+        return $row !== false && $row !== null;
     }
 
     private function fetchOne(string $sql, array $params): mixed

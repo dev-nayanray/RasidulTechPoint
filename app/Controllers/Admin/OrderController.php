@@ -76,12 +76,24 @@ final class OrderController
             throw new NotFoundException('Order not found.');
         }
 
+        $refundSvc = new \App\Services\RefundService();
+        $invoiceSvc = new \App\Services\InvoiceService();
+        $correctionSvc = new \App\Services\OrderCorrectionService();
+
         return Response::html(View::render('admin/orders/show', [
             'pageTitle' => 'Order ' . $order['reference'],
             'order' => $order,
             'methods' => OrderService::PAYMENT_METHODS,
             'canManage' => AuthService::can('orders.manage'),
             'canManagePayments' => AuthService::can('payments.manage'),
+            'canRefund' => AuthService::can('payments.refund'),
+            'canCorrect' => AuthService::can('pos.authorize_discount') || AuthService::can('payments.refund') || AuthService::can('settings.manage'),
+            'refunds' => $refundSvc->forOrder((int) $order['id']),
+            'refundableAmount' => $refundSvc->refundableAmount(null, (int) $order['id']),
+            'activeInvoice' => $invoiceSvc->findByOrder((int) $order['id']),
+            'corrections' => $correctionSvc->listForOrder((int) $order['id']),
+            'correctableFields' => \App\Services\OrderCorrectionService::CORRECTABLE_FIELDS,
+            'inventoryActions' => \App\Services\RefundService::INVENTORY_ACTIONS,
         ]));
     }
 

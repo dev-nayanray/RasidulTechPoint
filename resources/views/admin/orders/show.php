@@ -234,3 +234,130 @@ foreach ($order['payments'] as $p) {
         </div>
     </div>
 </div>
+
+<!-- Prompt 25: invoice + refund + corrections -->
+
+<?php if (!empty($activeInvoice)): ?>
+<div class="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+    <h2 class="font-semibold text-slate-900">Active invoice</h2>
+    <p class="mt-2 text-slate-700">
+        <a class="font-mono font-medium text-blue-700 hover:underline" href="<?= e(url('/admin/invoices/' . $activeInvoice['id'])) ?>"><?= e($activeInvoice['invoice_number']) ?></a>
+        — <?= \App\Support\View::component('badge', ['status' => $activeInvoice['status']]) ?>
+        — <?= e(money($activeInvoice['total'])) ?> · issued <?= e(local_datetime($activeInvoice['issue_date'], 'd M Y')) ?>
+    </p>
+</div>
+<?php elseif (!empty($canManage)): ?>
+<details class="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+    <summary class="cursor-pointer font-semibold text-slate-900">Generate invoice</summary>
+    <form method="post" action="<?= e(url('/admin/orders/' . $order['id'] . '/invoice')) ?>" class="mt-4 grid gap-3 sm:grid-cols-2" data-loading-form>
+        <?= csrf_field() ?>
+        <?= \App\Support\View::component('field', ['name' => 'billing_name', 'label' => 'Billing name', 'required' => true, 'value' => $order['customer_name'] ?? '']) ?>
+        <?= \App\Support\View::component('field', ['name' => 'billing_address', 'label' => 'Billing address', 'value' => $order['customer_address'] ?? '']) ?>
+        <?= \App\Support\View::component('field', ['name' => 'billing_phone', 'label' => 'Billing phone', 'value' => $order['customer_phone'] ?? '']) ?>
+        <?= \App\Support\View::component('field', ['name' => 'billing_email', 'label' => 'Billing email', 'type' => 'email', 'value' => $order['customer_email'] ?? '']) ?>
+        <?= \App\Support\View::component('field', ['name' => 'tax_name', 'label' => 'Tax name', 'value' => \App\Services\SettingService::get('invoice_tax_name', 'VAT')]) ?>
+        <?= \App\Support\View::component('field', ['name' => 'tax_rate', 'label' => 'Tax rate (e.g. 0.15 for 15%)', 'type' => 'number', 'step' => '0.0001', 'min' => '0', 'value' => '0']) ?>
+        <?= \App\Support\View::component('field', ['name' => 'due_date', 'label' => 'Due date (optional)', 'type' => 'date']) ?>
+        <div class="sm:col-span-2">
+            <label for="inv-notes" class="block text-xs font-medium text-slate-500">Notes (optional)</label>
+            <textarea id="inv-notes" name="notes" rows="2" class="input" placeholder="Payment due within 7 days. Please quote invoice number on the bank transfer."></textarea>
+        </div>
+        <div class="sm:col-span-2">
+            <button type="submit" class="btn-primary">Generate invoice</button>
+        </div>
+    </form>
+</details>
+<?php endif; ?>
+
+<?php if (!empty($canRefund) && $order['status'] !== 'cancelled' && (float) ($refundableAmount ?? 0) > 0): ?>
+<details class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm">
+    <summary class="cursor-pointer font-semibold text-amber-900">Issue a refund</summary>
+    <p class="mt-2 text-xs text-amber-800">Refundable amount: <strong class="font-mono"><?= money((string) $refundableAmount) ?></strong>. The refund amount cannot exceed this. After creation, the refund is 'pending' — process it to release the linked payment + inventory.</p>
+    <form method="post" action="<?= e(url('/admin/orders/' . $order['id'] . '/refund')) ?>" class="mt-4 grid gap-3 sm:grid-cols-2" data-loading-form data-confirm="Create this refund? It will start as pending.">
+        <?= csrf_field() ?>
+        <?= \App\Support\View::component('field', ['name' => 'amount', 'label' => 'Refund amount', 'type' => 'number', 'step' => '0.01', 'min' => '0.01', 'required' => true, 'value' => number_format((float) $refundableAmount, 2, '.', '')]) ?>
+        <?= \App\Support\View::component('select', [
+            'name' => 'payment_id', 'label' => 'Linked payment (optional)',
+            'options' => array_merge(['' => 'No linked payment (offline refund)'], array_map(fn ($p) => '#' . $p['id'] . ' ' . $p['method'] . ' ' . money($p['amount']), $order['payments'] ?? [])),
+        ]) ?>
+        <?= \App\Support\View::component('select', [
+            'name' => 'inventory_action', 'label' => 'Inventory action',
+            'options' => array_combine($inventoryActions, array_map(fn ($a) => ucfirst(str_replace('_', ' ', $a)), $inventoryActions)),
+            'value' => 'no_action',
+        ]) ?>
+        <div class="sm:col-span-2">
+            <label for="refund-reason" class="block text-xs font-medium text-amber-900">Refund reason (required)</label>
+            <textarea id="refund-reason" name="reason" rows="2" required maxlength="255" class="input" placeholder="Customer returned the unit; warranty claim; overpayment reversal…"></textarea>
+        </div>
+        <div class="sm:col-span-2">
+            <button type="submit" class="btn-danger">Create refund</button>
+        </div>
+    </form>
+</details>
+<?php endif; ?>
+
+<?php if (!empty($refunds)): ?>
+<section class="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <header class="border-b border-slate-200 px-5 py-3">
+        <h2 class="text-sm font-semibold text-slate-900">Refunds (<?= count($refunds) ?>)</h2>
+    </header>
+    <table class="min-w-full divide-y divide-slate-100 text-sm">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-4 py-2 text-left font-medium text-slate-500">Refund #</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-500">Status</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-500">Reason</th>
+                <th class="px-4 py-2 text-left font-medium text-slate-500">Inventory</th>
+                <th class="px-4 py-2 text-right font-medium text-slate-500">Amount</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            <?php foreach ($refunds as $r): ?>
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-2 font-mono text-blue-700"><a class="hover:underline" href="<?= e(url('/admin/refunds/' . $r['id'])) ?>"><?= e($r['refund_number']) ?></a></td>
+                    <td class="px-4 py-2"><?= \App\Support\View::component('badge', ['status' => $r['status']]) ?></td>
+                    <td class="px-4 py-2 text-slate-700"><?= e($r['reason']) ?></td>
+                    <td class="px-4 py-2 text-xs capitalize"><?= e(str_replace('_', ' ', $r['inventory_action'])) ?></td>
+                    <td class="px-4 py-2 text-right font-semibold text-red-700"><?= money($r['amount']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</section>
+<?php endif; ?>
+
+<?php if (!empty($canCorrect)): ?>
+<details class="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm">
+    <summary class="cursor-pointer font-semibold text-slate-900">Authorized corrections (<?= count($corrections ?? []) ?>)</summary>
+    <p class="mt-2 text-xs text-slate-500">Append-only log of manager edits to this order's fields after the sale. The table is INSERT-only — corrections cannot be edited or deleted.</p>
+    <?php if (!empty($corrections) && is_array($corrections)): ?>
+    <ul class="mt-3 divide-y divide-slate-100">
+        <?php foreach ($corrections as $c): ?>
+            <li class="py-2 text-xs">
+                <span class="font-mono text-slate-500"><?= e($c['field']) ?></span>:
+                <span class="line-through text-slate-400"><?= e($c['old_value']) ?></span> →
+                <span class="font-medium text-slate-800"><?= e($c['new_value']) ?></span>
+                <span class="block text-slate-400">by <?= e($c['authorized_by_name'] ?? 'unknown') ?> · <?= e(local_datetime($c['applied_at'])) ?> · <?= e($c['reason']) ?></span>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+    <form method="post" action="<?= e(url('/admin/orders/' . $order['id'] . '/corrections')) ?>" class="mt-4 grid gap-3 sm:grid-cols-2" data-loading-form>
+        <?= csrf_field() ?>
+        <?= \App\Support\View::component('select', [
+            'name' => 'field', 'label' => 'Field', 'required' => true,
+            'options' => array_combine($correctableFields, $correctableFields),
+        ]) ?>
+        <div></div>
+        <?= \App\Support\View::component('field', ['name' => 'old_value', 'label' => 'Old value', 'required' => true]) ?>
+        <?= \App\Support\View::component('field', ['name' => 'new_value', 'label' => 'New value', 'required' => true]) ?>
+        <div class="sm:col-span-2">
+            <label for="correction-reason" class="block text-xs font-medium text-slate-500">Reason (required)</label>
+            <textarea id="correction-reason" name="reason" rows="2" required maxlength="255" class="input" placeholder="Customer asked to swap the unit; pricing error from yesterday's promo; …"></textarea>
+        </div>
+        <div class="sm:col-span-2">
+            <button type="submit" class="btn-secondary">Record correction</button>
+        </div>
+    </form>
+</details>
+<?php endif; ?>

@@ -17,6 +17,7 @@ use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\InspectionController;
 use App\Controllers\Admin\InventoryController;
+use App\Controllers\Admin\InvoiceRefundController;
 use App\Controllers\Admin\LocationController;
 use App\Controllers\Admin\NotificationController;
 use App\Controllers\Admin\OrderController;
@@ -274,6 +275,32 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:payments.manage');
     $router->post('/payments/{id}/refund', [PaymentController::class, 'refund'])
         ->middleware('permission:payments.refund');
+
+    // Invoices + refunds + authorized corrections (Prompt 25)
+    $router->get('/invoices', [InvoiceRefundController::class, 'invoiceIndex'])
+        ->middleware('permission:orders.view');
+    $router->get('/invoices/{id}', [InvoiceRefundController::class, 'invoiceShow'])
+        ->middleware('permission:orders.view');
+    $router->post('/orders/{id}/invoice', [InvoiceRefundController::class, 'invoiceGenerate'])
+        ->middleware('permission:orders.manage');
+    $router->post('/invoices/{id}/void', [InvoiceRefundController::class, 'invoiceVoid'])
+        ->middleware('permission:settings.manage');
+    $router->post('/invoices/{id}/mark-paid', [InvoiceRefundController::class, 'invoiceMarkPaid'])
+        ->middleware('permission:payments.manage');
+
+    $router->get('/refunds', [InvoiceRefundController::class, 'refundIndex'])
+        ->middleware('permission:orders.view');
+    $router->get('/refunds/{id}', [InvoiceRefundController::class, 'refundShow'])
+        ->middleware('permission:orders.view');
+    $router->post('/orders/{id}/refund', [InvoiceRefundController::class, 'refundCreate'])
+        ->middleware('permission:payments.refund');
+    $router->post('/refunds/{id}/process', [InvoiceRefundController::class, 'refundProcess'])
+        ->middleware('permission:payments.refund');
+    $router->post('/refunds/{id}/cancel', [InvoiceRefundController::class, 'refundCancel'])
+        ->middleware('permission:payments.refund');
+
+    $router->post('/orders/{id}/corrections', [InvoiceRefundController::class, 'correctionStore'])
+        ->middleware('permission:pos.authorize_discount|payments.refund|settings.manage');
 
     // Customers
     $router->get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.view');

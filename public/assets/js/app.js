@@ -15,3 +15,4 @@ import './forms';
 import './order-form';
 import './mobile-search';
 import './page-progress';
+import './chart';

@@ -40,7 +40,7 @@ $height = (int) ($height ?? 160);
                         <thead><tr><th>Date</th><th>Total</th><th>Orders</th></tr></thead>
                         <tbody>
                             <?php foreach ($data as $row): ?>
-                                <tr><td><?= e($row['date']) ?></td><td><?= e((string) $row['total']) ?></td><td><?= e((string) $row['count']) ?></td></tr>
+                                <tr><td><?= e($row['date'] ?? '') ?></td><td><?= e((string) ($row['total'] ?? 0)) ?></td><td><?= e((string) ($row['count'] ?? 0)) ?></td></tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -50,7 +50,7 @@ $height = (int) ($height ?? 160);
     </div>
     <div class="mt-2 flex justify-between text-[10px] text-slate-400" data-chart-xaxis>
         <?php foreach ($data as $row): ?>
-            <span><?= e(gmdate('D', strtotime($row['date']))) ?></span>
+            <span><?= e(isset($row['date']) ? gmdate('D', strtotime($row['date'])) : '—') ?></span>
         <?php endforeach; ?>
     </div>
 </div>

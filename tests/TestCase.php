@@ -271,6 +271,36 @@ abstract class TestCase
         }
     }
 
+    public function assertStringStartsWith(string $prefix, string $value, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!str_starts_with($value, $prefix)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting that '" . $value . "' starts with '" . $prefix . "'"
+            );
+        }
+    }
+
+    public function assertGreaterThanOrEqual(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!($actual >= $expected)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting {$actual} >= {$expected}"
+            );
+        }
+    }
+
+    public function assertGreaterThan(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!($actual > $expected)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting {$actual} > {$expected}"
+            );
+        }
+    }
+
     public function assertMatchesRegularExpression(string $pattern, string $subject, string $message = ''): void
     {
         $this->assertions++;

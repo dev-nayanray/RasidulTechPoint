@@ -167,14 +167,21 @@ final class StaffManagementTest extends TestCase
         $ownerId = $this->makeUser('staff-owner-dup@test.local', 'Correct-Horse-1', ['owner']);
         $this->makeUser('existing@staff.test', 'Correct-Horse-1', ['technician']);
 
-        $this->assertThrows(ValidationException::class, function () use ($ownerId) {
-            $this->dispatchAs($ownerId, 'POST', '/admin/users', [
-                'name' => 'Dup',
-                'email' => 'existing@staff.test',
-                'password' => 'Strong-Pass-12',
-                'roles' => [],
-            ]);
-        }, 'duplicate email must fail validation');
+        // The controller catches ValidationException and returns a 422
+        // response with the form re-rendered — so we check the response
+        // status rather than expecting an exception to propagate.
+        $response = $this->dispatchAs($ownerId, 'POST', '/admin/users', [
+            'name' => 'Dup',
+            'email' => 'existing@staff.test',
+            'password' => 'Strong-Pass-12',
+            'roles' => [],
+        ]);
+        $this->assertSame(422, $response->status(), 'duplicate email must fail validation (422)');
+
+        // Verify the duplicate user was NOT created.
+        $count = $this->pdo()->prepare('SELECT COUNT(*) FROM users WHERE email = ?');
+        $count->execute(['existing@staff.test']);
+        $this->assertSame(1, (int) $count->fetchColumn(), 'only the original user should exist');
 
         // Cleanup.
         $this->pdo()->prepare('DELETE FROM user_roles WHERE user_id = ?')->execute([$ownerId]);
@@ -186,14 +193,18 @@ final class StaffManagementTest extends TestCase
         $this->wipeOwners();
         $ownerId = $this->makeUser('staff-owner-weak@test.local', 'Correct-Horse-1', ['owner']);
 
-        $this->assertThrows(ValidationException::class, function () use ($ownerId) {
-            $this->dispatchAs($ownerId, 'POST', '/admin/users', [
-                'name' => 'Weak',
-                'email' => 'weak@staff.test',
-                'password' => 'short',  // < 10 chars
-                'roles' => [],
-            ]);
-        }, 'weak password must fail validation');
+        $response = $this->dispatchAs($ownerId, 'POST', '/admin/users', [
+            'name' => 'Weak',
+            'email' => 'weak@staff.test',
+            'password' => 'short',  // < 10 chars
+            'roles' => [],
+        ]);
+        $this->assertSame(422, $response->status(), 'weak password must fail validation (422)');
+
+        // Verify the user was NOT created.
+        $count = $this->pdo()->prepare('SELECT COUNT(*) FROM users WHERE email = ?');
+        $count->execute(['weak@staff.test']);
+        $this->assertSame(0, (int) $count->fetchColumn(), 'user with weak password should not be created');
 
         // Cleanup.
         $this->pdo()->prepare('DELETE FROM user_roles WHERE user_id = ?')->execute([$ownerId]);
@@ -712,14 +723,18 @@ final class StaffManagementTest extends TestCase
         $targetId = $this->makeUser('staff-csrf-target@test.local', 'Correct-Horse-1', ['technician']);
         $this->actingAs($ownerId);
 
-        foreach ([
+        // Each entry: [method, uri, post]. All entries have 3 elements to
+        // avoid PHP 8.5 array-destructuring default-value issues.
+        $routes = [
             ['POST', '/admin/users', ['name' => 'X', 'email' => 'x@y.z', 'password' => 'Strong-Pass-12']],
             ['POST', '/admin/users/' . $targetId . '/update', ['name' => 'X']],
             ['POST', '/admin/users/' . $targetId . '/status', ['activate' => '0']],
-            ['POST', '/admin/users/' . $targetId . '/reset-password'],
-            ['POST', '/admin/users/' . $targetId . '/delete'],
-            ['POST', '/admin/users/' . $targetId . '/restore'],
-        ] as [$method, $uri, $post = []]) {
+            ['POST', '/admin/users/' . $targetId . '/reset-password', []],
+            ['POST', '/admin/users/' . $targetId . '/delete', []],
+            ['POST', '/admin/users/' . $targetId . '/restore', []],
+        ];
+
+        foreach ($routes as [$method, $uri, $post]) {
             $this->assertThrows(\App\Exceptions\CsrfTokenMismatchException::class, function () use ($method, $uri, $post) {
                 $this->router()->dispatch(
                     Request::synthetic($method, $uri, [], $post),

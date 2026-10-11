@@ -263,6 +263,14 @@ abstract class TestCase
         }
     }
 
+    public function assertNotContains(mixed $needle, array $haystack, string $message = ''): void
+    {
+        $this->assertions++;
+        if (in_array($needle, $haystack, true)) {
+            throw new \RuntimeException($message ?: 'Failed asserting not contains ' . var_export($needle, true));
+        }
+    }
+
     public function assertMatchesRegularExpression(string $pattern, string $subject, string $message = ''): void
     {
         $this->assertions++;

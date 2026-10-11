@@ -137,7 +137,8 @@ const RTP_ADMIN_NAV = [
         ['inventory.view', 'Locations', '/admin/locations', 'map-pin', true],
     ],
     'Purchasing' => [
-        ['purchases.view', 'Suppliers & Purchases', '/admin/purchasing', 'truck', false],
+        ['purchases.view', 'Suppliers', '/admin/suppliers', 'truck', true],
+        ['purchases.view', 'Purchase Orders', '/admin/purchasing', 'package-check', false],
     ],
     'Inspections' => [
         ['inspections.manage', 'QA Inspections', '/admin/inspections', 'check-circle', false],

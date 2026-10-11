@@ -23,6 +23,7 @@ use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\SettingsController;
+use App\Controllers\Admin\SupplierController;
 use App\Controllers\Admin\UserController;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\PasswordResetController;
@@ -163,6 +164,21 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:inventory.adjust');
     $router->post('/locations/{id}/delete', [LocationController::class, 'destroy'])
         ->middleware('permission:inventory.adjust');
+
+    // Suppliers
+    $router->get('/suppliers', [SupplierController::class, 'index'])->middleware('permission:purchases.view');
+    $router->get('/suppliers/create', [SupplierController::class, 'create'])
+        ->middleware('permission:purchases.manage');
+    $router->post('/suppliers', [SupplierController::class, 'store'])
+        ->middleware('permission:purchases.manage');
+    $router->get('/suppliers/{id}', [SupplierController::class, 'show'])
+        ->middleware('permission:purchases.view');
+    $router->get('/suppliers/{id}/edit', [SupplierController::class, 'edit'])
+        ->middleware('permission:purchases.manage');
+    $router->post('/suppliers/{id}/update', [SupplierController::class, 'update'])
+        ->middleware('permission:purchases.manage');
+    $router->post('/suppliers/{id}/delete', [SupplierController::class, 'destroy'])
+        ->middleware('permission:purchases.manage');
 
     // Orders & payments
     $router->get('/orders', [OrderController::class, 'index'])->middleware('permission:orders.view');

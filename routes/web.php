@@ -20,6 +20,7 @@ use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\LocationController;
 use App\Controllers\Admin\NotificationController;
 use App\Controllers\Admin\OrderController;
+use App\Controllers\Admin\PaymentController;
 use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\PurchaseOrderController;
@@ -255,6 +256,24 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:payments.manage');
     $router->post('/orders/{id}/fulfillment-notes', [OrderController::class, 'addFulfillmentNote'])
         ->middleware('permission:orders.manage');
+
+    // Payment records
+    $router->get('/payments', [PaymentController::class, 'index'])->middleware('permission:payments.view');
+    $router->get('/payments/pending', [PaymentController::class, 'pendingQueue'])->middleware('permission:payments.view');
+    $router->get('/payments/methods', [PaymentController::class, 'methodsIndex'])->middleware('permission:payments.view');
+    $router->post('/payments/methods/{id}/update', [PaymentController::class, 'updateMethod'])
+        ->middleware('permission:settings.manage');
+    $router->get('/payments/reconciliation', [PaymentController::class, 'reconciliationIndex'])
+        ->middleware('permission:payments.view');
+    $router->post('/payments/reconciliation', [PaymentController::class, 'createReconciliationBatch'])
+        ->middleware('permission:payments.manage');
+    $router->post('/payments/reconciliation/{id}/confirm', [PaymentController::class, 'confirmReconciliationBatch'])
+        ->middleware('permission:payments.manage');
+    $router->get('/payments/{id}', [PaymentController::class, 'show'])->middleware('permission:payments.view');
+    $router->post('/payments/{id}/verify', [PaymentController::class, 'verify'])
+        ->middleware('permission:payments.manage');
+    $router->post('/payments/{id}/refund', [PaymentController::class, 'refund'])
+        ->middleware('permission:payments.refund');
 
     // Customers
     $router->get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.view');

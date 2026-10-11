@@ -47,6 +47,7 @@ const RTP_PERMISSIONS = [
     // Payments & finance
     'payments.view',
     'payments.manage',
+    'payments.refund',
     'finance.view',
     'expenses.manage',
     // Warranty & service
@@ -81,7 +82,7 @@ const RTP_ROLE_PERMISSIONS = [
         'inventory.view', 'inventory.receive', 'inventory.adjust', 'inventory.approve',
         'purchases.view', 'purchases.manage', 'inspections.manage', 'pos.access', 'pos.authorize_discount',
         'orders.view', 'orders.manage', 'customers.view', 'customers.manage',
-        'payments.view', 'payments.manage', 'finance.view', 'expenses.manage',
+        'payments.view', 'payments.manage', 'payments.refund', 'finance.view', 'expenses.manage',
         'warranty.manage', 'service.manage', 'delivery.manage', 'crm.view',
         'reports.view', 'reports.export', 'notifications.view',
     ],
@@ -108,7 +109,7 @@ const RTP_ROLE_PERMISSIONS = [
     ],
     'accountant' => [
         'dashboard.view',
-        'orders.view', 'payments.view', 'payments.manage',
+        'orders.view', 'payments.view', 'payments.manage', 'payments.refund',
         'finance.view', 'expenses.manage',
         'customers.view',
         'reports.view', 'reports.export',
@@ -154,7 +155,7 @@ const RTP_ADMIN_NAV = [
         ['customers.view', 'Customers', '/admin/customers', 'users', true],
     ],
     'Finance' => [
-        ['payments.view', 'Payments', '/admin/payments', 'credit-card', false],
+        ['payments.view', 'Payments', '/admin/payments', 'credit-card', true],
         ['finance.view', 'Expenses', '/admin/expenses', 'wallet', false],
     ],
     'Warranty & Service' => [

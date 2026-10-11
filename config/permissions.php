@@ -170,6 +170,9 @@ const RTP_ADMIN_NAV = [
         ['users.view', 'Staff Users', '/admin/users', 'user', true],
         ['roles.manage', 'Roles & Permissions', '/admin/roles', 'key', true],
     ],
+    'Marketing' => [
+        ['marketing.manage', 'Marketing & Content', '/admin/marketing', 'megaphone', false],
+    ],
     'Notifications' => [
         ['notifications.view', 'Notifications', '/admin/notifications', 'bell', true],
     ],

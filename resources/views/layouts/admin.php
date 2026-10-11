@@ -1,13 +1,17 @@
 <?php
 /**
- * Administration shell: responsive sidebar (permission-aware), top bar with
- * search entry point + notification indicator + profile menu, breadcrumbs,
- * and the main content area. Mobile uses a slide-in drawer.
+ * Administration shell — shared Super Admin interface.
+ *
+ * - Collapsible sidebar (desktop icon-rail, persisted per browser; mobile drawer).
+ * - Permission-aware navigation from RTP_ADMIN_NAV; unimplemented modules are
+ *   clearly disabled ("SOON") and never render as fake pages.
+ * - Top bar: page title, global search, notification dropdown (live data),
+ *   account menu. Breadcrumbs auto-derive from the current route.
  */
 $auth = current_user();
 $unreadNotifications = $auth ? \App\Services\NotificationService::unreadCount((int) $auth['id']) : 0;
-$currentPath = $_SERVER['REQUEST_URI'] ?? '/';
-$currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
+$menuNotifications = $auth ? \App\Services\NotificationService::menuItems((int) $auth['id']) : [];
+$currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
 ?>
 <!doctype html>
 <html lang="en">
@@ -16,21 +20,39 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle ?? 'Admin') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
+    <script>
+        // Apply the persisted sidebar state before first paint to avoid a flash.
+        try {
+            if (localStorage.getItem('rtp-sidebar-collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) { /* storage unavailable */ }
+    </script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:m-2 focus:rounded-lg focus:bg-navy-700 focus:px-4 focus:py-2 focus:text-white">Skip to content</a>
+
     <div class="flex min-h-screen">
         <!-- Mobile drawer backdrop -->
         <div class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" data-sidebar-backdrop></div>
 
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto bg-navy-700 text-slate-200 transition-transform lg:static lg:translate-x-0 lg:shrink-0" data-sidebar aria-label="Admin navigation">
+        <aside class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto bg-navy-700 text-slate-200 transition-transform lg:static lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
             <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-sm font-bold text-white">RTP</span>
-                <span class="leading-tight">
-                    <span class="block text-sm font-semibold text-white"><?= e(\App\Support\Config::get('app.name')) ?></span>
+                <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm font-bold text-white" title="Dashboard">RTP</a>
+                <span class="min-w-0 leading-tight" data-sidebar-label>
+                    <span class="block truncate text-sm font-semibold text-white"><?= e(\App\Support\Config::get('app.name')) ?></span>
                     <span class="block text-[11px] text-slate-400">Management console</span>
                 </span>
-                <button type="button" class="ml-auto lg:hidden rounded-lg p-1.5 hover:bg-white/10" data-nav-toggle aria-label="Close navigation">
+                <button type="button"
+                        class="ml-auto hidden rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white lg:block"
+                        data-sidebar-collapse
+                        aria-label="Collapse sidebar"
+                        aria-expanded="true"
+                        title="Collapse sidebar">
+                    <?= \App\Support\View::component('icon', ['name' => 'chevron-down', 'class' => 'h-4 w-4 -rotate-90']) ?>
+                </button>
+                <button type="button" class="ml-auto rounded-lg p-1.5 hover:bg-white/10 lg:hidden" data-nav-toggle aria-label="Close navigation">
                     <?= \App\Support\View::component('icon', ['name' => 'x', 'class' => 'h-5 w-5']) ?>
                 </button>
             </div>
@@ -44,7 +66,7 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
                     }
                     ?>
                     <div>
-                        <p class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400"><?= e($section) ?></p>
+                        <p class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-sidebar-section><?= e($section) ?></p>
                         <ul class="space-y-0.5">
                             <?php foreach ($visible as [$permission, $label, $href, $icon, $implemented]): ?>
                                 <?php $active = str_starts_with($currentPath, $href); ?>
@@ -52,15 +74,16 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
                                     <?php if ($implemented): ?>
                                         <a href="<?= e(url($href)) ?>"
                                            class="flex items-center gap-3 rounded-lg px-3 py-2 font-medium <?= $active ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' ?>"
+                                           title="<?= e($label) ?>"
                                            <?= $active ? 'aria-current="page"' : '' ?>>
-                                            <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-4 w-4 opacity-80']) ?>
-                                            <?= e($label) ?>
+                                            <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-4 w-4 shrink-0 opacity-80']) ?>
+                                            <span class="truncate" data-sidebar-label><?= e($label) ?></span>
                                         </a>
                                     <?php else: ?>
                                         <span class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-500 cursor-not-allowed" title="Coming in a later development phase">
-                                            <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-4 w-4 opacity-50']) ?>
-                                            <span class="flex-1"><?= e($label) ?></span>
-                                            <span class="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium tracking-wide text-slate-500">SOON</span>
+                                            <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-4 w-4 shrink-0 opacity-50']) ?>
+                                            <span class="flex-1 truncate" data-sidebar-label><?= e($label) ?></span>
+                                            <span class="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium tracking-wide text-slate-500" data-sidebar-label>SOON</span>
                                         </span>
                                     <?php endif; ?>
                                 </li>
@@ -70,10 +93,19 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
                 <?php endforeach; ?>
             </nav>
 
-            <div class="border-t border-white/10 px-5 py-4 text-[11px] text-slate-500">
+            <div class="border-t border-white/10 px-5 py-4 text-[11px] text-slate-500" data-sidebar-label>
                 v<?= e(\App\Support\Config::get('app.version')) ?>
             </div>
         </aside>
+
+        <!-- Expand handle (desktop, collapsed state only) -->
+        <button type="button"
+                class="fixed left-0 top-20 z-30 hidden rounded-r-lg border border-l-0 border-slate-300 bg-white px-1 py-4 text-slate-500 shadow-sm hover:text-navy-700 lg:block"
+                data-sidebar-expand
+                aria-label="Expand sidebar"
+                title="Expand sidebar">
+            <?= \App\Support\View::component('icon', ['name' => 'chevron-down', 'class' => 'h-4 w-4 -rotate-90']) ?>
+        </button>
 
         <!-- Main column -->
         <div class="flex min-w-0 flex-1 flex-col">
@@ -82,7 +114,7 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
                     <?= \App\Support\View::component('icon', ['name' => 'menu', 'class' => 'h-5 w-5']) ?>
                 </button>
 
-                <h1 class="text-base font-semibold text-slate-900 truncate"><?= e($pageTitle ?? 'Admin') ?></h1>
+                <h1 class="min-w-0 truncate text-base font-semibold text-slate-900"><?= e($pageTitle ?? 'Admin') ?></h1>
 
                 <div class="ml-auto flex items-center gap-2">
                     <form action="<?= e(url('/admin/products')) ?>" method="get" class="hidden md:block" role="search">
@@ -96,12 +128,47 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
                     </form>
 
                     <?php if (\App\Services\AuthService::can('notifications.view')): ?>
-                        <a href="<?= e(url('/admin/notifications')) ?>" class="relative inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Notifications<?= $unreadNotifications > 0 ? " ({$unreadNotifications} unread)" : '' ?>">
-                            <?= \App\Support\View::component('icon', ['name' => 'bell', 'class' => 'h-5 w-5']) ?>
-                            <?php if ($unreadNotifications > 0): ?>
-                                <span class="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-semibold text-white"><?= $unreadNotifications > 9 ? '9+' : $unreadNotifications ?></span>
-                            <?php endif; ?>
-                        </a>
+                        <div class="relative" data-dropdown>
+                            <button type="button" class="relative inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100" data-dropdown-toggle aria-haspopup="true" aria-expanded="false" aria-label="Notifications<?= $unreadNotifications > 0 ? " ({$unreadNotifications} unread)" : '' ?>">
+                                <?= \App\Support\View::component('icon', ['name' => 'bell', 'class' => 'h-5 w-5']) ?>
+                                <?php if ($unreadNotifications > 0): ?>
+                                    <span class="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-semibold text-white"><?= $unreadNotifications > 9 ? '9+' : $unreadNotifications ?></span>
+                                <?php endif; ?>
+                            </button>
+                            <div class="hidden absolute right-0 mt-2 w-80 rounded-lg border border-slate-200 bg-white shadow-lg" data-dropdown-menu>
+                                <div class="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
+                                    <p class="text-sm font-semibold text-slate-900">Notifications</p>
+                                    <?php if ($unreadNotifications > 0): ?>
+                                        <form method="post" action="<?= e(url('/admin/notifications/read-all')) ?>">
+                                            <?= csrf_field() ?>
+                                            <button type="submit" class="text-xs font-medium text-blue-700 hover:text-blue-800">Mark all read</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if ($menuNotifications === []): ?>
+                                    <p class="px-4 py-8 text-center text-sm text-slate-400">You're all caught up.</p>
+                                <?php else: ?>
+                                    <ul class="max-h-72 divide-y divide-slate-100 overflow-y-auto">
+                                        <?php foreach ($menuNotifications as $notification): ?>
+                                            <li class="flex items-start gap-3 px-4 py-3 text-sm <?= (int) $notification['is_read'] === 0 ? 'bg-blue-50/40' : '' ?>">
+                                                <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full <?= (int) $notification['is_read'] === 0 ? 'bg-blue-600' : 'bg-slate-200' ?>" aria-hidden="true"></span>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="truncate font-medium <?= (int) $notification['is_read'] === 0 ? 'text-slate-900' : 'text-slate-500' ?>"><?= e($notification['title']) ?></p>
+                                                    <p class="mt-0.5 text-xs text-slate-400"><?= e(local_datetime($notification['created_at'])) ?></p>
+                                                </div>
+                                                <?php if ((int) $notification['is_read'] === 0): ?>
+                                                    <form method="post" action="<?= e(url('/admin/notifications/' . $notification['id'] . '/read')) ?>">
+                                                        <?= csrf_field() ?>
+                                                        <button type="submit" class="shrink-0 text-xs font-medium text-slate-500 hover:text-slate-700">Mark read</button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                                <a href="<?= e(url('/admin/notifications')) ?>" class="block border-t border-slate-100 px-4 py-2.5 text-center text-sm font-medium text-blue-700 hover:bg-slate-50">View all notifications</a>
+                            </div>
+                        </div>
                     <?php endif; ?>
 
                     <div class="relative" data-dropdown>
@@ -126,7 +193,8 @@ $currentPath = '/' . trim(parse_url($currentPath, PHP_URL_PATH) ?: '/', '/');
                 </div>
             </header>
 
-            <main class="flex-1 p-4 sm:p-6">
+            <main id="main-content" class="flex-1 p-4 sm:p-6">
+                <?= \App\Support\View::component('breadcrumbs', ['items' => $breadcrumbs ?? null, 'pageTitle' => $pageTitle ?? null]) ?>
                 <?= \App\Support\View::component('flash') ?>
                 <?= $content ?? '' ?>
             </main>

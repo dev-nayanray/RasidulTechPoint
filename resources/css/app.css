@@ -49,3 +49,39 @@
     @apply rounded-xl border border-slate-200 bg-white shadow-sm;
   }
 }
+
+/*
+ * Desktop sidebar collapse (icon rail). Driven by <html.sidebar-collapsed>,
+ * applied pre-paint from localStorage by the admin layout. Mobile drawer
+ * behaviour is untouched — these rules only apply from lg up.
+ */
+@media (min-width: 1024px) {
+  html [data-sidebar] {
+    /* placeholder to keep media block valid; width rules below */
+  }
+  html.sidebar-collapsed [data-sidebar] {
+    width: 4rem;
+    overflow-x: hidden;
+  }
+  html.sidebar-collapsed [data-sidebar] nav {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  html.sidebar-collapsed [data-sidebar] nav a,
+  html.sidebar-collapsed [data-sidebar] nav span {
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  html.sidebar-collapsed [data-sidebar-label],
+  html.sidebar-collapsed [data-sidebar-section] {
+    display: none;
+  }
+  /* Specificity (0,1,1)/(0,2,1) beats display utilities regardless of rule order. */
+  html [data-sidebar-expand] {
+    display: none;
+  }
+  html.sidebar-collapsed [data-sidebar-expand] {
+    display: block;
+  }
+}

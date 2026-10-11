@@ -166,6 +166,55 @@ if (!function_exists('can')) {
     }
 }
 
+if (!function_exists('admin_breadcrumbs')) {
+    /**
+     * Auto-derive admin breadcrumbs from the nav config + current path.
+     * A controller may pass its own $breadcrumbs array to override.
+     *
+     * @param string|null $pageTitle current page title appended as the last crumb
+     * @return list<array{0:string,1:?string}> [label, url] pairs; url null = current page
+     */
+    function admin_breadcrumbs(?string $pageTitle = null): array
+    {
+        $path = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/admin/dashboard', PHP_URL_PATH) ?: '/', '/');
+        if (!str_starts_with($path, '/admin')) {
+            return [];
+        }
+
+        $items = [['Dashboard', '/admin/dashboard']];
+
+        // Longest matching nav item defines section + item.
+        $best = null;
+        $bestLen = 0;
+        foreach (RTP_ADMIN_NAV as $section => $entries) {
+            foreach ($entries as $entry) {
+                [$permission, $label, $href] = $entry;
+                if (str_starts_with($path, $href) && strlen($href) > $bestLen) {
+                    $best = [$section, $label, $href];
+                    $bestLen = strlen($href);
+                }
+            }
+        }
+
+        if ($best !== null && $best[2] !== '/admin/dashboard') {
+            [$section, $label, $href] = $best;
+            $items[] = [$section, null];
+            if ($href !== $path) {
+                $items[] = [$label, $href];
+                if ($pageTitle !== null && $pageTitle !== $label) {
+                    $items[] = [$pageTitle, null];
+                }
+            } elseif ($pageTitle !== null && $pageTitle !== $label) {
+                $items[] = [$pageTitle, null];
+            }
+        } elseif ($pageTitle !== null && $pageTitle !== 'Dashboard') {
+            $items[] = [$pageTitle, null];
+        }
+
+        return $items;
+    }
+}
+
 if (!function_exists('paginate')) {
     /**
      * Clamp pagination input.

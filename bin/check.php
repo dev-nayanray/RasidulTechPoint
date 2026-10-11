@@ -44,6 +44,27 @@ foreach ($routes as $route) {
     }
 }
 
+// ---- 1b. Every IMPLEMENTED sidebar nav href must match a registered route ----
+$regexes = array_map(fn ($r) => $r['regex'], $routes);
+foreach (RTP_ADMIN_NAV as $section => $entries) {
+    foreach ($entries as $entry) {
+        [$permission, $label, $href, $icon, $implemented] = $entry;
+        if (!$implemented) {
+            continue;
+        }
+        $matched = false;
+        foreach ($regexes as $regex) {
+            if (preg_match($regex, $href)) {
+                $matched = true;
+                break;
+            }
+        }
+        if (!$matched) {
+            $issues[] = "NAV: implemented item '{$label}' → {$href} has no matching route";
+        }
+    }
+}
+
 // ---- 2. View targets ----------------------------------------------------------
 $checkView = function (string $template, string $dir, string $source) use (&$issues): void {
     if (!is_file(BASE_PATH . "/resources/views/{$dir}{$template}.php")) {

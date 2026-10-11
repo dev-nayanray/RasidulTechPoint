@@ -22,11 +22,18 @@ final class View
     /**
      * Render a template inside its layout.
      *
+     * Layout convention when none is passed explicitly:
+     *   admin/*  → layouts/admin  (management console shell)
+     *   anything else → layouts/app (storefront shell)
+     * Auth pages pass layouts/guest explicitly.
+     *
      * @param array<string,mixed> $data
      */
-    public static function render(string $template, array $data = [], ?string $layout = 'layouts/app'): string
+    public static function render(string $template, array $data = [], ?string $layout = null): string
     {
         $content = self::partial($template, $data);
+
+        $layout ??= str_starts_with($template, 'admin/') ? 'layouts/admin' : 'layouts/app';
 
         if ($layout === null) {
             return $content;

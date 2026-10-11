@@ -133,6 +133,56 @@ final class RouterTest extends TestCase
             $this->router()->dispatch(Request::synthetic('GET', '/nothing'), $this->resolver()));
     }
 
+    public function testEveryImplementedNavItemResolvesToARegisteredRoute(): void
+    {
+        // Build the real application router.
+        $router = new Router();
+        $router->group(['middleware' => ['headers']], function (Router $router): void {
+            require BASE_PATH . '/routes/web.php';
+        });
+        $regexes = array_map(
+            fn ($r) => $r['regex'],
+            (new \ReflectionProperty($router, 'routes'))->getValue($router)
+        );
+
+        foreach (RTP_ADMIN_NAV as $section => $entries) {
+            foreach ($entries as [$permission, $label, $href, $icon, $implemented]) {
+                if (!$implemented) {
+                    continue; // "SOON" items intentionally have no route
+                }
+                $matched = false;
+                foreach ($regexes as $regex) {
+                    if (preg_match($regex, $href)) {
+                        $matched = true;
+                        break;
+                    }
+                }
+                $this->assertTrue($matched, "nav item '{$label}' → {$href} must match a registered route");
+            }
+        }
+    }
+
+    public function testAdminBreadcrumbsDeriveFromNavConfig(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/admin/users/42/edit';
+        $crumbs = admin_breadcrumbs('Edit Karim');
+
+        $this->assertSame('Dashboard', $crumbs[0][0]);
+        $this->assertSame('/admin/dashboard', $crumbs[0][1]);
+        $this->assertSame('Staff & Roles', $crumbs[1][0]);
+        $this->assertSame('Staff Users', $crumbs[2][0]);
+        $this->assertSame('/admin/users', $crumbs[2][1]);
+        $this->assertSame('Edit Karim', $crumbs[3][0]);
+        $this->assertNull($crumbs[3][1]);
+
+        $_SERVER['REQUEST_URI'] = '/admin/dashboard';
+        $crumbs = admin_breadcrumbs('Dashboard');
+        $this->assertCount(1, $crumbs, 'the dashboard itself renders no trail');
+
+        $_SERVER['REQUEST_URI'] = '/shop';
+        $this->assertSame([], admin_breadcrumbs('Shop'), 'non-admin paths produce no admin breadcrumbs');
+    }
+
     private function resolver(): MiddlewareResolver
     {
         $resolver = new MiddlewareResolver();

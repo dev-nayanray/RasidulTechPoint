@@ -1,6 +1,8 @@
 /**
- * Mobile navigation: sidebar drawer (admin) and collapsible header nav (storefront).
- * Uses event delegation so it works on any page without re-binding.
+ * Navigation behaviours:
+ * 1. Mobile drawer (admin sidebar + storefront header nav).
+ * 2. Desktop sidebar collapse to an icon rail, persisted in localStorage
+ *    (class applied pre-paint by an inline script in the admin layout).
  */
 const MOBILE_VISIBLE = ['translate-x-0'];
 
@@ -24,12 +26,39 @@ function setDrawer(open) {
     }
 }
 
+function setCollapsed(collapsed) {
+    const root = document.documentElement;
+    root.classList.toggle('sidebar-collapsed', collapsed);
+    try {
+        localStorage.setItem('rtp-sidebar-collapsed', collapsed ? '1' : '0');
+    } catch (e) { /* storage unavailable */ }
+
+    document.querySelector('[data-sidebar-collapse]')?.setAttribute('aria-expanded', String(!collapsed));
+    document.querySelector('[data-sidebar-collapse]')?.setAttribute(
+        'aria-label',
+        collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+    );
+}
+
 document.addEventListener('click', (event) => {
+    const collapseToggle = event.target.closest('[data-sidebar-collapse]');
+    if (collapseToggle) {
+        setCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'));
+        return;
+    }
+
+    if (event.target.closest('[data-sidebar-expand]')) {
+        setCollapsed(false);
+        return;
+    }
+
     const toggle = event.target.closest('[data-nav-toggle]');
     if (toggle) {
         const sidebar = document.querySelector('[data-sidebar]');
         if (sidebar && sidebar.classList.contains('-translate-x-full')) {
             setDrawer(true);
+        } else if (sidebar && window.getComputedStyle(sidebar).position === 'fixed') {
+            setDrawer(false);
         } else if (sidebar) {
             setDrawer(false);
         } else {

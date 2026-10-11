@@ -56,4 +56,21 @@ final class NotificationService
         $stmt = Connection::pdo()->prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?');
         $stmt->execute([$userId]);
     }
+
+    /**
+     * Header dropdown items: unread first, then most recent — real rows only.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function menuItems(int $userId, int $limit = 5): array
+    {
+        $stmt = Connection::pdo()->prepare(
+            'SELECT id, type, title, is_read, created_at FROM notifications
+             WHERE user_id = ?
+             ORDER BY is_read ASC, id DESC
+             LIMIT ' . max(1, min(10, $limit))
+        );
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

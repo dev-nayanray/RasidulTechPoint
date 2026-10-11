@@ -26,6 +26,7 @@ final class MigrationTest extends TestCase
             'cashier_shifts', 'held_sales',
             'payment_methods_catalog', 'reconciliation_batches',
             'invoices', 'refunds', 'order_corrections', 'order_cancellations',
+            'couriers', 'delivery_zones', 'shipments',
             'migrations',
         ];
         $rows = $this->pdo()->query('SHOW TABLES')->fetchAll(\PDO::FETCH_COLUMN);
@@ -37,7 +38,7 @@ final class MigrationTest extends TestCase
     public function testMigrationRunnerTracksBatches(): void
     {
         $count = (int) $this->pdo()->query('SELECT COUNT(*) FROM migrations')->fetchColumn();
-        $this->assertSame(20, $count, 'twenty migration files should be recorded');
+        $this->assertSame(21, $count, 'twenty-one migration files should be recorded');
 
         // Re-running is a no-op.
         $migrator = new \App\Support\Database\Migrator($this->pdo(), BASE_PATH . '/database/migrations');

@@ -162,7 +162,7 @@ const RTP_ADMIN_NAV = [
         ['warranty.manage', 'Warranty & Repairs', '/admin/warranty', 'shield', false],
     ],
     'Delivery' => [
-        ['delivery.manage', 'Courier & Delivery', '/admin/delivery', 'map-pin', false],
+        ['delivery.manage', 'Courier & Delivery', '/admin/delivery', 'map-pin', true],
     ],
     'CRM' => [
         ['crm.view', 'Customer CRM', '/admin/crm', 'heart', false],

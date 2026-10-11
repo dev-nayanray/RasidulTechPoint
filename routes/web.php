@@ -15,6 +15,7 @@ use App\Controllers\Admin\BrandController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
+use App\Controllers\Admin\DeliveryController;
 use App\Controllers\Admin\InspectionController;
 use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\InvoiceRefundController;
@@ -301,6 +302,35 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
 
     $router->post('/orders/{id}/corrections', [InvoiceRefundController::class, 'correctionStore'])
         ->middleware('permission:pos.authorize_discount|payments.refund|settings.manage');
+
+    // Delivery & courier management (Prompt 26)
+    $router->get('/delivery', [DeliveryController::class, 'index'])->middleware('permission:delivery.manage');
+    // Couriers
+    $router->get('/delivery/couriers', [DeliveryController::class, 'courierIndex'])->middleware('permission:delivery.manage');
+    $router->get('/delivery/couriers/create', [DeliveryController::class, 'courierCreate'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/couriers', [DeliveryController::class, 'courierStore'])->middleware('permission:delivery.manage');
+    $router->get('/delivery/couriers/{id}', [DeliveryController::class, 'courierShow'])->middleware('permission:delivery.manage');
+    $router->get('/delivery/couriers/{id}/edit', [DeliveryController::class, 'courierEdit'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/couriers/{id}/update', [DeliveryController::class, 'courierUpdate'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/couriers/{id}/delete', [DeliveryController::class, 'courierDelete'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/couriers/{id}/restore', [DeliveryController::class, 'courierRestore'])->middleware('permission:delivery.manage');
+    // Zones
+    $router->get('/delivery/zones', [DeliveryController::class, 'zoneIndex'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/zones', [DeliveryController::class, 'zoneStore'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/zones/{id}/update', [DeliveryController::class, 'zoneUpdate'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/zones/{id}/delete', [DeliveryController::class, 'zoneDelete'])->middleware('permission:delivery.manage');
+    // Shipments
+    $router->get('/delivery/shipments', [DeliveryController::class, 'shipmentIndex'])->middleware('permission:delivery.manage');
+    $router->get('/delivery/shipments/{id}', [DeliveryController::class, 'shipmentShow'])->middleware('permission:delivery.manage');
+    $router->get('/delivery/orders/{orderId}/shipments/create', [DeliveryController::class, 'shipmentCreateForm'])
+        ->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments', [DeliveryController::class, 'shipmentStore'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments/{id}/dispatch', [DeliveryController::class, 'shipmentDispatch'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments/{id}/transit', [DeliveryController::class, 'shipmentTransit'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments/{id}/deliver', [DeliveryController::class, 'shipmentDeliver'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments/{id}/fail', [DeliveryController::class, 'shipmentFail'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments/{id}/return', [DeliveryController::class, 'shipmentReturn'])->middleware('permission:delivery.manage');
+    $router->post('/delivery/shipments/{id}/cancel', [DeliveryController::class, 'shipmentCancel'])->middleware('permission:delivery.manage');
 
     // Customers
     $router->get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.view');

@@ -56,14 +56,15 @@ abstract class TestCase
     {
         $pdo = self::$pdo;
         $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
-        foreach (['migrations', 'audit_logs', 'login_attempts', 'password_reset_tokens',
-                  'role_permissions', 'user_roles', 'permissions', 'roles', 'users',
-                  'notifications', 'settings', 'locations', 'business_profiles', 'business_hours',
-                  'product_images', 'inventory_units', 'stock_movements', 'product_models',
-                  'categories', 'brands',
-                  'payments', 'order_items', 'orders', 'customers'] as $table) {
-            $pdo->exec("DROP TABLE IF EXISTS {$table}");
+
+        // Dynamically drop ALL existing tables so newly-added migrations
+        // (whose tables may not yet be listed here) don't trip over
+        // "Table already exists" on a re-run of the test suite.
+        $rows = $pdo->query('SHOW TABLES')->fetchAll(\PDO::FETCH_COLUMN);
+        foreach ($rows as $table) {
+            $pdo->exec('DROP TABLE IF EXISTS `' . $table . '`');
         }
+
         $pdo->exec('SET FOREIGN_KEY_CHECKS=1');
 
         (new Migrator($pdo, BASE_PATH . '/database/migrations'))->migrate(fn () => null);

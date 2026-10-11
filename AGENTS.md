@@ -49,3 +49,49 @@ You are working on Rasidul Tech Point, a laptop retail and business management s
 - Keep the application compatible with previously completed features.
 
 Reference: `README.md` (architecture, commands), `docs/SECURITY.md` (production checklist), `config/permissions.php` (RBAC catalog).
+
+## Local development environment (micromamba)
+
+The project is developed against PHP 8.5 and MySQL 9.7 installed via micromamba. The conda-forge `php` package is built WITHOUT `pdo_mysql`, so the extension must be compiled and loaded separately. If a request returns `500 — Something went wrong. The problem has been logged.`, the very first thing to check is whether `pdo_mysql` is loaded:
+
+```bash
+export PATH=/tmp/mamba/envs/php-env/bin:/tmp/mamba/envs/mysql-env/bin:$PATH
+export LD_LIBRARY_PATH=/tmp/mamba/envs/mysql-env/lib:$LD_LIBRARY_PATH
+php -m | grep pdo_mysql     # MUST list pdo_mysql
+```
+
+If `pdo_mysql` is missing, rebuild it from PHP source against the micromamba MySQL client:
+
+```bash
+cd /tmp && mkdir -p php-build && cd php-build
+curl -sSL https://php.net/distributions/php-8.5.9.tar.gz -o php-8.5.9.tar.gz
+tar xzf php-8.5.9.tar.gz
+cd php-8.5.9/ext/pdo_mysql
+/tmp/mamba/envs/php-env/bin/phpize
+./configure --with-pdo-mysql=/tmp/mamba/envs/mysql-env \
+            --with-php-config=/tmp/mamba/envs/php-env/bin/php-config
+make -j2
+mkdir -p /tmp/mamba/envs/php-env/lib/php/extensions/no-debug-non-zts-20250925/
+cp modules/pdo_mysql.so /tmp/mamba/envs/php-env/lib/php/extensions/no-debug-non-zts-20250925/
+# Then ensure php.ini loads it:
+cat > /tmp/mamba/envs/php-env/lib/php.ini <<'INI'
+extension=pdo_mysql.so
+date.timezone = "UTC"
+display_errors = Off
+log_errors = On
+error_reporting = E_ALL
+INI
+```
+
+Start MySQL before running the test suite:
+
+```bash
+/tmp/mamba/envs/mysql-env/bin/mysqld_safe --defaults-file=/tmp/mysql.cnf --user=root &
+/tmp/mamba/envs/mysql-env/bin/mysql -h 127.0.0.1 -P 3360 -u root -e "SELECT 1"
+```
+
+The full test suite is the source of truth for a clean state:
+
+```bash
+php bin/test.php             # expect: OK: 346 passed, 0 failed
+```

@@ -51,8 +51,22 @@ final class Connection
             $pdo->exec("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO'");
             $pdo->exec("SET SESSION time_zone = '+00:00'");
         } catch (\PDOException $e) {
+            $msg = $e->getMessage();
+            // Detect the most common deployment fault early and tell the
+            // operator exactly what to do — otherwise the user only sees a
+            // generic 500 page and the admin is left guessing.
+            if (str_contains($msg, 'could not find driver')) {
+                throw new \RuntimeException(
+                    'Database connection failed: the pdo_mysql extension is not loaded in PHP. '
+                    . 'Install/enable pdo_mysql (e.g. `apt install php-mysql` '
+                    . 'or add `extension=pdo_mysql` to php.ini) '
+                    . 'then restart the web server or PHP-FPM.',
+                    0,
+                    $e
+                );
+            }
             throw new \RuntimeException(
-                'Database connection failed: ' . $e->getMessage()
+                'Database connection failed: ' . $msg
                     . ' — check DB_* values in your .env file.',
                 0,
                 $e

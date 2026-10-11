@@ -68,6 +68,49 @@ $transitionLabels = [
     </div>
 
     <div class="lg:col-span-2 space-y-6">
+        <!-- Unit photos -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-900">Unit photos</h2>
+                <?php if (\App\Services\AuthService::can('inventory.adjust')): ?>
+                    <form method="post" action="<?= e(url('/admin/inventory/' . $unit['id'] . '/photos')) ?>" enctype="multipart/form-data" class="flex items-center gap-2" data-loading-form>
+                        <?= csrf_field() ?>
+                        <input name="caption" type="text" placeholder="Caption (optional)" class="input w-32 text-xs">
+                        <input name="photo" type="file" accept="image/jpeg,image/png,image/webp" class="text-xs text-slate-600 file:mr-2 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white">
+                        <button type="submit" class="btn-primary text-xs">Upload</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+            <div class="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <?php if (($unit['photos'] ?? []) === []): ?>
+                    <p class="col-span-full py-4 text-center text-sm text-slate-400">No unit photos yet.</p>
+                <?php else: ?>
+                    <?php foreach ($unit['photos'] as $photo): ?>
+                        <div class="relative overflow-hidden rounded-lg border border-slate-200 bg-white">
+                            <?php if (file_exists(BASE_PATH . '/public/' . $photo['file_path'])): ?>
+                                <img src="<?= e(url($photo['file_path'])) ?>" alt="<?= e($photo['caption'] ?? '') ?>" class="h-28 w-full object-cover">
+                            <?php else: ?>
+                                <div class="flex h-28 items-center justify-center text-xs text-slate-400">File missing</div>
+                            <?php endif; ?>
+                            <div class="flex items-center justify-between px-2 py-1 text-xs">
+                                <?php if (!empty($photo['caption'])): ?>
+                                    <span class="text-slate-600"><?= e($photo['caption']) ?></span>
+                                <?php else: ?>
+                                    <span class="text-slate-400">#<?= (int) $photo['sort_order'] ?></span>
+                                <?php endif; ?>
+                                <?php if (\App\Services\AuthService::can('inventory.adjust')): ?>
+                                    <form method="post" action="<?= e(url('/admin/inventory/photos/' . $photo['id'] . '/delete')) ?>" data-confirm="Delete this photo?" data-loading-form>
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="text-red-600 hover:text-red-800" title="Delete">✕</button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <div class="rounded-xl border border-slate-200 bg-white p-5">
             <h2 class="text-sm font-semibold text-slate-900">Inventory operations</h2>
             <p class="mt-1 text-xs text-slate-500">Only state-machine-valid transitions are offered. Every operation requires a reason and is recorded permanently.</p>

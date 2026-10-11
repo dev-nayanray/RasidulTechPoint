@@ -7,6 +7,13 @@ namespace App\Repositories;
 use App\Support\Database\Connection;
 use PDO;
 
+/**
+ * Inventory unit search, filtering, and detail reads.
+ *
+ * Search supports: text query (SKU, serial, model name), status filter,
+ * location filter, condition grade filter, and brand filter. All filters
+ * are parameterised (no SQL injection).
+ */
 final class InventoryRepository
 {
     private PDO $pdo;
@@ -16,9 +23,29 @@ final class InventoryRepository
         $this->pdo = Connection::pdo();
     }
 
-    /** @return array{rows:list<array<string,mixed>>,total:int} */
-    public function search(string $q = '', string $status = '', int $modelId = 0, int $page = 1, int $perPage = 20): array
-    {
+    /**
+     * Paginated search with filters.
+     *
+     * @param string $q text search (SKU, serial, model name)
+     * @param string $status status filter (empty = all)
+     * @param int $modelId model filter (0 = all)
+     * @param int $page page number
+     * @param int $perPage items per page
+     * @param int $locationId location filter (0 = all)
+     * @param string $grade condition grade filter (empty = all)
+     * @param int $brandId brand filter (0 = all)
+     * @return array{rows:list<array<string,mixed>>,total:int}
+     */
+    public function search(
+        string $q = '',
+        string $status = '',
+        int $modelId = 0,
+        int $page = 1,
+        int $perPage = 20,
+        int $locationId = 0,
+        string $grade = '',
+        int $brandId = 0,
+    ): array {
         $where = ' WHERE 1=1';
         $params = [];
         if ($q !== '') {
@@ -35,10 +62,25 @@ final class InventoryRepository
             $where .= ' AND iu.product_model_id = ?';
             $params[] = $modelId;
         }
+        if ($locationId > 0) {
+            $where .= ' AND iu.location_id = ?';
+            $params[] = $locationId;
+        }
+        if ($grade !== '' && in_array($grade, ['A', 'B', 'C', 'D'], true)) {
+            $where .= ' AND iu.condition_grade = ?';
+            $params[] = $grade;
+        }
+        if ($brandId > 0) {
+            $where .= ' AND pm.brand_id = ?';
+            $params[] = $brandId;
+        }
 
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM inventory_units iu JOIN product_models pm ON pm.id = iu.product_model_id{$where}");
-        $stmt->execute($params);
-        $total = (int) $stmt->fetchColumn();
+        $countStmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM inventory_units iu
+             JOIN product_models pm ON pm.id = iu.product_model_id{$where}"
+        );
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
 
         $offset = ($page - 1) * $perPage;
         $stmt = $this->pdo->prepare(
@@ -74,6 +116,7 @@ final class InventoryRepository
             return null;
         }
         $row['movements'] = $this->movementsFor($id);
+        $row['photos'] = $this->photos($id);
         return $row;
     }
 
@@ -91,7 +134,7 @@ final class InventoryRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** @return list<array<string,mixed>> available units for a model (storefront) */
+    /** @return list<array<string,mixed>> */
     public function availableUnitsForModel(int $modelId): array
     {
         $stmt = $this->pdo->prepare(
@@ -113,5 +156,47 @@ final class InventoryRepository
             $counts[$row['status']] = (int) $row['c'];
         }
         return $counts;
+    }
+
+    /** @return list<array<string,mixed>> */
+    public function photos(int $unitId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, file_path, caption, sort_order, created_at
+             FROM unit_photos
+             WHERE inventory_unit_id = ?
+             ORDER BY sort_order ASC, id ASC'
+        );
+        $stmt->execute([$unitId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findPhoto(int $photoId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM unit_photos WHERE id = ?');
+        $stmt->execute([$photoId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row === false ? null : $row;
+    }
+
+    public function addPhoto(int $unitId, string $filePath, ?string $caption = null): int
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT COALESCE(MAX(sort_order), -1) + 1 FROM unit_photos WHERE inventory_unit_id = ?'
+        );
+        $stmt->execute([$unitId]);
+        $sortOrder = (int) $stmt->fetchColumn();
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO unit_photos (inventory_unit_id, file_path, caption, sort_order)
+             VALUES (?, ?, ?, ?)'
+        );
+        $stmt->execute([$unitId, $filePath, $caption, $sortOrder]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function deletePhoto(int $photoId): void
+    {
+        $this->pdo->prepare('DELETE FROM unit_photos WHERE id = ?')->execute([$photoId]);
     }
 }

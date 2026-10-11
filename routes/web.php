@@ -143,6 +143,10 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
         ->middleware('permission:inventory.view');
     $router->post('/inventory/{id}/price', [InventoryController::class, 'adjustPrice'])
         ->middleware('permission:inventory.adjust');
+    $router->post('/inventory/{id}/photos', [InventoryController::class, 'uploadPhoto'])
+        ->middleware('permission:inventory.adjust');
+    $router->post('/inventory/photos/{photoId}/delete', [InventoryController::class, 'deletePhoto'])
+        ->middleware('permission:inventory.adjust');
 
     // Locations & branches
     $router->get('/locations', [LocationController::class, 'index'])->middleware('permission:inventory.view');

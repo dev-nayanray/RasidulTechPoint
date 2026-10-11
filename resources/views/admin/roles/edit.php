@@ -1,5 +1,5 @@
 <?php /** @var array $role @var array $permissionsGrouped */ ?>
-<p class="text-sm text-slate-500"><a href="<?= e(url('/admin/roles')) ?>" class="font-medium text-blue-700 hover:text-blue-800">← Roles &amp; permissions</a></p>
+<p class="text-sm text-slate-500"><a href="<?= e(url('/admin/roles/' . $role['id'])) ?>" class="font-medium text-blue-700 hover:text-blue-800">← <?= e($role['name']) ?></a></p>
 <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Edit role: <?= e($role['name']) ?></h1>
 <p class="mt-1 text-sm text-slate-500">Choose exactly what this role may do. Changes take effect immediately for every user holding this role and are recorded in the audit log.</p>
 
@@ -22,6 +22,6 @@
     </div>
     <div class="flex gap-3">
         <button type="submit" class="btn-primary">Save permissions</button>
-        <a href="<?= e(url('/admin/roles')) ?>" class="btn-secondary">Cancel</a>
+        <a href="<?= e(url('/admin/roles/' . $role['id'])) ?>" class="btn-secondary">Cancel</a>
     </div>
 </form>

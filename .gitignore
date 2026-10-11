@@ -33,3 +33,5 @@ Thumbs.db
 # Test artifacts
 .phpunit.result.cache
 /tests/.phpunit.result.cache
+composer.phar
+composer.lock

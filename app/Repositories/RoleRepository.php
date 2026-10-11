@@ -96,4 +96,75 @@ final class RoleRepository
         }
         return $map;
     }
+
+    /**
+     * Create a new custom (non-system) role. Slug must be unique.
+     * Returns the new role id.
+     */
+    public function create(string $name, string $slug, ?string $description = null): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO roles (name, slug, description, is_system) VALUES (?, ?, ?, 0)'
+        );
+        $stmt->execute([$name, $slug, $description]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /** Whether a slug is already taken (case-insensitive). */
+    public function slugExists(string $slug): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM roles WHERE slug = ?');
+        $stmt->execute([$slug]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Members of a role: user id, name, email, is_active, last_login_at.
+     * Returns up to $limit rows, newest first.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function members(int $roleId, int $limit = 100): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT u.id, u.name, u.email, u.is_active, u.last_login_at, u.deleted_at
+             FROM users u
+             JOIN user_roles ur ON ur.user_id = u.id
+             WHERE ur.role_id = ?
+             ORDER BY u.name ASC
+             LIMIT ' . max(1, min(500, $limit))
+        );
+        $stmt->execute([$roleId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Delete a non-system role that has no members. System roles
+     * (owner, customer, etc.) can never be deleted. Roles with
+     * active members must be emptied first (reassign users before
+     * deleting).
+     */
+    public function delete(int $roleId): void
+    {
+        $role = $this->find($roleId);
+        if ($role === null) {
+            throw new \App\Exceptions\NotFoundException('Role not found.');
+        }
+        if ((int) $role['is_system'] === 1) {
+            throw new \App\Exceptions\ValidationException([
+                'role' => 'System roles cannot be deleted.',
+            ]);
+        }
+        $members = $this->members($roleId, 500);
+        if ($members !== []) {
+            throw new \App\Exceptions\ValidationException([
+                'role' => 'Cannot delete a role that still has members. Reassign or remove them first.',
+            ]);
+        }
+
+        \App\Support\Database\Connection::transaction(function (PDO $pdo) use ($roleId) {
+            $pdo->prepare('DELETE FROM role_permissions WHERE role_id = ?')->execute([$roleId]);
+            $pdo->prepare('DELETE FROM roles WHERE id = ?')->execute([$roleId]);
+        });
+    }
 }

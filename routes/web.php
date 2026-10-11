@@ -92,8 +92,13 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
 
     // Roles & permissions
     $router->get('/roles', [RoleController::class, 'index'])->middleware('permission:roles.manage');
+    $router->get('/roles/create', [RoleController::class, 'create'])->middleware('permission:roles.manage');
+    $router->post('/roles', [RoleController::class, 'store'])->middleware('permission:roles.manage');
+    $router->get('/roles/{id}', [RoleController::class, 'show'])->middleware('permission:roles.manage');
     $router->get('/roles/{id}/edit', [RoleController::class, 'edit'])->middleware('permission:roles.manage');
     $router->post('/roles/{id}/permissions', [RoleController::class, 'updatePermissions'])
+        ->middleware('permission:roles.manage');
+    $router->post('/roles/{id}/delete', [RoleController::class, 'destroy'])
         ->middleware('permission:roles.manage');
 
     // Catalog: brands / categories / laptop models

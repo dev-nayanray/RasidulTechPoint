@@ -105,11 +105,18 @@ $scan('resources/views');
 $viewCount = count(glob(BASE_PATH . '/resources/views/**/*.php', GLOB_BRACE) ?: []);
 
 // ---- 3. JS module imports ------------------------------------------------------
+// Catch BOTH `import './x'` (bare side-effect imports) and `... from './x'`
+// (named imports). Without the bare-import branch, the previous check would
+// silently pass even when app.js imported modules from a non-existent path.
 foreach (glob(BASE_PATH . '/public/assets/js/*.js') as $file) {
     $src = (string) file_get_contents($file);
-    preg_match_all("/from\s+'(\.\/[^']+)'/", $src, $m);
-    foreach ($m[1] as $import) {
-        if (!is_file(BASE_PATH . '/public/assets/js/' . substr($import, 2))) {
+    preg_match_all("/import\s+'(\.\/[^']+)'/", $src, $bareImports);
+    preg_match_all("/from\s+'(\.\/[^']+)'/", $src, $namedImports);
+    foreach (array_merge($bareImports[1], $namedImports[1]) as $import) {
+        $resolved = BASE_PATH . '/public/assets/js/' . substr($import, 2);
+        // Accept either the bare path (rare) or the path with `.js` appended
+        // (the only form browsers actually resolve).
+        if (!is_file($resolved) && !is_file($resolved . '.js')) {
             $issues[] = 'JS import missing: ' . basename($file) . " → {$import}";
         }
     }

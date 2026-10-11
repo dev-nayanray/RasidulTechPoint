@@ -127,6 +127,16 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                         </div>
                     </form>
 
+                    <!-- Mobile search toggle: reveals an inline search panel below the header -->
+                    <button type="button"
+                            class="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+                            data-mobile-search-toggle
+                            aria-label="Search laptop models"
+                            aria-expanded="false"
+                            aria-controls="mobile-search-panel">
+                        <?= \App\Support\View::component('icon', ['name' => 'search', 'class' => 'h-5 w-5']) ?>
+                    </button>
+
                     <?php if (\App\Services\AuthService::can('notifications.view')): ?>
                         <div class="relative" data-dropdown>
                             <button type="button" class="relative inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100" data-dropdown-toggle aria-haspopup="true" aria-expanded="false" aria-label="Notifications<?= $unreadNotifications > 0 ? " ({$unreadNotifications} unread)" : '' ?>">
@@ -192,6 +202,19 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                     </div>
                 </div>
             </header>
+
+            <!-- Mobile search panel: slides down under the header when toggled -->
+            <div id="mobile-search-panel" class="hidden border-b border-slate-200 bg-white px-4 py-3 md:hidden" data-mobile-search-panel>
+                <form action="<?= e(url('/admin/products')) ?>" method="get" role="search" data-loading-form>
+                    <label class="sr-only" for="mobile-search-input">Search laptop models</label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <?= \App\Support\View::component('icon', ['name' => 'search', 'class' => 'h-4 w-4']) ?>
+                        </span>
+                        <input id="mobile-search-input" name="q" value="" placeholder="Search laptop models…" class="input pl-9" autocomplete="off">
+                    </div>
+                </form>
+            </div>
 
             <main id="main-content" class="flex-1 p-4 sm:p-6">
                 <?= \App\Support\View::component('breadcrumbs', ['items' => $breadcrumbs ?? null, 'pageTitle' => $pageTitle ?? null]) ?>

@@ -37,6 +37,7 @@ final class MigrationTest extends TestCase
             'coupons', 'coupon_target_products', 'coupon_target_categories', 'coupon_usages',
             'notification_templates', 'notification_deliveries',
             'contact_inquiries',
+            'customer_addresses', 'wishlist_items',
             'migrations',
         ];
         // 031_system_settings_categorized ALTERs the existing settings table
@@ -50,7 +51,7 @@ final class MigrationTest extends TestCase
     public function testMigrationRunnerTracksBatches(): void
     {
         $count = (int) $this->pdo()->query('SELECT COUNT(*) FROM migrations')->fetchColumn();
-        $this->assertSame(33, $count, 'thirty-three migration files should be recorded');
+        $this->assertSame(34, $count, 'thirty-four migration files should be recorded');
 
         // Re-running is a no-op.
         $migrator = new \App\Support\Database\Migrator($this->pdo(), BASE_PATH . '/database/migrations');

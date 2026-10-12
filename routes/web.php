@@ -97,8 +97,22 @@ $router->group(['prefix' => 'account', 'middleware' => ['auth', 'csrf']], functi
     $router->get('', [AccountController::class, 'index'])->name('account');
     $router->get('/profile', [AccountController::class, 'profile'])->name('account.profile');
     $router->post('/profile', [AccountController::class, 'updateProfile'])->name('account.profile.update');
+    $router->post('/profile/password', [AccountController::class, 'changePassword'])->name('account.password.change');
     $router->get('/orders', [AccountController::class, 'orders'])->name('account.orders');
     $router->get('/orders/{reference}', [AccountController::class, 'order'])->name('account.orders.show');
+    $router->get('/addresses', [AccountController::class, 'addresses'])->name('account.addresses');
+    $router->post('/addresses', [AccountController::class, 'addressStore'])->name('account.addresses.store');
+    $router->post('/addresses/{id}/delete', [AccountController::class, 'addressDelete'])->name('account.addresses.delete');
+    $router->post('/addresses/{id}/default', [AccountController::class, 'addressSetDefault'])->name('account.addresses.default');
+    $router->get('/warranty', [AccountController::class, 'warranty'])->name('account.warranty');
+    $router->get('/service-jobs', [AccountController::class, 'serviceJobs'])->name('account.service-jobs');
+    $router->get('/notifications', [AccountController::class, 'notifications'])->name('account.notifications');
+    $router->post('/notifications/{id}/read', [AccountController::class, 'markNotificationRead'])->name('account.notifications.read');
+    $router->post('/notifications/read-all', [AccountController::class, 'markAllNotificationsRead'])->name('account.notifications.read-all');
+    $router->get('/wishlist', [AccountController::class, 'wishlist'])->name('account.wishlist');
+    $router->post('/wishlist/add', [AccountController::class, 'wishlistAdd'])->name('account.wishlist.add');
+    $router->post('/wishlist/{id}/remove', [AccountController::class, 'wishlistRemove'])->name('account.wishlist.remove');
+    $router->get('/support', [AccountController::class, 'support'])->name('account.support');
 });
 
 // ---------------------------------------------------------------- ADMIN ----

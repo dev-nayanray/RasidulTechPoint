@@ -84,6 +84,9 @@ Demo staff accounts (only with `--demo`, local env): `manager@rtp.local`,
 | `php bin/create-admin.php` | Interactive secure first-admin setup (`--name= --email= --password=` supported). Requires a ≥10-char password with letters and numbers; refuses when an active owner exists unless `--force`. |
 | `php bin/test.php` | Runs the test suite against `rasidul_tech_point_test` (created automatically). |
 | `php bin/check.php` | Structural self-check (no DB needed): every route maps to an existing controller method, every view/component target exists, JS imports resolve, built assets and critical files are present. Exits non-zero on any gap — suitable for CI. |
+| `php bin/backup.php` | Database + `storage/` + `public/uploads/` backup. `--list`, `--retention=N`, `--no-files`, `--gpg=recipient`. See `docs/BACKUPS.md`. |
+| `php bin/restore.php` | Restore from a backup. `--list`, `--from=<stamp>`, `--confirm`, `--target=<db>`, `--i-know-this-is-production` (required to overwrite the configured prod DB). Refuses corrupt backups via SHA-256 check. Never destructive to production without explicit opt-in. |
+| `php bin/deploy-check.php` | Post-deploy battery: APP_ENV/DEBUG/URL consistency, APP_KEY set, SESSION_SECURE, pending migrations, public/ exposure, PHP extensions, .env perms, demo users, owner account. Exits 0 on success / 1 on failure / 2 on warning. |
 
 No installation or admin-creation route is exposed over HTTP.
 
@@ -126,8 +129,8 @@ rasidul-tech-point/
 ├── resources/views/        # layouts, components, storefront/account/admin/errors
 ├── routes/web.php          # public / auth / customer / admin(perm-gated) groups
 ├── storage/                # logs, cache, sessions, private (outside public/)
-├── tests/                  # Unit / Feature / Security (709 tests / 21k assertions)
-└── bin/                    # migrate, seed, create-admin, test
+├── tests/                  # Unit / Feature / Security (729 tests / 21k assertions)
+└── bin/                    # migrate, seed, create-admin, test, backup, restore, deploy-check
 ```
 
 Request lifecycle: `public/index.php` → bootstrap (env, config, error handlers)
@@ -217,7 +220,7 @@ See `docs/SECURITY.md` for the production deployment checklist.
 ## 9. Testing
 
 ```bash
-php bin/test.php          # everything (709 tests / 21k assertions)
+php bin/test.php          # everything (729 tests / 21k assertions)
 php bin/test.php Auth     # filter by class/file substring
 ```
 
@@ -251,6 +254,17 @@ at HTTP layer, audit fires on every save with secret values NEVER in metadata,
 form never echoes secret plaintext, empty submission keeps existing secret,
 clear flag wipes encrypted value, permission enforcement on systemIndex /
 systemCategory / systemSave, CSRF on save, all 9 categories round-trip);
+backup, restore & deployment (BackupSafety refuses production target without
+explicit `--i-know-this-is-production` flag; refuses corrupt backups via
+SHA-256 check; bin/backup.php creates manifest + db dump + files archive +
+optionally GPG-encrypts; bin/restore.php runs dry-run by default, requires
+--confirm to execute; bin/restore.php refuses non-existent target DB;
+bin/restore.php executes a real restore into a non-production DB and verifies
+table-count parity + users-count parity between source and target; corrupt
+backup refused with exit 1; retention rotation prunes back-dated files;
+bin/deploy-check.php exits non-zero on production misconfig like
+APP_DEBUG=true / SESSION_SECURE=false / missing APP_KEY / pending migrations;
+HTTP smoke tests against the application after deploy);
 security (CSRF accept/reject, XSS escaping incl. view rendering,
 SQL-injection payloads, security headers, cookie flags, `.env.example`
 hygiene, nothing dangerous under `public/`).
@@ -268,11 +282,16 @@ the credentials from `.env`.
    least-privilege DB user, `SESSION_SECURE=true` (HTTPS required),
    `MAIL_DRIVER` configured for a real transport.
 5. `php bin/migrate.php && php bin/seed.php && php bin/create-admin.php`
-6. Follow `docs/SECURITY.md` (headers/TLS/backup hardening checklist).
+6. `php bin/deploy-check.php` — battery of production-readiness checks; exit 0 OK, exit 1 failure, exit 2 warning. CI hook: `php bin/deploy-check.php || exit 1`.
+7. Schedule `bin/backup.php` via cron (see `docs/BACKUPS.md` + `docs/SECURITY.md` for the recommended schedule). Test restore into a non-production DB at least once before you need it.
+8. Follow `docs/SECURITY.md` (headers/TLS/backup hardening checklist).
 
-Backups: `mysqldump --single-transaction --routines rasidul_tech_point > backup.sql`
-plus `storage/` and `public/uploads/`. Restore by importing the dump into a
-fresh database and pointing `.env` at it.
+Backups: `php bin/backup.php` (database + `storage/` + `public/uploads/`,
+SHA-256 manifest, optional GPG encryption, retention rotation). Restore
+via `php bin/restore.php --from=<stamp> --confirm --target=<db>` (the tool
+refuses to overwrite the configured production DB without
+`--i-know-this-is-production`). See `docs/BACKUPS.md` for the full
+runbook, including a step-by-step disaster-recovery procedure.
 
 ## 11. What is not built yet (planned phases)
 

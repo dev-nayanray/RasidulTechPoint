@@ -40,16 +40,70 @@ outside the code.
 
 ## Operations
 
-- [ ] Scheduled backup of the database
-      (`mysqldump --single-transaction`) **and** `storage/` + `public/uploads/`;
-      restore tested at least once.
+- [ ] Scheduled backup of the database **and** `storage/` + `public/uploads/`
+      via `php bin/backup.php` (see `docs/BACKUPS.md`). Schedule via cron:
+      ```
+      0 2 * * *  cd /var/www/rasidul-tech-point && /usr/bin/php bin/backup.php --retention=30 >> storage/logs/cron-backup.log 2>&1
+      ```
+- [ ] Restore procedure tested at least once in a **non-production**
+      environment (`php bin/restore.php --from=<stamp> --target=rtp_restore --confirm`).
+      Never run `bin/restore.php` against the configured production DB
+      without `--i-know-this-is-production` — the tool refuses by default.
+- [ ] Backup directory (`storage/backups/` by default; override with
+      `BACKUP_DIR` env var) MUST live **outside** `public/` — the tool
+      enforces this and writes a `.htaccess` deny rule + blank `index.html`
+      as defense in depth.
+- [ ] Optional GPG encryption at rest for off-site backups:
+      `php bin/backup.php --gpg=admin@example.com` produces `.gpg` files
+      (and removes the plaintext originals). Test decryption:
+      `gpg --decrypt backup.sql.gz.gpg | gzip -dc | mysql rtp_restore`.
+- [ ] Retention: default 30 days (override with `BACKUP_RETENTION_DAYS`
+      env var or `--retention=N`). Older backups are pruned after each
+      successful backup.
 - [ ] Logs reviewed: `storage/logs/*-security.log` (auth failures,
-      permission denials), `*-app.log` (errors), `mail.log`.
+      permission denials), `*-app.log` (errors), `mail.log`, `cron-backup.log`.
 - [ ] Audit log (`/admin/audit-logs`) monitored for unexpected
-      `roles.permissions_updated` / `user.*` events.
+      `roles.permissions_updated` / `user.*` / `settings.*` /
+      `notification.*` / `coupon.*` events.
 - [ ] PHP errors logged to file (`storage/logs/php-error.log`), `display_errors=Off`.
 - [ ] MariaDB/MySQL and PHP versions kept patched; `pdo_mysql`, `openssl`,
       `mbstring`, `fileinfo` enabled.
+- [ ] `APP_KEY` (32+ random bytes) set in `.env` — required for the
+      secret-encryption layer (Prompt 39 payment provider keys, SMTP
+      password, SMS API secret). Without `APP_KEY`, the system refuses
+      to store any new secret.
+
+## Cron / scheduled tasks
+
+| Frequency | Command | Purpose |
+|---|---|---|
+| Daily 02:00 | `php bin/backup.php --retention=30` | Database + files backup; rotate old backups |
+| Daily 03:00 | `php bin/migrate.php status \| grep -q 'No pending'` (alerting on the inverse) | Detect pending migrations on the live DB |
+| Daily 04:00 | `php bin/restore.php --list \| mail -s 'RTP backups' ops@example.com` | Operator reminder of available backups |
+| Hourly | `php -r '…call NotificationService::retryFailed()…'` | Retry failed notification deliveries (Prompt 38) |
+| As needed | `php bin/deploy-check.php` (CI / post-deploy) | Production-readiness battery |
+
+Never run `bin/restore.php` from cron — restore is a manual,
+operator-supervised operation.
+
+## Deployment checks
+
+Run `php bin/deploy-check.php` after every deploy. Exits 0 on success,
+1 on any failure (must block), 2 on any warning (informational).
+
+The battery covers:
+- `.env` exists and is non-default in production
+- `APP_ENV` / `APP_DEBUG` / `APP_URL` consistency
+- `APP_KEY` is set (required for secrets + sessions)
+- `SESSION_SECURE=true` in production
+- All migrations are applied (no pending)
+- `public/` is the only web-exposed dir (no `.env`, `composer.json`,
+  `storage/logs`, etc. leaked there)
+- `storage/backups/` is not web-accessible
+- Critical PHP extensions loaded (`pdo_mysql`, `openssl`, `mbstring`, `fileinfo`)
+- `.env` file permissions are restrictive (chmod 0640 or better)
+- No demo seed data (`*@rtp.local`) in production
+- An active owner account exists
 
 ## Verification smoke tests after deploy
 

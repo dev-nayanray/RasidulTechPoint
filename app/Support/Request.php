@@ -128,6 +128,12 @@ final class Request
         return $this->post[$key] ?? $default;
     }
 
+    /** True when the key was present in the POST body (even with an empty value). */
+    public function has(string $key): bool
+    {
+        return array_key_exists($key, $this->post);
+    }
+
     public function post(): array
     {
         return $this->post;

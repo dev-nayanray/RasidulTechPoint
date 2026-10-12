@@ -191,6 +191,7 @@ const RTP_ADMIN_NAV = [
     ],
     'Settings' => [
         ['settings.manage', 'Business Settings', '/admin/settings', 'settings', true],
+        ['settings.manage', 'System Settings', '/admin/settings/system', 'tool', true],
         ['audit_logs.view', 'Audit Logs', '/admin/audit-logs', 'file-text', true],
     ],
 ];

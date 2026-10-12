@@ -126,7 +126,7 @@ rasidul-tech-point/
 ├── resources/views/        # layouts, components, storefront/account/admin/errors
 ├── routes/web.php          # public / auth / customer / admin(perm-gated) groups
 ├── storage/                # logs, cache, sessions, private (outside public/)
-├── tests/                  # Unit / Feature / Security (684 tests / 20k assertions)
+├── tests/                  # Unit / Feature / Security (709 tests / 21k assertions)
 └── bin/                    # migrate, seed, create-admin, test
 ```
 
@@ -136,7 +136,7 @@ auth/guest → permission) → controller → View render → Response send. Any
 exception is converted centrally into a proper status page or JSON error
 without leaking details in production.
 
-## 7. Database schema (30 migrations)
+## 7. Database schema (31 migrations)
 
 **Identity & access:** `users`, `roles`, `permissions`, `user_roles`,
 `role_permissions`, `password_reset_tokens`, `login_attempts`, `audit_logs`
@@ -171,6 +171,15 @@ permissions / specific users / all_staff, dedupe window), `notification_deliveri
 (append-only delivery log + retry state: status delivered/failed/suppressed_duplicate/
 no_template/no_recipients, attempts counter, last_error). The existing `notifications`
 table is untouched; delivery log links to it via `notification_id`.
+
+**System settings (Prompt 39):** the existing `settings` table is extended with
+`is_secret` (flag), `encrypted_value` (TEXT — base64-encoded IV+ciphertext, AES-256-CBC
+under APP_KEY), and `category` (currency / dates / invoice / inventory / warranty /
+delivery / email / payments / integrations). Secrets (payment provider keys, SMTP
+password, SMS API secret, webhook signing secret) are encrypted at rest; the
+`setting_value` column is NULL when `is_secret=1`, and the legacy `get()` API
+returns the default rather than leaking a plaintext value. Audit metadata records
+only key names + `secret_changed` boolean — never the plaintext.
 
 **System:** `migrations`
 
@@ -208,7 +217,7 @@ See `docs/SECURITY.md` for the production deployment checklist.
 ## 9. Testing
 
 ```bash
-php bin/test.php          # everything (684 tests / 20k assertions)
+php bin/test.php          # everything (709 tests / 21k assertions)
 php bin/test.php Auth     # filter by class/file substring
 ```
 
@@ -234,6 +243,14 @@ for failed deliveries, privacy — markRead scoped by signed-in user,
 delivery-log viewer never exposes body content, permission enforcement on
 templates/deliveries endpoints, wired events — order.created /
 order.status_updated / payment.confirmed / refund.processed / coupon.redeemed);
+system settings & integrations (Crypto AES-256-CBC round-trip, empty APP_KEY
+refuses to encrypt, corrupted blob returns null, wrong key returns null,
+secrets stored as encrypted_value with setting_value NULL, legacy get() returns
+default for secret keys, getInCategory omits secrets, validation per category
+at HTTP layer, audit fires on every save with secret values NEVER in metadata,
+form never echoes secret plaintext, empty submission keeps existing secret,
+clear flag wipes encrypted value, permission enforcement on systemIndex /
+systemCategory / systemSave, CSRF on save, all 9 categories round-trip);
 security (CSRF accept/reject, XSS escaping incl. view rendering,
 SQL-injection payloads, security headers, cookie flags, `.env.example`
 hygiene, nothing dangerous under `public/`).

@@ -38,6 +38,8 @@ final class MigrationTest extends TestCase
             'notification_templates', 'notification_deliveries',
             'migrations',
         ];
+        // 031_system_settings_categorized ALTERs the existing settings table
+        // (adds is_secret, encrypted_value, category columns) — no new tables.
         $rows = $this->pdo()->query('SHOW TABLES')->fetchAll(\PDO::FETCH_COLUMN);
         foreach ($expected as $table) {
             $this->assertContains($table, $rows, "Table {$table} should exist");
@@ -47,7 +49,7 @@ final class MigrationTest extends TestCase
     public function testMigrationRunnerTracksBatches(): void
     {
         $count = (int) $this->pdo()->query('SELECT COUNT(*) FROM migrations')->fetchColumn();
-        $this->assertSame(30, $count, 'thirty migration files should be recorded');
+        $this->assertSame(31, $count, 'thirty-one migration files should be recorded');
 
         // Re-running is a no-op.
         $migrator = new \App\Support\Database\Migrator($this->pdo(), BASE_PATH . '/database/migrations');

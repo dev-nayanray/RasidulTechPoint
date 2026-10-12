@@ -309,4 +309,286 @@ final class SettingsController
             'tax_rate' => $taxRate,
         ], $request);
     }
+
+    // ---------------------------------------------------- SYSTEM SETTINGS (Prompt 39) --
+    //
+    // Categorized settings: currency, dates, invoice, inventory, warranty,
+    // delivery, email, payments, integrations. Each category has:
+    //   - GET  /admin/settings/system                — dashboard with category nav
+    //   - GET  /admin/settings/system/{category}    — render the form for that category
+    //   - POST /admin/settings/system/{category}     — save + audit
+    //
+    // Secret fields (payment provider keys, SMTP password, SMS API secret,
+    // webhook secret) are rendered as password inputs with a "leave blank to
+    // keep current value" hint. An empty submission for an already-configured
+    // secret keeps the existing encrypted value; a non-empty submission
+    // re-encrypts and replaces it.
+
+    /** Map category => human label. */
+    private const CATEGORY_LABELS = [
+        'currency' => 'Currency',
+        'dates' => 'Date & Time',
+        'invoice' => 'Invoice',
+        'inventory' => 'Inventory rules',
+        'warranty' => 'Warranty policy',
+        'delivery' => 'Delivery',
+        'email' => 'Email',
+        'payments' => 'Payment providers',
+        'integrations' => 'Integrations',
+    ];
+
+    /**
+     * System-settings dashboard. Shows the category list + summary of
+     * which categories have configured secrets.
+     */
+    public function systemIndex(): Response
+    {
+        $categories = [];
+        foreach (self::CATEGORY_LABELS as $key => $label) {
+            $secretsConfigured = SettingService::allSecretKeysInCategory($key);
+            $secretsSet = array_filter(
+                $secretsConfigured,
+                fn ($k) => SettingService::secretIsSet($k),
+            );
+            $categories[] = [
+                'key' => $key,
+                'label' => $label,
+                'secret_count' => count($secretsConfigured),
+                'secrets_configured' => count($secretsSet),
+            ];
+        }
+        return Response::html(View::render('admin/settings/system/index', [
+            'pageTitle' => 'System settings',
+            'categories' => $categories,
+        ]));
+    }
+
+    /**
+     * Render the per-category settings form. The form template
+     * dispatches on $category to render the right set of fields.
+     */
+    public function systemCategory(string $category): Response
+    {
+        if (!isset(self::CATEGORY_LABELS[$category])) {
+            throw new \App\Exceptions\NotFoundException('Unknown settings category: ' . $category);
+        }
+        $values = SettingService::getInCategory($category);
+        $secretKeys = SettingService::allSecretKeysInCategory($category);
+        $secretStatus = [];
+        foreach ($secretKeys as $k) {
+            $secretStatus[$k] = SettingService::secretIsSet($k);
+        }
+
+        return Response::html(View::render('admin/settings/system/category', [
+            'pageTitle' => self::CATEGORY_LABELS[$category] . ' settings',
+            'category' => $category,
+            'categoryLabel' => self::CATEGORY_LABELS[$category],
+            'categories' => self::CATEGORY_LABELS,
+            'values' => $values,
+            'secretStatus' => $secretStatus,
+            'errors' => [],
+            'cryptoAvailable' => \App\Support\Crypto::available(),
+        ]));
+    }
+
+    /**
+     * Save per-category settings. Validates against the per-category
+     * rules, then writes plaintext settings via setCategory() and
+     * secret settings (non-empty submission) via setSecret(). Empty
+     * submissions for secrets keep the existing encrypted value.
+     */
+    public function systemSave(string $category, Request $request): Response
+    {
+        if (!isset(self::CATEGORY_LABELS[$category])) {
+            throw new \App\Exceptions\NotFoundException('Unknown settings category: ' . $category);
+        }
+
+        $rules = $this->rulesFor($category);
+        $secretKeys = $this->secretKeysFor($category);
+
+        // Build the validator rule set from the plaintext rules; secret
+        // fields are validated separately (only "string" + "max" so we
+        // don't reject empty submissions).
+        $validatorRules = [];
+        foreach ($rules as $key => $rule) {
+            $validatorRules[$key] = $rule['rules'] ?? 'nullable|string|max:500';
+        }
+        foreach ($secretKeys as $key) {
+            $validatorRules[$key] = 'nullable|string|max:500';
+        }
+
+        try {
+            $data = Validator::make($request->post(), $validatorRules)->validate();
+        } catch (\App\Exceptions\ValidationException $e) {
+            $values = SettingService::getInCategory($category);
+            $secretStatus = [];
+            foreach ($secretKeys as $k) {
+                $secretStatus[$k] = SettingService::secretIsSet($k);
+            }
+            return Response::html(View::render('admin/settings/system/category', [
+                'pageTitle' => self::CATEGORY_LABELS[$category] . ' settings',
+                'category' => $category,
+                'categoryLabel' => self::CATEGORY_LABELS[$category],
+                'categories' => self::CATEGORY_LABELS,
+                'values' => array_merge($values, $request->post()),
+                'secretStatus' => $secretStatus,
+                'errors' => $e->errors,
+                'cryptoAvailable' => \App\Support\Crypto::available(),
+            ]), 422);
+        }
+
+        $changedKeys = [];
+        $secretChangedKeys = [];
+
+        // Plaintext keys.
+        foreach ($rules as $key => $rule) {
+            $type = $rule['type'] ?? 'string';
+            $value = $data[$key] ?? '';
+            if ($type === 'bool') {
+                $value = !empty($data[$key]) ? '1' : '0';
+            } elseif ($type === 'int') {
+                $value = (string) max(0, (int) $data[$key]);
+            }
+            SettingService::setCategory($key, (string) $value, $type, $category);
+            $changedKeys[$key] = $value;
+        }
+
+        // Secret keys.
+        foreach ($secretKeys as $key) {
+            $submitted = (string) ($data[$key] ?? '');
+            if ($submitted === '') {
+                // Empty submission — keep existing. If admin ticked
+                // "clear", we wipe the encrypted_value.
+                if ($request->has('clear_' . $key)) {
+                    SettingService::clearSecret($key);
+                    $secretChangedKeys[] = $key . ' (cleared)';
+                }
+                continue;
+            }
+            try {
+                SettingService::setSecret($key, $submitted, $category);
+                $secretChangedKeys[] = $key;
+            } catch (\App\Exceptions\ValidationException $e) {
+                flash_error('Could not save secret for ' . $key . ': ' . implode(' ', $e->errors));
+            }
+        }
+
+        AuditService::record('settings.' . $category . '_updated', 'setting', null, [
+            'category' => $category,
+            'changed_keys' => array_keys($changedKeys),
+            'secret_changes' => $secretChangedKeys,
+        ], $request);
+
+        flash_success(ucfirst(self::CATEGORY_LABELS[$category]) . ' settings saved.');
+        return Response::redirect(url('/admin/settings/system/' . $category));
+    }
+
+    // ---------------------------------------------------- PER-CATEGORY RULES + SECRET KEYS --
+
+    /**
+     * Validation rules per category. Each entry is:
+     *   'setting_key' => ['type' => 'string'|'int'|'bool', 'rules' => '...']
+     * Type is used to coerce the input before persistence.
+     *
+     * @return array<string, array{type:string, rules:string}>
+     */
+    private function rulesFor(string $category): array
+    {
+        return match ($category) {
+            'currency' => [
+                'currency_code' => ['type' => 'string', 'rules' => 'required|string|max:3'],
+                'currency_symbol' => ['type' => 'string', 'rules' => 'required|string|max:5'],
+                'currency_position' => ['type' => 'string', 'rules' => 'required|in:before,after'],
+                'currency_decimal_places' => ['type' => 'int', 'rules' => 'required|integer|min:0|max:4'],
+            ],
+            'dates' => [
+                'date_format' => ['type' => 'string', 'rules' => 'required|string|max:60'],
+                'datetime_format' => ['type' => 'string', 'rules' => 'required|string|max:60'],
+                'time_format' => ['type' => 'string', 'rules' => 'required|string|max:60'],
+                'first_day_of_week' => ['type' => 'string', 'rules' => 'required|in:sun,mon'],
+            ],
+            'invoice' => [
+                'invoice_prefix' => ['type' => 'string', 'rules' => 'required|string|max:10'],
+                'invoice_next_number' => ['type' => 'int', 'rules' => 'required|integer|min:1'],
+                'invoice_tax_name' => ['type' => 'string', 'rules' => 'nullable|string|max:30'],
+                'invoice_tax_rate' => ['type' => 'string', 'rules' => 'nullable|decimal:2'],
+                'invoice_footer_text' => ['type' => 'string', 'rules' => 'nullable|string|max:500'],
+                'invoice_payment_terms' => ['type' => 'string', 'rules' => 'nullable|string|max:255'],
+                'invoice_reset_yearly' => ['type' => 'bool', 'rules' => 'nullable'],
+            ],
+            'inventory' => [
+                'inventory_low_stock_threshold' => ['type' => 'int', 'rules' => 'required|integer|min:0|max:10000'],
+                'inventory_allow_negative_stock' => ['type' => 'bool', 'rules' => 'nullable'],
+                'inventory_default_markup_percent' => ['type' => 'int', 'rules' => 'required|integer|min:0|max:500'],
+                'inventory_track_serial_numbers' => ['type' => 'bool', 'rules' => 'nullable'],
+            ],
+            'warranty' => [
+                'warranty_default_days' => ['type' => 'int', 'rules' => 'required|integer|min:0|max:1825'],
+                'warranty_requires_serial' => ['type' => 'bool', 'rules' => 'nullable'],
+                'warranty_claim_window_days' => ['type' => 'int', 'rules' => 'required|integer|min:0|max:365'],
+            ],
+            'delivery' => [
+                'delivery_default_carrier' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'delivery_default_shipping_days' => ['type' => 'int', 'rules' => 'required|integer|min:0|max:60'],
+                'delivery_default_shipping_fee' => ['type' => 'string', 'rules' => 'nullable|decimal:2'],
+                'delivery_free_shipping_threshold' => ['type' => 'string', 'rules' => 'nullable|decimal:2'],
+            ],
+            'email' => [
+                'mail_driver' => ['type' => 'string', 'rules' => 'required|in:log,smtp,sendmail'],
+                'mail_from_address' => ['type' => 'string', 'rules' => 'required|email|max:190'],
+                'mail_from_name' => ['type' => 'string', 'rules' => 'required|string|max:120'],
+                'mail_smtp_host' => ['type' => 'string', 'rules' => 'nullable|string|max:190'],
+                'mail_smtp_port' => ['type' => 'int', 'rules' => 'required|integer|min:1|max:65535'],
+                'mail_smtp_encryption' => ['type' => 'string', 'rules' => 'nullable|in:none,tls,ssl'],
+                'mail_smtp_username' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'mail_bcc_address' => ['type' => 'string', 'rules' => 'nullable|email|max:190'],
+            ],
+            'payments' => [
+                'payment_provider_stripe_enabled' => ['type' => 'bool', 'rules' => 'nullable'],
+                'payment_provider_stripe_publishable_key' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'payment_provider_bkash_enabled' => ['type' => 'bool', 'rules' => 'nullable'],
+                'payment_provider_bkash_app_key' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'payment_provider_bkash_username' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'payment_provider_nagad_enabled' => ['type' => 'bool', 'rules' => 'nullable'],
+                'payment_provider_nagad_merchant_id' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'payment_provider_nagad_public_key' => ['type' => 'string', 'rules' => 'nullable|string|max:500'],
+            ],
+            'integrations' => [
+                'integration_sms_enabled' => ['type' => 'bool', 'rules' => 'nullable'],
+                'integration_sms_provider' => ['type' => 'string', 'rules' => 'required|in:none,twilio,vonage,bulksms'],
+                'integration_sms_api_key' => ['type' => 'string', 'rules' => 'nullable|string|max:120'],
+                'integration_sms_sender_id' => ['type' => 'string', 'rules' => 'nullable|string|max:30'],
+                'integration_google_analytics_id' => ['type' => 'string', 'rules' => 'nullable|string|max:60'],
+                'integration_facebook_pixel_id' => ['type' => 'string', 'rules' => 'nullable|string|max:60'],
+                'integration_webhook_url' => ['type' => 'string', 'rules' => 'nullable|url|max:500'],
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Secret keys per category. These are rendered as password inputs
+     * and never displayed back; empty submission keeps the existing
+     * encrypted value.
+     *
+     * @return list<string>
+     */
+    private function secretKeysFor(string $category): array
+    {
+        return match ($category) {
+            'email' => ['mail_smtp_password'],
+            'payments' => [
+                'payment_provider_stripe_secret_key',
+                'payment_provider_stripe_webhook_secret',
+                'payment_provider_bkash_app_secret',
+                'payment_provider_bkash_password',
+                'payment_provider_nagad_secret_key',
+            ],
+            'integrations' => [
+                'integration_sms_api_secret',
+                'integration_webhook_secret',
+            ],
+            default => [],
+        };
+    }
 }

@@ -4,42 +4,109 @@ declare(strict_types=1);
 
 namespace App\Controllers\Storefront;
 
+use App\Repositories\CatalogRepository;
 use App\Services\ContentService;
+use App\Services\SettingService;
 use App\Support\Response;
+use App\Support\View;
 
 /**
- * Homepage controller.
+ * Homepage controller — premium marketing storefront.
  *
- * Serves the custom uploaded homepage HTML (public/homepage.html)
- * as a pixel-perfect, responsive design. The HTML is stored as a
- * static file and served directly — it's a self-contained bundler
- * page that renders at runtime via JavaScript.
- *
- * The CMS manages dynamic content (blocks, banners, pages, FAQs,
- * SEO) for all other storefront pages. The homepage HTML itself
- * can be edited via the content_blocks admin (block_key =
- * 'homepage_html') — the admin stores the raw HTML in the
- * database and the file is served from public/.
+ * Renders the PHP/Tailwind view at resources/views/storefront/home.php.
+ * All sections (announcement bar, header, hero, categories, budget,
+ * featured laptops, why-choose, how-we-check, brands, special deals,
+ * customer reviews, FAQ, final CTA, footer) live in the view + the
+ * shared public.php layout. Data is fetched from the catalog (real
+ * inventory) and the content service (CMS-managed blocks, FAQs,
+ * banners). Marketing copy that is not yet backed by operational
+ * services renders in an explicit empty state — we never fabricate
+ * inventory, reviews, ratings, or warranty durations.
  */
 final class HomeController
 {
     public function index(): Response
     {
-        // Serve the custom uploaded homepage HTML directly.
-        $htmlFile = BASE_PATH . '/public/homepage.html';
-        if (is_file($htmlFile)) {
-            $html = file_get_contents($htmlFile);
-            return Response::html($html)->header('Content-Type', 'text/html; charset=UTF-8');
-        }
+        $catalog = new CatalogRepository();
+        $content = new ContentService();
 
-        // Fallback to the default PHP-rendered storefront homepage.
-        $catalog = new \App\Repositories\CatalogRepository();
-        return Response::html(\App\Support\View::render('storefront/home', [
+        // Real published product models with at least one available unit.
+        $featured = $catalog->publishedForStore(limit: 8);
+
+        // Active brands — only those the store actually carries stock for.
+        $brands = array_filter(
+            $catalog->brands(onlyActive: true),
+            fn ($b) => $this->brandHasAvailableUnits((int) $b['id']),
+        );
+
+        // Configurable budget ranges from the settings table. Falls back
+        // to a sensible BDT default when the admin hasn't configured any.
+        $budgetRanges = $this->budgetRanges();
+
+        // CMS-managed FAQ entries (Prompt 36). Empty list is fine — the
+        // view renders a tasteful "FAQ coming soon" placeholder.
+        $faqs = $content->publishedFaqs();
+
+        return Response::html(View::render('storefront/home', [
             'pageTitle' => 'Home',
-            'featured' => $catalog->publishedForStore(limit: 8),
-            'brands' => $catalog->brands(onlyActive: true),
+            'featured' => $featured,
+            'brands' => $brands,
+            'budgetRanges' => $budgetRanges,
+            'faqs' => $faqs,
+            // Trust / marketing blocks pulled from the CMS so the admin
+            // can edit copy without touching code. Falls back to inline
+            // copy when the block is not yet configured.
+            'heroBlock' => $content->publishedBlock('home_hero') ?? '',
+            'whyChooseBlock' => $content->publishedBlock('home_why_choose') ?? '',
+            'howWeCheckBlock' => $content->publishedBlock('home_how_we_check') ?? '',
+            'finalCtaBlock' => $content->publishedBlock('home_final_cta') ?? '',
             'metaTitle' => 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops',
-            'metaDescription' => 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty. Buy online or visit our shop.',
+            'metaDescription' => 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.',
         ]));
+    }
+
+    /**
+     * Return the configured budget ranges. Each range is [label, min, max]
+     * where max = null means "and above". The ranges are editable via
+     * the system settings (currency category) — `home_budget_ranges`
+     * setting holds a JSON-encoded list.
+     *
+     * @return list<array{label:string,min:int,max:?int}>
+     */
+    private function budgetRanges(): array
+    {
+        $json = (string) SettingService::get('home_budget_ranges', '');
+        if ($json !== '') {
+            $decoded = json_decode($json, true);
+            if (is_array($decoded) && $decoded !== []) {
+                return array_values(array_filter(array_map(
+                    fn ($r) => isset($r['label'], $r['min']) ? [
+                        'label' => (string) $r['label'],
+                        'min' => (int) $r['min'],
+                        'max' => isset($r['max']) ? (int) $r['max'] : null,
+                    ] : null,
+                    $decoded,
+                )));
+            }
+        }
+        // Sensible BDT defaults — admin can override via system settings.
+        return [
+            ['label' => 'Under ৳15,000', 'min' => 0, 'max' => 15000],
+            ['label' => '৳15,000 – ৳25,000', 'min' => 15000, 'max' => 25000],
+            ['label' => '৳25,000 – ৳40,000', 'min' => 25000, 'max' => 40000],
+            ['label' => '৳40,000+', 'min' => 40000, 'max' => null],
+        ];
+    }
+
+    private function brandHasAvailableUnits(int $brandId): bool
+    {
+        $stmt = \App\Support\Database\Connection::pdo()->prepare(
+            "SELECT 1 FROM inventory_units iu
+             JOIN product_models pm ON pm.id = iu.product_model_id
+             WHERE pm.brand_id = ? AND iu.status = 'available'
+             LIMIT 1"
+        );
+        $stmt->execute([$brandId]);
+        return $stmt->fetchColumn() !== false;
     }
 }

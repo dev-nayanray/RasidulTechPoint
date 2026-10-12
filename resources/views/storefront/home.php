@@ -30,6 +30,11 @@
 </style>
 </head>
 <body>
+<?php
+$auth = current_user();
+$cartCount = (int) ($_SESSION['cart_count'] ?? 0);
+$wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
+?>
 <div id="top">
 
 <div class="announce">
@@ -44,28 +49,34 @@
 <header class="site-hdr">
   <div class="wrap">
     <div class="hdr">
-      <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasul Tech Point home">
+      <button class="icon-btn burger" aria-label="Open menu" aria-expanded="false" data-nav-toggle>
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+      <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
         <span class="logomark"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg></span>
         <span><span class="wm-a">Rasidul</span><span class="wm-b">TECH POINT</span></span>
       </a>
-      <form class="search" method="get" action="<?= e(url('/shop')) ?>">
+      <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search">
         <div class="search-box">
           <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
-          <input type="search" name="q" placeholder="Search laptops by brand or model" aria-label="Search laptops" value="">
+          <label class="sr-only" for="site-search">Search laptops</label>
+          <input id="site-search" type="search" name="q" placeholder="Search laptops by brand or model" value="<?= e($_GET['q'] ?? '') ?>">
           <button type="submit" class="search-go" aria-label="Search">
             <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
           </button>
         </div>
       </form>
       <div class="icons">
-        <a class="icon-btn hide-xs" href="<?= e(url('/account')) ?>" aria-label="Account">
+        <a class="icon-btn hide-xs" href="<?= e(url($auth ? '/account' : '/login')) ?>" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>">
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
         </a>
         <a class="icon-btn" href="<?= e(url('/account/wishlist')) ?>" aria-label="Wishlist">
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>
+          <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
         </a>
         <a class="icon-btn" href="<?= e(url('/cart')) ?>" aria-label="Shopping cart">
           <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>
+          <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
         </a>
       </div>
     </div>
@@ -73,14 +84,24 @@
   <div class="nav-row">
     <div class="wrap">
       <nav class="nav-desktop" aria-label="Main">
-        <a href="#featured">Shop Laptops</a>
-        <a href="#brands">Brands</a>
-        <a href="#budget">Budget Deals</a>
-        <a href="#faq">Warranty &amp; Support</a>
+        <a href="<?= e(url('/shop')) ?>">Shop Laptops</a>
+        <a href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
+        <a href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
+        <a href="<?= e(url('/contact')) ?>">Warranty &amp; Support</a>
         <a href="<?= e(url('/about')) ?>">About Us</a>
-        <a class="push" href="#inspection">How we check laptops</a>
+        <a class="push" href="<?= e(url('/about')) ?>">How we check laptops</a>
       </nav>
     </div>
+  </div>
+  <div class="wrap">
+    <nav class="nav-mobile" aria-label="Mobile" data-nav-mobile>
+      <a href="<?= e(url('/shop')) ?>">Shop Laptops</a>
+      <a href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
+      <a href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
+      <a href="<?= e(url('/contact')) ?>">Warranty &amp; Support</a>
+      <a href="<?= e(url('/about')) ?>">About Us</a>
+      <a href="<?= e(url($auth ? '/account' : '/login')) ?>"><?= $auth ? 'My account' : 'Sign in' ?></a>
+    </nav>
   </div>
 </header>
 
@@ -459,6 +480,35 @@
   </div>
 </footer>
 
+<div class="tab-space"></div>
+<nav class="tabbar" aria-label="Quick navigation">
+  <a class="tab" href="<?= e(url('/')) ?>">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>Home
+  </a>
+  <a class="tab" href="<?= e(url('/shop')) ?>">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>Laptops
+  </a>
+  <a class="tab" href="<?= e(url('/account/wishlist')) ?>">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>Wishlist
+    <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
+  </a>
+  <a class="tab" href="<?= e(url('/cart')) ?>">
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>Cart
+    <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
+  </a>
+</nav>
+
 </div>
+<script>
+  // Mobile nav drawer toggle.
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-nav-toggle]');
+    if (!t) { return; }
+    var nav = document.querySelector('[data-nav-mobile]');
+    if (!nav) { return; }
+    var open = nav.classList.toggle('open');
+    t.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+</script>
 </body>
 </html>

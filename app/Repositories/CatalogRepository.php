@@ -516,6 +516,61 @@ final class CatalogRepository
     }
 
     /**
+     * Homepage card data: ONE exact available unit per published model —
+     * the storefront card shows the specs, grade and price of a real unit,
+     * never a fabricated aggregate.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function featuredUnits(int $limit = 8): array
+    {
+        return $this->pdo->query(
+            "SELECT iu.id AS unit_id, iu.sku, iu.condition_grade, iu.selling_price,
+                    pm.id AS model_id, pm.name AS model_name, pm.slug AS model_slug,
+                    pm.processor, pm.ram_gb, pm.storage_type, pm.storage_capacity_gb, pm.display_size_inches,
+                    b.name AS brand_name, b.slug AS brand_slug,
+                    (SELECT pi.file_path FROM product_images pi
+                      WHERE pi.product_model_id = pm.id
+                      ORDER BY pi.is_primary DESC, pi.sort_order ASC LIMIT 1) AS image_path,
+                    (SELECT COUNT(*) FROM inventory_units x
+                      WHERE x.product_model_id = pm.id AND x.status = 'available') AS available_units
+             FROM inventory_units iu
+             JOIN product_models pm ON pm.id = iu.product_model_id
+             JOIN brands b ON b.id = pm.brand_id
+             WHERE iu.status = 'available' AND pm.is_published = 1 AND pm.deleted_at IS NULL
+               AND iu.id = (SELECT MIN(x.id) FROM inventory_units x
+                             WHERE x.product_model_id = pm.id AND x.status = 'available')
+             ORDER BY iu.id DESC
+             LIMIT " . (int) $limit
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Categories that actually have available stock (for homepage tiles). */
+    public function storeCategories(): array
+    {
+        return $this->pdo->query(
+            "SELECT c.id, c.name, c.slug,
+                    (SELECT COUNT(*) FROM inventory_units iu
+                      JOIN product_models pm ON pm.id = iu.product_model_id
+                      WHERE pm.category_id = c.id AND iu.status = 'available' AND pm.deleted_at IS NULL) AS available_units
+             FROM categories c
+             WHERE c.is_active = 1
+             HAVING available_units > 0
+             ORDER BY c.sort_order ASC, c.name ASC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** @return array{min:int,max:int} live available-price bounds */
+    public function priceBounds(): array
+    {
+        $row = $this->pdo->query(
+            "SELECT COALESCE(MIN(selling_price),0) AS pmin, COALESCE(MAX(selling_price),0) AS pmax
+             FROM inventory_units WHERE status = 'available'"
+        )->fetch(PDO::FETCH_ASSOC);
+        return ['min' => (int) $row['pmin'], 'max' => (int) $row['pmax']];
+    }
+
+    /**
      * Storefront listing: published models with available-unit counts and
      * their lowest available selling price.
      *

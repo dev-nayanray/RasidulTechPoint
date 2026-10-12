@@ -1,0 +1,87 @@
+/*
+ * Rasidul Tech Point — application stylesheet (Tailwind CSS source).
+ * Compiled for production with `npm run build` — the Play CDN is never used.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply antialiased;
+  }
+  /* Visible focus indicators for keyboard users. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-blue-600 ring-offset-1;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Form controls */
+  .input {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500;
+  }
+  textarea.input {
+    @apply min-h-[2.75rem];
+  }
+
+  /* Cards & panels */
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+}
+
+/*
+ * Desktop sidebar collapse (icon rail). Driven by <html.sidebar-collapsed>,
+ * applied pre-paint from localStorage by the admin layout. Mobile drawer
+ * behaviour is untouched — these rules only apply from lg up.
+ */
+@media (min-width: 1024px) {
+  html [data-sidebar] {
+    /* placeholder to keep media block valid; width rules below */
+  }
+  html.sidebar-collapsed [data-sidebar] {
+    width: 4rem;
+    overflow-x: hidden;
+  }
+  html.sidebar-collapsed [data-sidebar] nav {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  html.sidebar-collapsed [data-sidebar] nav a,
+  html.sidebar-collapsed [data-sidebar] nav span {
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  html.sidebar-collapsed [data-sidebar-label],
+  html.sidebar-collapsed [data-sidebar-section] {
+    display: none;
+  }
+  /* Specificity (0,1,1)/(0,2,1) beats display utilities regardless of rule order. */
+  html [data-sidebar-expand] {
+    display: none;
+  }
+  html.sidebar-collapsed [data-sidebar-expand] {
+    display: block;
+  }
+}

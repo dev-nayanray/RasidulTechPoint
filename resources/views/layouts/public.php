@@ -1,11 +1,26 @@
 <?php
-/** Storefront layout: announcement bar, premium header (search + cart + wishlist), footer. */
+/**
+ * Storefront layout — Rasidul Tech Point reference design clone.
+ *
+ * Header (sticky, white, search + icon rail + nav row), footer (navy,
+ * link grid + legal + watermark) and mobile bottom tab bar follow the
+ * approved homepage reference. All chrome is driven by real state:
+ * session cart/wishlist counts, auth-aware account link, GET search
+ * routed to /shop, contact details from configured settings only —
+ * never fabricated.
+ */
 $auth = current_user();
-// Cart count: read straight from the session — the CartService (Prompt 41+)
-// writes $_SESSION['cart_count'] whenever the cart changes. Until that
-// module ships, the badge stays hidden (count = 0).
 $cartCount = (int) ($_SESSION['cart_count'] ?? 0);
 $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
+
+// Configured contact details only (PageController uses the same source).
+$businessPhone = (string) App\Services\SettingService::get('business_phone', '');
+$businessEmail = (string) App\Services\SettingService::get('contact_email', '');
+if ($businessEmail === '') {
+    $businessEmail = (string) App\Services\SettingService::get('business_email', '');
+}
+$businessAddress = (string) App\Services\SettingService::get('business_address', '');
+$businessHours = (string) App\Services\SettingService::get('business_hours', '');
 ?>
 <!doctype html>
 <html lang="en">
@@ -17,115 +32,83 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
     <meta name="theme-color" content="#14243A">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased">
+<body class="rtp-skin min-h-screen flex flex-col" id="top">
 
-    <?php /* ====== A. Top announcement bar ====== */ ?>
-    <div class="bg-navy-800 text-white text-xs sm:text-sm">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-center gap-2 h-9 text-center">
-            <span class="font-medium tracking-wide">Authentic Dubai Imports</span>
-            <span class="text-slate-400">|</span>
-            <span class="font-medium tracking-wide">Quality Checked</span>
-            <span class="text-slate-400">|</span>
-            <span class="font-medium tracking-wide">Warranty Available</span>
-            <a href="<?= e(url('/contact')) ?>" class="ml-1 underline decoration-dotted underline-offset-2 hover:text-blue-200 hidden sm:inline">Support</a>
+    <?php /* ====== Announcement bar (configurable copy; quiet, honest) ====== */ ?>
+    <div class="announce">
+        <div class="wrap announce-in">
+            <span>Dubai-imported used laptops</span>
+            <span>·</span>
+            <span>Inspected one unit at a time</span>
+            <a href="<?= e(url('/contact')) ?>">Support</a>
         </div>
     </div>
 
-    <?php /* ====== B. Header + navigation ====== */ ?>
-    <header class="bg-navy-700 text-white sticky top-0 z-40 shadow-sm">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6">
-            <div class="flex h-16 items-center gap-4">
-
-                <?php /* Logo + wordmark */ ?>
-                <a href="<?= e(url('/')) ?>" class="flex items-center gap-2.5 shrink-0" aria-label="Rasidul Tech Point home">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-blue text-sm font-bold text-white">RTP</span>
-                    <span class="hidden sm:block leading-tight">
-                        <span class="block text-sm font-bold tracking-tight">Rasidul Tech Point</span>
-                        <span class="block text-[10px] uppercase tracking-wider text-slate-300">Dubai Imported | Authentic Used</span>
+    <?php /* ====== Header ====== */ ?>
+    <header class="site-hdr">
+        <div class="wrap">
+            <div class="hdr">
+                <button class="icon-btn burger" aria-label="Open menu" aria-expanded="false" data-nav-toggle>
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+                </button>
+                <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
+                    <span class="logomark">
+                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>
+                    </span>
+                    <span>
+                        <span class="wm-a">Rasidul</span>
+                        <span class="wm-b">TECH POINT</span>
                     </span>
                 </a>
-
-                <?php /* Prominent search — desktop only on >=lg; condensed on mobile */ ?>
-                <form action="<?= e(url('/shop')) ?>" method="get" class="hidden sm:flex flex-1 max-w-xl items-center gap-0" role="search">
-                    <label for="header-search" class="sr-only">Search laptops</label>
-                    <input id="header-search" name="q" type="search" value="<?= e($_GET['q'] ?? '') ?>" placeholder="Search by brand, model, processor…"
-                           class="w-full rounded-l-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue">
-                    <button type="submit" class="rounded-r-lg bg-brand-blue px-4 py-2 text-sm font-semibold hover:bg-blue-700 inline-flex items-center gap-1.5" aria-label="Search">
-                        <?= \App\Support\View::component('icon', ['name' => 'search', 'class' => 'h-4 w-4']) ?>
-                        <span class="hidden lg:inline">Search</span>
-                    </button>
+                <form class="search" action="<?= e(url('/shop')) ?>" method="get" role="search">
+                    <div class="search-box">
+                        <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color: rgb(100, 116, 139);"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+                        <label class="sr-only" for="site-search">Search laptops</label>
+                        <input id="site-search" type="search" name="q" placeholder="Search laptops by brand or model" value="<?= e($_GET['q'] ?? '') ?>">
+                        <button class="search-go" type="submit" aria-label="Search">
+                            <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                        </button>
+                    </div>
                 </form>
-
-                <?php /* Desktop nav */ ?>
-                <nav class="hidden lg:flex items-center gap-5 text-sm font-medium" aria-label="Main">
-                    <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/shop')) ?>">Shop Laptops</a>
-                    <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
-                    <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
-                    <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/about')) ?>">About Us</a>
-                    <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/faq')) ?>">FAQ</a>
-                </nav>
-
-                <?php /* Right-side icons */ ?>
-                <div class="flex items-center gap-1 sm:gap-2 ml-auto lg:ml-0">
-                    <?php /* Account */ ?>
-                    <a href="<?= e($auth ? url('/account') : url('/login')) ?>" class="hidden sm:flex flex-col items-center rounded-lg px-2 py-1 text-center hover:bg-white/10" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>">
-                        <?= \App\Support\View::component('icon', ['name' => 'user', 'class' => 'h-5 w-5']) ?>
-                        <span class="text-[10px] mt-0.5"><?= $auth ? 'Account' : 'Sign in' ?></span>
+                <div class="icons">
+                    <a class="icon-btn hide-xs" href="<?= e(url($auth ? '/account' : '/login')) ?>" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>">
+                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
                     </a>
-
-                    <?php /* Wishlist (placeholder — count shown when wishlist module ships) */ ?>
-                    <a href="<?= e(url('/account#wishlist')) ?>" class="hidden sm:flex flex-col items-center rounded-lg px-2 py-1 text-center hover:bg-white/10 relative" aria-label="Wishlist">
-                        <?= \App\Support\View::component('icon', ['name' => 'heart', 'class' => 'h-5 w-5']) ?>
-                        <span class="text-[10px] mt-0.5">Wishlist</span>
-                        <?php if ($wishlistCount > 0): ?><span class="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-brand-blue text-[10px] font-bold leading-4 px-1"><?= (int) $wishlistCount ?></span><?php endif; ?>
+                    <a class="icon-btn" href="<?= e(url('/account/wishlist')) ?>" aria-label="Wishlist">
+                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>
+                        <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
                     </a>
-
-                    <?php /* Cart */ ?>
-                    <a href="<?= e(url('/cart')) ?>" class="flex flex-col items-center rounded-lg px-2 py-1 text-center hover:bg-white/10 relative" aria-label="Cart">
-                        <?= \App\Support\View::component('icon', ['name' => 'shopping-cart', 'class' => 'h-5 w-5']) ?>
-                        <span class="text-[10px] mt-0.5 hidden sm:inline">Cart</span>
-                        <?php if ($cartCount > 0): ?><span class="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-brand-green text-white text-[10px] font-bold leading-4 px-1"><?= (int) $cartCount ?></span><?php endif; ?>
+                    <a class="icon-btn" href="<?= e(url('/cart')) ?>" aria-label="Shopping cart">
+                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>
+                        <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
                     </a>
-
-                    <?php /* Mobile menu toggle */ ?>
-                    <button type="button" class="lg:hidden inline-flex items-center justify-center rounded-lg p-2 hover:bg-white/10" data-nav-toggle aria-label="Toggle navigation" aria-expanded="false">
-                        <?= \App\Support\View::component('icon', ['name' => 'menu', 'class' => 'h-5 w-5']) ?>
-                    </button>
                 </div>
             </div>
-
-            <?php /* Mobile search — visible from sm down (replaces the desktop inline search) */ ?>
-            <form action="<?= e(url('/shop')) ?>" method="get" class="sm:hidden pb-3" role="search">
-                <label for="header-search-mobile" class="sr-only">Search laptops</label>
-                <div class="flex items-center gap-0">
-                    <input id="header-search-mobile" name="q" type="search" value="<?= e($_GET['q'] ?? '') ?>" placeholder="Search laptops…"
-                           class="w-full rounded-l-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-blue">
-                    <button type="submit" class="rounded-r-lg bg-brand-blue px-4 py-2 text-sm font-semibold" aria-label="Search">
-                        <?= \App\Support\View::component('icon', ['name' => 'search', 'class' => 'h-4 w-4']) ?>
-                    </button>
-                </div>
-            </form>
-
-            <?php /* Mobile nav drawer */ ?>
-            <nav class="lg:hidden hidden pb-4 flex-col gap-1 text-sm font-medium" data-nav-mobile aria-label="Mobile">
-                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/shop')) ?>">Shop Laptops</a>
-                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
-                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
-                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/about')) ?>">About Us</a>
-                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/faq')) ?>">FAQ</a>
-                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/contact')) ?>">Contact</a>
-                <?php if ($auth): ?>
-                    <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/account')) ?>">My Account</a>
-                    <?php if (\App\Services\AuthService::can('dashboard.view')): ?>
-                        <a class="rounded-lg px-3 py-2 bg-white/10 hover:bg-white/20" href="<?= e(url('/admin/dashboard')) ?>">Admin Console</a>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/login')) ?>">Sign in</a>
-                    <a class="rounded-lg px-3 py-2 bg-brand-blue text-center hover:bg-blue-700" href="<?= e(url('/register')) ?>">Create account</a>
-                <?php endif; ?>
+        </div>
+        <div class="nav-row">
+            <div class="wrap">
+                <nav class="nav-desktop" aria-label="Main">
+                    <a href="<?= e(url('/shop')) ?>">Shop Laptops</a>
+                    <a href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
+                    <a href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
+                    <a href="<?= e(url('/faq')) ?>">Warranty &amp; Support</a>
+                    <a href="<?= e(url('/about')) ?>">About Us</a>
+                    <a class="push" href="<?= e(url('/page/inspection-process')) ?>">How we check laptops</a>
+                </nav>
+            </div>
+        </div>
+        <div class="wrap">
+            <nav class="nav-mobile" aria-label="Mobile" data-nav-mobile>
+                <a href="<?= e(url('/shop')) ?>">Shop Laptops</a>
+                <a href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
+                <a href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
+                <a href="<?= e(url('/faq')) ?>">Warranty &amp; Support</a>
+                <a href="<?= e(url('/about')) ?>">About Us</a>
+                <a href="<?= e(url('/page/inspection-process')) ?>">How we check laptops</a>
+                <a href="<?= e(url($auth ? '/account' : '/login')) ?>"><?= $auth ? 'My account' : 'Sign in' ?></a>
             </nav>
         </div>
     </header>
@@ -135,54 +118,92 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
         <?= $content ?? '' ?>
     </main>
 
-    <?php /* ====== N. Footer ====== */ ?>
-    <footer class="bg-navy-700 text-slate-300">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 py-10 grid gap-8 md:grid-cols-4 text-sm">
-            <div class="md:col-span-1">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-sm font-bold text-white">RTP</span>
-                    <span class="font-bold text-white">Rasidul Tech Point</span>
+    <?php /* ====== Footer ====== */ ?>
+    <footer class="foot" id="contact">
+        <div class="wrap">
+            <div class="foot-grid">
+                <div style="display: flex; flex-direction: column; gap: 14px; align-items: flex-start;">
+                    <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
+                        <span class="logomark" style="background: rgb(255, 255, 255); color: rgb(20, 36, 58);">
+                            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>
+                        </span>
+                        <span>
+                            <span class="wm-a" style="color: rgb(255, 255, 255);">Rasidul</span>
+                            <span class="wm-b" style="color: rgb(127, 164, 245);">TECH POINT</span>
+                        </span>
+                    </a>
+                    <p style="max-width: 300px;">Dubai-imported used laptops, inspected one unit at a time, for Bangladesh.</p>
                 </div>
-                <p class="mt-3 text-slate-400 leading-relaxed">Authentic Dubai-imported used laptops. Every unit individually inspected, condition-graded, and priced fairly.</p>
+                <div>
+                    <h4 class="mono">Shop</h4>
+                    <ul>
+                        <li><a href="<?= e(url('/shop')) ?>">All laptops</a></li>
+                        <li><a href="<?= e(url('/shop?budget=1')) ?>">Budget deals</a></li>
+                        <li><a href="<?= e(url('/shop?sort=brands')) ?>">Browse brands</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="mono">Support</h4>
+                    <ul>
+                        <li><a href="<?= e(url('/contact')) ?>">Contact us</a></li>
+                        <li><a href="<?= e(url('/page/warranty')) ?>">Warranty &amp; service</a></li>
+                        <li><a href="<?= e(url('/page/returns')) ?>">Returns</a></li>
+                        <li><a href="<?= e(url('/page/shipping')) ?>">Delivery</a></li>
+                        <li><a href="<?= e(url('/page/inspection-process')) ?>">How we check laptops</a></li>
+                        <li><a href="<?= e(url('/about')) ?>">About us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="mono">Contact</h4>
+                    <ul>
+                        <li><?= $businessAddress !== '' ? e($businessAddress) : '<span class="ph">[Store address]</span>' ?></li>
+                        <li><?= $businessHours !== '' ? e($businessHours) : '<span class="ph">[Business hours]</span>' ?></li>
+                        <li><?= $businessPhone !== '' ? '<a href="tel:' . e(preg_replace('/[^0-9+]/', '', $businessPhone)) . '">' . e($businessPhone) . '</a>' : '<span class="ph">[Phone number]</span>' ?></li>
+                        <li><?= $businessEmail !== '' ? '<a href="mailto:' . e($businessEmail) . '">' . e($businessEmail) . '</a>' : '<span class="ph">[Email address]</span>' ?></li>
+                    </ul>
+                </div>
             </div>
-
-            <div>
-                <p class="font-semibold text-white">Shop</p>
-                <ul class="mt-3 space-y-2 text-slate-400">
-                    <li><a class="hover:text-white" href="<?= e(url('/shop')) ?>">All laptops</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/shop?budget=1')) ?>">Budget deals</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/shop?sort=brands')) ?>">Browse brands</a></li>
-                </ul>
+            <div class="foot-bottom">
+                <span>© <?= date('Y') ?> Rasidul Tech Point. All rights reserved.</span>
+                <div class="legal">
+                    <a href="<?= e(url('/page/privacy')) ?>" style="color: inherit;">Privacy Policy</a>
+                    <a href="<?= e(url('/page/terms')) ?>" style="color: inherit;">Terms</a>
+                    <a href="<?= e(url('/page/returns')) ?>" style="color: inherit;">Return Policy</a>
+                </div>
             </div>
-
-            <div>
-                <p class="font-semibold text-white">Support</p>
-                <ul class="mt-3 space-y-2 text-slate-400">
-                    <li><a class="hover:text-white" href="<?= e(url('/contact')) ?>">Contact us</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/faq')) ?>">FAQ</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/page/warranty')) ?>">Warranty &amp; service</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/page/returns')) ?>">Return policy</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/page/shipping')) ?>">Shipping &amp; delivery</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/page/inspection-process')) ?>">Inspection process</a></li>
-                </ul>
-            </div>
-
-            <div>
-                <p class="font-semibold text-white">About</p>
-                <ul class="mt-3 space-y-2 text-slate-400">
-                    <li><a class="hover:text-white" href="<?= e(url('/about')) ?>">About us</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/page/privacy')) ?>">Privacy policy</a></li>
-                    <li><a class="hover:text-white" href="<?= e(url('/page/terms')) ?>">Terms</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="border-t border-white/10">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 py-4 text-center text-xs text-slate-400">
-                © <?= date('Y') ?> Rasidul Tech Point — Dubai Imported | Authentic Used Laptops | v<?= e(\App\Support\Config::get('app.version')) ?>
-            </div>
+            <div class="foot-mark" aria-hidden="true">Rasidul Tech Point</div>
         </div>
     </footer>
 
+    <div class="tab-space"></div>
+    <nav class="tabbar" aria-label="Quick navigation">
+        <a class="tab" href="<?= e(url('/')) ?>">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>Home
+        </a>
+        <a class="tab" href="<?= e(url('/shop')) ?>">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>Laptops
+        </a>
+        <a class="tab" href="<?= e(url('/account/wishlist')) ?>">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>Wishlist
+            <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
+        </a>
+        <a class="tab" href="<?= e(url('/cart')) ?>">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>Cart
+            <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
+        </a>
+    </nav>
+
+    <script>
+        // Mobile nav drawer toggle.
+        document.addEventListener('click', function (e) {
+            var t = e.target.closest('[data-nav-toggle]');
+            if (!t) { return; }
+            var nav = document.querySelector('[data-nav-mobile]');
+            if (!nav) { return; }
+            var open = nav.classList.toggle('open');
+            t.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    </script>
     <script type="module" src="<?= e(url('assets/js/app.js')) ?>"></script>
 </body>
 </html>

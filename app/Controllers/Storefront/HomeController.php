@@ -30,8 +30,12 @@ final class HomeController
         $catalog = new CatalogRepository();
         $content = new ContentService();
 
-        // Real published product models with at least one available unit.
-        $featured = $catalog->publishedForStore(limit: 8);
+        // Real published product models with at least one available unit —
+        // one EXACT unit per model so each card shows real grade + price.
+        $featured = $catalog->featuredUnits(limit: 8);
+
+        // Categories that actually carry available stock.
+        $categories = $catalog->storeCategories();
 
         // Active brands — only those the store actually carries stock for.
         $brands = array_filter(
@@ -43,6 +47,9 @@ final class HomeController
         // to a sensible BDT default when the admin hasn't configured any.
         $budgetRanges = $this->budgetRanges();
 
+        // Live price bounds for the budget range bars (honest scale).
+        $priceBounds = $catalog->priceBounds();
+
         // CMS-managed FAQ entries (Prompt 36). Empty list is fine — the
         // view renders a tasteful "FAQ coming soon" placeholder.
         $faqs = $content->publishedFaqs();
@@ -50,8 +57,10 @@ final class HomeController
         return Response::html(View::render('storefront/home', [
             'pageTitle' => 'Home',
             'featured' => $featured,
+            'categories' => $categories,
             'brands' => $brands,
             'budgetRanges' => $budgetRanges,
+            'priceBounds' => $priceBounds,
             'faqs' => $faqs,
             // Trust / marketing blocks pulled from the CMS so the admin
             // can edit copy without touching code. Falls back to inline

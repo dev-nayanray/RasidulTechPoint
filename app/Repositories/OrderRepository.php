@@ -99,11 +99,14 @@ final class OrderRepository
         $stmt = $this->pdo->prepare(
             'SELECT o.*, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
                     c.address AS customer_address, c.city AS customer_city,
-                    u.name AS placed_by_name, au.name AS discount_authorizer_name
+                    u.name AS placed_by_name, au.name AS discount_authorizer_name,
+                    cp.code AS coupon_code, cp.discount_type AS coupon_type,
+                    cp.discount_value AS coupon_value
              FROM orders o
              JOIN customers c ON c.id = o.customer_id
              LEFT JOIN users u ON u.id = o.placed_by
              LEFT JOIN users au ON au.id = o.discount_authorized_by
+             LEFT JOIN coupons cp ON cp.id = o.coupon_id
              WHERE o.id = ?'
         );
         $stmt->execute([$id]);
@@ -129,6 +132,17 @@ final class OrderRepository
         );
         $payments->execute([$id]);
         $order['payments'] = $payments->fetchAll(PDO::FETCH_ASSOC);
+
+        // Coupon redemption record (if any). Discount_amount is the
+        // actual server-computed value applied at checkout.
+        $couponUsage = $this->pdo->prepare(
+            'SELECT cu.*, u.name AS applied_by_name
+             FROM coupon_usages cu
+             LEFT JOIN users u ON u.id = cu.applied_by
+             WHERE cu.order_id = ? LIMIT 1'
+        );
+        $couponUsage->execute([$id]);
+        $order['coupon_usage'] = $couponUsage->fetch(PDO::FETCH_ASSOC) ?: null;
 
         $order['status_history'] = $this->statusHistory($id);
         $order['fulfillment_notes'] = $this->fulfillmentNotes($id);

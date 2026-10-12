@@ -412,7 +412,16 @@ final class PosService
      * validation failure (units no longer available, payment rejected,
      * discount not authorized, etc.).
      *
-     * @param array{items:list<array{unit_id:int}>, discount:float, customer_id:int, payment_method:string, paid_amount:float, payment_reference?:?string} $cart
+     * Coupon handling: when $cart['coupon_code'] is provided, the
+     * server validates the coupon against the actual subtotal and the
+     * customer id (per-customer limit), recomputes the discount from
+     * the coupon definition, and passes the resulting
+     * {coupon_id, discount} pair to OrderService::createOrder, which
+     * records the redemption atomically. The coupon discount
+     * OVERRIDES any manual discount the cashier may have entered —
+     * only one of the two is allowed per sale.
+     *
+     * @param array{items:list<array{unit_id:int}>, discount:float, customer_id:int, payment_method:string, paid_amount:float, payment_reference?:?string, coupon_code?:?string} $cart
      */
     public function checkout(array $cart, int $cashierId, ?int $shiftId, ?int $discountAuthorizedBy): array
     {
@@ -435,12 +444,36 @@ final class PosService
         $paid = (float) ($cart['paid_amount'] ?? 0);
         $reference = $cart['payment_reference'] ?? null;
         $heldSaleId = isset($cart['held_sale_id']) ? (int) $cart['held_sale_id'] : null;
+        $couponCode = isset($cart['coupon_code']) ? trim((string) $cart['coupon_code']) : '';
 
         // Pre-flight: compute subtotal from current prices (server-side
         // always wins; the client's claimed prices are advisory). Then
         // enforce discount authorization against the actual subtotal.
         $subtotal = $this->computeSubtotal($unitIds);
-        $this->assertDiscountAuthorized($discount, $subtotal, $cashierId, $discountAuthorizedBy);
+
+        // Coupon: when supplied, the server recalculates the discount
+        // from the definition and uses that instead of any manual
+        // discount. The cashier cannot combine a coupon with a manual
+        // discount on the same sale.
+        $couponOption = null;
+        if ($couponCode !== '') {
+            $coupon = (new CouponService())->validateAndCompute(
+                $couponCode,
+                [
+                    'subtotal' => $subtotal,
+                    'unit_ids' => $unitIds,
+                ],
+                $customerId,
+            );
+            $couponOption = $coupon;
+            // Coupon overrides manual discount.
+            $discount = (float) $coupon['discount'];
+            // Manual-discount authorization no longer applies — the
+            // coupon's discount is server-trusted.
+            $discountAuthorizedBy = null;
+        } else {
+            $this->assertDiscountAuthorized($discount, $subtotal, $cashierId, $discountAuthorizedBy);
+        }
 
         $orderService = new OrderService();
         $order = $orderService->createOrder(
@@ -452,6 +485,7 @@ final class PosService
                 'discount' => $discount,
                 'discount_authorized_by' => $discountAuthorizedBy,
                 'notes' => $cart['notes'] ?? null,
+                'coupon' => $couponOption,
             ],
             'completed',
         );
@@ -474,6 +508,8 @@ final class PosService
             'method' => $method,
             'paid' => number_format($paid, 2, '.', ''),
             'shift_id' => $shiftId,
+            'coupon' => $couponOption['code'] ?? null,
+            'coupon_discount' => isset($couponOption['discount']) ? number_format((float) $couponOption['discount'], 2, '.', '') : null,
         ]);
 
         return [

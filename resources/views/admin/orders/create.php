@@ -23,7 +23,8 @@
                 'options' => ['pending' => 'Pending', 'confirmed' => 'Confirmed', 'processing' => 'Processing', 'completed' => 'Completed (POS sale)'],
                 'value' => old('status', 'pending'), 'errors' => $errors ?? [],
             ]) ?>
-            <?= \App\Support\View::component('field', ['name' => 'discount', 'label' => 'Discount (BDT)', 'value' => old('discount', '0.00'), 'errors' => $errors ?? []]) ?>
+            <?= \App\Support\View::component('field', ['name' => 'discount', 'label' => 'Discount (BDT)', 'value' => old('discount', '0.00'), 'errors' => $errors ?? [], 'help' => 'Ignored when a coupon code is supplied below.']) ?>
+            <?= \App\Support\View::component('field', ['name' => 'coupon_code', 'label' => 'Coupon code (optional)', 'value' => old('coupon_code'), 'errors' => $errors ?? [], 'help' => 'When supplied, the server recomputes the discount from the coupon definition and overrides the manual discount.']) ?>
         </div>
     </section>
 

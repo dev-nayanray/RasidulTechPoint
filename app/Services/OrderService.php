@@ -51,7 +51,13 @@ final class OrderService
      * Create an order for specific inventory units.
      *
      * @param int[] $unitIds
-     * @param array{discount?:float,notes?:string,discount_authorized_by?:int} $options
+     * @param array{
+     *   discount?:float, notes?:string, discount_authorized_by?:int,
+     *   coupon?:?array{coupon_id:int,discount:float}
+     * } $options
+     *   - coupon: optional pre-validated coupon + its server-computed discount.
+     *     When present, the coupon discount OVERRIDES any manual $options['discount']
+     *     and the redemption is recorded atomically inside this transaction.
      * @return array{id:int,reference:string,total:string}
      */
     public function createOrder(
@@ -89,7 +95,8 @@ final class OrderService
             sort($unitIds);
             $placeholders = implode(',', array_fill(0, count($unitIds), '?'));
             $stmt = $pdo->prepare(
-                "SELECT iu.id, iu.sku, iu.selling_price, iu.status, pm.name AS product_name
+                "SELECT iu.id, iu.sku, iu.selling_price, iu.status, pm.name AS product_name,
+                        iu.product_model_id, pm.category_id
                  FROM inventory_units iu
                  JOIN product_models pm ON pm.id = iu.product_model_id
                  WHERE iu.id IN ({$placeholders})
@@ -104,6 +111,8 @@ final class OrderService
 
             $subtotal = 0.0;
             $lines = [];
+            $productModelIds = [];
+            $categoryIds = [];
             foreach ($units as $unit) {
                 if (!in_array($unit['status'], ['available', 'reserved'], true)) {
                     throw new ValidationException([
@@ -118,9 +127,21 @@ final class OrderService
                     'sku' => $unit['sku'],
                     'unit_price' => $price,
                 ];
+                $productModelIds[] = (int) $unit['product_model_id'];
+                $categoryIds[] = (int) $unit['category_id'];
             }
 
-            $discount = (float) ($options['discount'] ?? 0);
+            // Coupon: when supplied, the server-recomputed discount overrides
+            // any manual discount. The actual redemption is recorded inside
+            // this same transaction (CouponService::recordRedemption locks
+            // the coupon row + re-validates eligibility + recomputes the
+            // value, so the client's claimed discount is never trusted).
+            $coupon = $options['coupon'] ?? null;
+            if ($coupon !== null && is_array($coupon) && (int) ($coupon['coupon_id'] ?? 0) > 0) {
+                $discount = (float) $coupon['discount'];
+            } else {
+                $discount = (float) ($options['discount'] ?? 0);
+            }
             if ($discount < 0 || $discount > $subtotal) {
                 throw new ValidationException(['discount' => 'Discount must be between 0 and the order subtotal.']);
             }
@@ -176,6 +197,24 @@ final class OrderService
                 $inventory->markSold($line['unit_id'], 'Sold on order ' . $reference, $staffUserId);
             }
 
+            // Record coupon redemption inside this same transaction.
+            // CouponService locks the coupon row, re-validates eligibility,
+            // recomputes the discount from the definition (client value
+            // is advisory only), inserts the coupon_usages row, and links
+            // the order to the coupon. Any failure rolls back the entire
+            // order — coupons are never partially applied.
+            if ($coupon !== null && is_array($coupon) && (int) ($coupon['coupon_id'] ?? 0) > 0) {
+                (new CouponService())->recordRedemption(
+                    $pdo,
+                    $orderId,
+                    $customerId,
+                    (int) $coupon['coupon_id'],
+                    (float) $coupon['discount'],
+                    $staffUserId,
+                    $subtotal,
+                );
+            }
+
             // Seed the status history with the initial transition so the
             // timeline has a "from nothing → pending/confirmed/..." row.
             $this->recordStatusHistory($pdo, $orderId, null, $initialStatus, $staffUserId, 'Order created');
@@ -185,6 +224,8 @@ final class OrderService
                 'channel' => $channel,
                 'total' => number_format($total, 2, '.', ''),
                 'units' => count($lines),
+                'coupon_id' => $coupon['coupon_id'] ?? null,
+                'coupon_discount' => isset($coupon['discount']) ? number_format((float) $coupon['discount'], 2, '.', '') : null,
             ]);
 
             return ['id' => $orderId, 'reference' => $reference, 'total' => number_format($total, 2, '.', '')];

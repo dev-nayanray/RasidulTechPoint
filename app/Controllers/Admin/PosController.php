@@ -220,6 +220,7 @@ final class PosController
         $cart['payment_reference'] = $payload['payment_reference'] ?? null;
         $cart['notes'] = $payload['notes'] ?? null;
         $cart['held_sale_id'] = isset($payload['held_sale_id']) ? (int) $payload['held_sale_id'] : null;
+        $cart['coupon_code'] = isset($payload['coupon_code']) ? trim((string) $payload['coupon_code']) : '';
 
         // If the cashier tried to apply a discount above the threshold,
         // they had to enter the authorizer confirmation. The server

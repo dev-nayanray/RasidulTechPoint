@@ -126,7 +126,7 @@ rasidul-tech-point/
 ├── resources/views/        # layouts, components, storefront/account/admin/errors
 ├── routes/web.php          # public / auth / customer / admin(perm-gated) groups
 ├── storage/                # logs, cache, sessions, private (outside public/)
-├── tests/                  # Unit / Feature / Security (92 tests)
+├── tests/                  # Unit / Feature / Security (658 tests / 19k assertions)
 └── bin/                    # migrate, seed, create-admin, test
 ```
 
@@ -136,7 +136,7 @@ auth/guest → permission) → controller → View render → Response send. Any
 exception is converted centrally into a proper status page or JSON error
 without leaking details in production.
 
-## 7. Database schema (25 tables)
+## 7. Database schema (29 migrations)
 
 **Identity & access:** `users`, `roles`, `permissions`, `user_roles`,
 `role_permissions`, `password_reset_tokens`, `login_attempts`, `audit_logs`
@@ -149,17 +149,30 @@ without leaking details in production.
 price, location, status machine), `stock_movements` (append-only history)
 
 **Sales:** `customers` (1:1 optional `users`), `orders` (non-sequential public
-`reference`), `order_items` (sale-time snapshots; unique `inventory_unit_id`
-makes double-selling structurally impossible), `payments`
+`reference`; nullable `coupon_id` links to applied coupon), `order_items` (sale-time
+snapshots; unique `inventory_unit_id` makes double-selling structurally
+impossible), `payments`
+
+**Coupons & promotions:** `coupons` (definition: code, discount type
+[fixed/percentage], value, validity window, usage limits, eligible
+products/categories, approval workflow), `coupon_target_products`,
+`coupon_target_categories` (eligibility junctions), `coupon_usages`
+(append-only redemption ledger — one row per order, unique on
+`(coupon_id, order_id)`)
+
+**Content (Prompt 36):** `content_blocks`, `banners`, `content_pages`, `faqs`,
+`seo_metadata` — editable HTML blocks/pages, image banners, FAQ entries, and
+per-page SEO metadata. Content management is separate from application
+configuration (the `settings` table).
 
 **System:** `migrations`
 
 Key constraints: all money columns are `DECIMAL(14,2)`; FKs with `RESTRICT`
-on audit-critical relations (units ↔ movements, order items ↔ units);
-unique SKU/serial/phone/email/slug/reference; `CHECK` constraints on money
-non-negativity; timestamps stored in UTC (`SET time_zone = '+00:00'` per
-connection); soft deletes only where justified (`users`, `customers`,
-`product_models`).
+on audit-critical relations (units ↔ movements, order items ↔ units,
+coupon_usages ↔ orders); unique SKU/serial/phone/email/slug/reference/coupon
+code; `CHECK` constraints on money non-negativity; timestamps stored in UTC
+(`SET time_zone = '+00:00'` per connection); soft deletes only where justified
+(`users`, `customers`, `product_models`).
 
 ## 8. Security baseline (implemented & tested)
 
@@ -188,7 +201,7 @@ See `docs/SECURITY.md` for the production deployment checklist.
 ## 9. Testing
 
 ```bash
-php bin/test.php          # everything (92 tests / ~1.4k assertions)
+php bin/test.php          # everything (658 tests / 19k assertions)
 php bin/test.php Auth     # filter by class/file substring
 ```
 
@@ -202,9 +215,13 @@ immediate effect of permission sync, mid-session deactivation); inventory
 append-only history, FK protection, competing reservations); orders
 (server-side totals, snapshots, non-sequential references, double-sell
 prevention, order/payment state separation, duplicate gateway references,
-cancel returns units, customer scoping); security (CSRF accept/reject, XSS
-escaping incl. view rendering, SQL-injection payloads, security headers,
-cookie flags, `.env.example` hygiene, nothing dangerous under `public/`).
+cancel returns units, customer scoping); coupons & promotions
+(CRUD, status lifecycle, approval workflow, eligibility — validity window,
+usage limits, minimum subtotal, product include/exclude, server-side
+recalculation, per-order uniqueness, stale-client discount rejection,
+POS checkout with coupon); security (CSRF accept/reject, XSS escaping incl.
+view rendering, SQL-injection payloads, security headers, cookie flags,
+`.env.example` hygiene, nothing dangerous under `public/`).
 
 The suite runs against a dedicated `rasidul_tech_point_test` database that is
 dropped and re-migrated automatically. MySQL/MariaDB must be reachable with
@@ -235,7 +252,6 @@ and no fake data suggests otherwise:
 - Warranty & repair tracking, delivery/courier management, CRM
 - Expenses module, full finance reports, exports (CSV/PDF)
 - Online checkout with payment gateway integration, delivery-address capture
-- Product image uploads (schema ready in `product_images`; MIME validation helper present)
 - Email transport beyond the log driver; background task runner
 - Bengali localization (font stack prepared)
 

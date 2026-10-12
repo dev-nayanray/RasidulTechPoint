@@ -182,6 +182,29 @@ final class CatalogRepository
 
     // ---- Categories ----------------------------------------------------------
 
+    /**
+     * Lightweight list of all published product models for picker UIs
+     * (coupon target picker, etc.). Excludes soft-deleted models.
+     *
+     * @return list<array<string,mixed>> each row: id, name, sku, brand_name
+     */
+    public function allModels(): array
+    {
+        return $this->pdo->query(
+            'SELECT pm.id, pm.name, b.name AS brand_name
+             FROM product_models pm
+             JOIN brands b ON b.id = pm.brand_id
+             WHERE pm.deleted_at IS NULL
+             ORDER BY pm.name'
+        )->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Alias of categories() — presentational convenience. */
+    public function allCategories(): array
+    {
+        return $this->categories();
+    }
+
     /** @return list<array<string,mixed>> */
     public function categories(bool $onlyActive = false): array
     {

@@ -63,6 +63,9 @@ const RTP_PERMISSIONS = [
     // Marketing & content
     'marketing.manage',
     'content.manage',
+    // Coupons & promotions
+    'coupons.manage',
+    'coupons.approve',
     // Notifications
     'notifications.view',
     // System
@@ -85,6 +88,7 @@ const RTP_ROLE_PERMISSIONS = [
         'payments.view', 'payments.manage', 'payments.refund', 'finance.view', 'expenses.manage',
         'warranty.manage', 'service.manage', 'delivery.manage', 'crm.view',
         'reports.view', 'reports.export', 'notifications.view',
+        'coupons.manage', 'coupons.approve',
     ],
     'sales_cashier' => [
         'dashboard.view', 'pos.access',
@@ -119,6 +123,7 @@ const RTP_ROLE_PERMISSIONS = [
         'dashboard.view',
         'products.view', 'products.create', 'products.update',
         'marketing.manage', 'content.manage',
+        'coupons.manage',
         'notifications.view',
     ],
     'customer' => [],
@@ -177,6 +182,7 @@ const RTP_ADMIN_NAV = [
     ],
     'Marketing' => [
         ['marketing.manage', 'Marketing & Content', '/admin/content', 'megaphone', true],
+        ['coupons.manage', 'Coupons & Promotions', '/admin/coupons', 'ticket', true],
     ],
     'Notifications' => [
         ['notifications.view', 'Notifications', '/admin/notifications', 'bell', true],

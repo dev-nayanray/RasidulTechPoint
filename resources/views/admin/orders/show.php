@@ -78,6 +78,12 @@ foreach ($order['payments'] as $p) {
                 <p class="flex justify-between text-slate-500"><span>Subtotal</span><span><?= money($order['subtotal']) ?></span></p>
                 <?php if ((float) $order['discount'] > 0): ?>
                     <p class="flex justify-between text-slate-500"><span>Discount</span><span class="text-green-700">-<?= money($order['discount']) ?></span></p>
+                    <?php if (!empty($order['coupon_usage'])): ?>
+                        <p class="flex justify-between text-xs text-slate-400">
+                            <span>Coupon <span class="font-mono"><?= e($order['coupon_code'] ?? '—') ?></span></span>
+                            <span><?= e($order['coupon_usage']['applied_by_name'] ?? 'System') ?> · <?= e(local_datetime($order['coupon_usage']['applied_at'], 'd M Y H:i')) ?></span>
+                        </p>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <p class="flex justify-between text-base font-bold text-slate-900"><span>Total</span><span><?= money($order['total']) ?></span></p>
                 <?php

@@ -117,6 +117,7 @@ final class OrderController
                 'discount' => 'nullable|decimal:2',
                 'notes' => 'nullable|string|max:500',
                 'units' => 'required|array',
+                'coupon_code' => 'nullable|string|max:64',
             ], [
                 'customer_id' => 'Customer',
                 'units' => 'Units',
@@ -137,13 +138,41 @@ final class OrderController
             return Response::redirect(url('/admin/orders/create'));
         }
 
+        // Coupon: when supplied, server-recalculates the discount from
+        // the coupon definition (overrides any manual $data['discount']).
+        $couponCode = trim((string) ($data['coupon_code'] ?? ''));
+        $couponOption = null;
+        try {
+            if ($couponCode !== '') {
+                // Compute subtotal from the actual unit prices.
+                $placeholders = implode(',', array_fill(0, count($unitIds), '?'));
+                $stmt = \App\Support\Database\Connection::pdo()->prepare(
+                    "SELECT COALESCE(SUM(selling_price), 0) FROM inventory_units WHERE id IN ({$placeholders})"
+                );
+                $stmt->execute($unitIds);
+                $subtotal = (float) $stmt->fetchColumn();
+                $couponOption = (new \App\Services\CouponService())->validateAndCompute(
+                    $couponCode,
+                    ['subtotal' => $subtotal, 'unit_ids' => $unitIds],
+                    (int) $data['customer_id'],
+                );
+            }
+        } catch (\App\Exceptions\ValidationException $e) {
+            flash_error(implode(' ', $e->errors));
+            return Response::redirect(url('/admin/orders/create'));
+        }
+
         try {
             $order = (new OrderService())->createOrder(
                 (int) $data['customer_id'],
                 $unitIds,
                 $data['channel'],
                 current_user_id(),
-                ['discount' => (float) ($data['discount'] ?? 0), 'notes' => $data['notes'] ?? null],
+                [
+                    'discount' => $couponOption === null ? (float) ($data['discount'] ?? 0) : 0,
+                    'notes' => $data['notes'] ?? null,
+                    'coupon' => $couponOption,
+                ],
                 $data['status']
             );
         } catch (\App\Exceptions\ValidationException $e) {

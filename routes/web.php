@@ -17,6 +17,7 @@ use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CashbookController;
 use App\Controllers\Admin\CrmController;
 use App\Controllers\Admin\ContentController;
+use App\Controllers\Admin\CouponController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\DeliveryController;
@@ -397,6 +398,23 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/content/faqs/{id}/delete', [ContentController::class, 'faqDelete'])->middleware('permission:content.manage');
     $router->get('/content/seo', [ContentController::class, 'seoIndex'])->middleware('permission:content.manage');
     $router->post('/content/seo', [ContentController::class, 'seoStore'])->middleware('permission:content.manage');
+
+    // Coupons & promotions (Prompt 37)
+    $router->get('/coupons', [CouponController::class, 'index'])->middleware('permission:coupons.manage');
+    $router->get('/coupons/create', [CouponController::class, 'create'])->middleware('permission:coupons.manage');
+    $router->post('/coupons', [CouponController::class, 'store'])->middleware('permission:coupons.manage');
+    $router->get('/coupons/{id}', [CouponController::class, 'show'])->middleware('permission:coupons.manage');
+    $router->get('/coupons/{id}/edit', [CouponController::class, 'edit'])->middleware('permission:coupons.manage');
+    $router->post('/coupons/{id}/update', [CouponController::class, 'update'])->middleware('permission:coupons.manage');
+    $router->post('/coupons/{id}/submit', [CouponController::class, 'submit'])->middleware('permission:coupons.manage');
+    $router->post('/coupons/{id}/approve', [CouponController::class, 'approve'])->middleware('permission:coupons.approve');
+    $router->post('/coupons/{id}/reject', [CouponController::class, 'reject'])->middleware('permission:coupons.approve');
+    $router->post('/coupons/{id}/pause', [CouponController::class, 'pause'])->middleware('permission:coupons.manage');
+    $router->post('/coupons/{id}/resume', [CouponController::class, 'resume'])->middleware('permission:coupons.manage');
+    $router->post('/coupons/{id}/archive', [CouponController::class, 'archive'])->middleware('permission:coupons.manage');
+    // Coupon preview is read-only; any authenticated staff can call it for live
+    // discount preview at POS/checkout. No permission beyond auth.
+    $router->post('/coupons/preview', [CouponController::class, 'preview']);
 
     // Business reports (Prompt 35)
     $router->get('/reports/inventory-valuation', [BusinessReportController::class, 'inventoryValuation'])->middleware('permission:reports.view');

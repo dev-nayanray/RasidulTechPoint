@@ -68,6 +68,7 @@ const RTP_PERMISSIONS = [
     'coupons.approve',
     // Notifications
     'notifications.view',
+    'notifications.manage',
     // System
     'settings.manage',
     'audit_logs.view',
@@ -87,7 +88,7 @@ const RTP_ROLE_PERMISSIONS = [
         'orders.view', 'orders.manage', 'customers.view', 'customers.manage',
         'payments.view', 'payments.manage', 'payments.refund', 'finance.view', 'expenses.manage',
         'warranty.manage', 'service.manage', 'delivery.manage', 'crm.view',
-        'reports.view', 'reports.export', 'notifications.view',
+        'reports.view', 'reports.export', 'notifications.view', 'notifications.manage',
         'coupons.manage', 'coupons.approve',
     ],
     'sales_cashier' => [
@@ -186,6 +187,7 @@ const RTP_ADMIN_NAV = [
     ],
     'Notifications' => [
         ['notifications.view', 'Notifications', '/admin/notifications', 'bell', true],
+        ['notifications.manage', 'Templates & Delivery', '/admin/notifications/templates', 'file-text', true],
     ],
     'Settings' => [
         ['settings.manage', 'Business Settings', '/admin/settings', 'settings', true],

@@ -527,6 +527,28 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/notifications/read-all', [NotificationController::class, 'markAllRead'])
         ->middleware('permission:notifications.view');
 
+    // Notification templates & delivery log (Prompt 38)
+    $router->get('/notifications/templates', [NotificationController::class, 'templateIndex'])
+        ->middleware('permission:notifications.manage');
+    $router->get('/notifications/templates/create', [NotificationController::class, 'templateCreate'])
+        ->middleware('permission:notifications.manage');
+    $router->post('/notifications/templates', [NotificationController::class, 'templateStore'])
+        ->middleware('permission:notifications.manage');
+    $router->get('/notifications/templates/{id}', [NotificationController::class, 'templateShow'])
+        ->middleware('permission:notifications.manage');
+    $router->get('/notifications/templates/{id}/edit', [NotificationController::class, 'templateEdit'])
+        ->middleware('permission:notifications.manage');
+    $router->post('/notifications/templates/{id}/update', [NotificationController::class, 'templateUpdate'])
+        ->middleware('permission:notifications.manage');
+    $router->post('/notifications/templates/{id}/toggle', [NotificationController::class, 'templateToggle'])
+        ->middleware('permission:notifications.manage');
+    $router->post('/notifications/templates/{id}/delete', [NotificationController::class, 'templateDelete'])
+        ->middleware('permission:notifications.manage');
+    $router->get('/notifications/deliveries', [NotificationController::class, 'deliveryIndex'])
+        ->middleware('permission:notifications.manage');
+    $router->post('/notifications/deliveries/retry', [NotificationController::class, 'retryFailed'])
+        ->middleware('permission:notifications.manage');
+
     // Settings & audit
     $router->get('/settings', [SettingsController::class, 'edit'])->middleware('permission:settings.manage');
     $router->post('/settings', [SettingsController::class, 'update'])->middleware('permission:settings.manage');

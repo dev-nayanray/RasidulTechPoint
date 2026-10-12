@@ -85,11 +85,13 @@ final class OrderService
 
         return Connection::transaction(function (PDO $pdo) use ($customerId, $unitIds, $channel, $staffUserId, $options, $initialStatus) {
             // Verify customer under the same lock scope.
-            $stmt = $pdo->prepare('SELECT id FROM customers WHERE id = ? AND deleted_at IS NULL FOR UPDATE');
+            $stmt = $pdo->prepare('SELECT id, name FROM customers WHERE id = ? AND deleted_at IS NULL FOR UPDATE');
             $stmt->execute([$customerId]);
-            if ($stmt->fetchColumn() === false) {
+            $customerRow = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($customerRow === false) {
                 throw new ValidationException(['customer_id' => 'Customer does not exist.']);
             }
+            $customerName = (string) $customerRow['name'];
 
             // Lock every unit in deterministic order (avoid deadlocks).
             sort($unitIds);
@@ -227,6 +229,19 @@ final class OrderService
                 'coupon_id' => $coupon['coupon_id'] ?? null,
                 'coupon_discount' => isset($coupon['discount']) ? number_format((float) $coupon['discount'], 2, '.', '') : null,
             ]);
+
+            // Event-based notification dispatch (Prompt 38). Fire-and-
+            // forget — failures inside NotificationService never break
+            // the order transaction because dispatch logs and absorbs
+            // them in notification_deliveries.
+            NotificationService::dispatch('order.created', [
+                'reference' => $reference,
+                'channel' => $channel,
+                'total' => number_format($total, 2, '.', ''),
+                'customer_name' => $customerName,
+                'order_id' => (string) $orderId,
+                'dedupe' => (string) $orderId,
+            ], $staffUserId);
 
             return ['id' => $orderId, 'reference' => $reference, 'total' => number_format($total, 2, '.', '')];
         });
@@ -369,9 +384,11 @@ final class OrderService
                 'SELECT COALESCE(SUM(amount), 0) FROM payments WHERE order_id = ' . $orderId . ' AND status = "completed"'
             )->fetchColumn();
 
-            $orderStmt = $pdo->prepare('SELECT total FROM orders WHERE id = ?');
+            $orderStmt = $pdo->prepare('SELECT reference, total FROM orders WHERE id = ?');
             $orderStmt->execute([$orderId]);
-            $total = (float) $orderStmt->fetchColumn();
+            $orderRow = $orderStmt->fetch(PDO::FETCH_ASSOC);
+            $total = (float) $orderRow['total'];
+            $orderReference = (string) $orderRow['reference'];
 
             $paymentStatus = 'unpaid';
             if ($paid >= $total - 0.001) {
@@ -388,6 +405,15 @@ final class OrderService
                 'evidence_ref' => mb_substr($evidenceRef, 0, 80),
                 'payment_status' => $paymentStatus,
             ]);
+
+            // Event-based notification (Prompt 38).
+            NotificationService::dispatch('payment.confirmed', [
+                'reference' => $orderReference,
+                'amount' => number_format((float) $payment['amount'], 2, '.', ''),
+                'method' => (string) $payment['method'],
+                'order_id' => (string) $orderId,
+                'dedupe' => (string) $paymentId,
+            ], $actorUserId);
 
             return ['payment_id' => $paymentId, 'payment_status' => $paymentStatus, 'paid' => $paid];
         });
@@ -406,7 +432,7 @@ final class OrderService
         }
 
         Connection::transaction(function (PDO $pdo) use ($orderId, $status, $actorUserId, $reason) {
-            $stmt = $pdo->prepare('SELECT status, payment_status FROM orders WHERE id = ? FOR UPDATE');
+            $stmt = $pdo->prepare('SELECT reference, status, payment_status FROM orders WHERE id = ? FOR UPDATE');
             $stmt->execute([$orderId]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($row === false) {
@@ -462,6 +488,16 @@ final class OrderService
                 'from' => $current,
                 'to' => $status,
             ]);
+
+            // Event-based notification (Prompt 38).
+            NotificationService::dispatch('order.status_updated', [
+                'reference' => (string) $row['reference'],
+                'from' => $current,
+                'to' => $status,
+                'reason' => $reason,
+                'order_id' => (string) $orderId,
+                'dedupe' => (string) $orderId . ':' . $status,
+            ], $actorUserId);
         });
     }
 

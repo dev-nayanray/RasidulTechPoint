@@ -155,6 +155,11 @@ final class RefundService
 
             $orderId = (int) $refund['order_id'];
 
+            // Fetch order reference for the notification context.
+            $refStmt = $pdo->prepare('SELECT reference FROM orders WHERE id = ?');
+            $refStmt->execute([$orderId]);
+            $orderReference = (string) $refStmt->fetchColumn();
+
             // Refund the linked payment (if any). If no payment is
             // linked, the cashier is recording an offline refund; the
             // refund record itself is the only trail.
@@ -213,6 +218,14 @@ final class RefundService
                 'amount' => $refund['amount'],
                 'inventory_action' => $refund['inventory_action'],
             ]);
+
+            // Event-based notification (Prompt 38).
+            \App\Services\NotificationService::dispatch('refund.processed', [
+                'reference' => $orderReference,
+                'amount' => (string) $refund['amount'],
+                'order_id' => (string) $orderId,
+                'dedupe' => (string) $refundId,
+            ], $processedBy);
 
             return [
                 'id' => $refundId,

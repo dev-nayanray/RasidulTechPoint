@@ -126,7 +126,7 @@ rasidul-tech-point/
 ├── resources/views/        # layouts, components, storefront/account/admin/errors
 ├── routes/web.php          # public / auth / customer / admin(perm-gated) groups
 ├── storage/                # logs, cache, sessions, private (outside public/)
-├── tests/                  # Unit / Feature / Security (658 tests / 19k assertions)
+├── tests/                  # Unit / Feature / Security (684 tests / 20k assertions)
 └── bin/                    # migrate, seed, create-admin, test
 ```
 
@@ -136,7 +136,7 @@ auth/guest → permission) → controller → View render → Response send. Any
 exception is converted centrally into a proper status page or JSON error
 without leaking details in production.
 
-## 7. Database schema (29 migrations)
+## 7. Database schema (30 migrations)
 
 **Identity & access:** `users`, `roles`, `permissions`, `user_roles`,
 `role_permissions`, `password_reset_tokens`, `login_attempts`, `audit_logs`
@@ -164,6 +164,13 @@ products/categories, approval workflow), `coupon_target_products`,
 `seo_metadata` — editable HTML blocks/pages, image banners, FAQ entries, and
 per-page SEO metadata. Content management is separate from application
 configuration (the `settings` table).
+
+**Notifications (Prompt 38):** `notification_templates` (event_key, title/body/link
+patterns with `{placeholder}` substitution, recipient resolver — by roles /
+permissions / specific users / all_staff, dedupe window), `notification_deliveries`
+(append-only delivery log + retry state: status delivered/failed/suppressed_duplicate/
+no_template/no_recipients, attempts counter, last_error). The existing `notifications`
+table is untouched; delivery log links to it via `notification_id`.
 
 **System:** `migrations`
 
@@ -201,7 +208,7 @@ See `docs/SECURITY.md` for the production deployment checklist.
 ## 9. Testing
 
 ```bash
-php bin/test.php          # everything (658 tests / 19k assertions)
+php bin/test.php          # everything (684 tests / 20k assertions)
 php bin/test.php Auth     # filter by class/file substring
 ```
 
@@ -219,9 +226,17 @@ cancel returns units, customer scoping); coupons & promotions
 (CRUD, status lifecycle, approval workflow, eligibility — validity window,
 usage limits, minimum subtotal, product include/exclude, server-side
 recalculation, per-order uniqueness, stale-client discount rejection,
-POS checkout with coupon); security (CSRF accept/reject, XSS escaping incl.
-view rendering, SQL-injection payloads, security headers, cookie flags,
-`.env.example` hygiene, nothing dangerous under `public/`).
+POS checkout with coupon); notifications & templates (templates CRUD, event-key
+uniqueness + format validation, dispatch with placeholder interpolation,
+recipient resolver — roles / permissions / specific_users / all_staff,
+dedupe within configurable window, delivery log entries, in-place retry
+for failed deliveries, privacy — markRead scoped by signed-in user,
+delivery-log viewer never exposes body content, permission enforcement on
+templates/deliveries endpoints, wired events — order.created /
+order.status_updated / payment.confirmed / refund.processed / coupon.redeemed);
+security (CSRF accept/reject, XSS escaping incl. view rendering,
+SQL-injection payloads, security headers, cookie flags, `.env.example`
+hygiene, nothing dangerous under `public/`).
 
 The suite runs against a dedicated `rasidul_tech_point_test` database that is
 dropped and re-migrated automatically. MySQL/MariaDB must be reachable with

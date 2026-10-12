@@ -559,6 +559,19 @@ final class CouponService
             'code' => (string) $coupon['code'],
             'discount' => number_format($recomputed, 2, '.', ''),
         ]);
+
+        // Event-based notification (Prompt 38). Fire-and-forget.
+        $refStmt = $pdo->prepare('SELECT reference FROM orders WHERE id = ?');
+        $refStmt->execute([$orderId]);
+        $orderReference = (string) $refStmt->fetchColumn();
+        NotificationService::dispatch('coupon.redeemed', [
+            'code' => (string) $coupon['code'],
+            'reference' => $orderReference,
+            'discount' => number_format($recomputed, 2, '.', ''),
+            'coupon_id' => (string) $couponId,
+            'order_id' => (string) $orderId,
+            'dedupe' => (string) $orderId,
+        ], $appliedBy);
     }
 
     // ---------------------------------------------------- HELPERS --

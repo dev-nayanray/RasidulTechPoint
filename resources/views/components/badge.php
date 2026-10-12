@@ -51,6 +51,17 @@ $map = [
     'all' => 'bg-slate-100 text-slate-700 border-slate-200',
     'categories' => 'bg-blue-50 text-blue-700 border-blue-200',
     'products' => 'bg-purple-50 text-purple-700 border-purple-200',
+    // notification delivery statuses
+    'delivered' => 'bg-green-50 text-green-700 border-green-200',
+    'failed' => 'bg-red-50 text-red-700 border-red-200',
+    'suppressed_duplicate' => 'bg-amber-50 text-amber-700 border-amber-200',
+    'no_template' => 'bg-slate-100 text-slate-500 border-slate-200',
+    'no_recipients' => 'bg-slate-100 text-slate-500 border-slate-200',
+    // notification recipient modes
+    'roles' => 'bg-blue-50 text-blue-700 border-blue-200',
+    'permissions' => 'bg-purple-50 text-purple-700 border-purple-200',
+    'specific_users' => 'bg-amber-50 text-amber-700 border-amber-200',
+    'all_staff' => 'bg-slate-100 text-slate-700 border-slate-200',
 ];
 $classes = $map[$label] ?? 'bg-slate-100 text-slate-700 border-slate-200';
 $text = str_replace('_', ' ', $label);

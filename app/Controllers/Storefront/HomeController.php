@@ -26,8 +26,10 @@ final class HomeController
         $faqs = $content->publishedFaqs();
 
         // home.php is self-contained (has its own DOCTYPE, header, footer,
-        // and inline CSS). Render WITHOUT a layout to avoid double header/footer.
-        return Response::html(View::render('storefront/home', [
+        // and inline CSS). Use View::partial() (NOT View::render) to avoid
+        // layout wrapping — View::render(layout: null) STILL wraps because
+        // the ??= operator treats null as "unset" and assigns the default.
+        return Response::html(View::partial('storefront/home', [
             'pageTitle' => 'Home',
             'featured' => $featured,
             'brands' => $brands,
@@ -35,7 +37,7 @@ final class HomeController
             'faqs' => $faqs,
             'metaTitle' => 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops',
             'metaDescription' => 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.',
-        ], layout: null));
+        ]));
     }
 
     private function budgetRanges(): array

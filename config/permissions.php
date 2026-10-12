@@ -160,6 +160,7 @@ const RTP_ADMIN_NAV = [
     ],
     'Warranty & Service' => [
         ['warranty.manage', 'Warranty & Repairs', '/admin/warranty', 'shield', true],
+        ['service.manage', 'Service Jobs', '/admin/service', 'wrench', true],
     ],
     'Delivery' => [
         ['delivery.manage', 'Courier & Delivery', '/admin/delivery', 'map-pin', true],

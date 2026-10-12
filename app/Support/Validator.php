@@ -208,7 +208,8 @@ final class Validator
             'cashier_shifts', 'held_sales', 'payment_methods_catalog', 'reconciliation_batches',
             'invoices', 'refunds', 'order_corrections', 'order_cancellations',
             'couriers', 'delivery_zones', 'shipments',
-            'warranty_policies', 'warranty_registrations', 'warranty_claims', 'warranty_claim_history'];
+            'warranty_policies', 'warranty_registrations', 'warranty_claims', 'warranty_claim_history',
+            'service_jobs', 'service_notes', 'service_parts', 'service_history'];
         if (!in_array($table, $allowed, true)) {
             throw new \RuntimeException("unique rule not allowed for table {$table}");
         }
@@ -232,7 +233,8 @@ final class Validator
             'payment_methods_catalog', 'reconciliation_batches',
             'invoices', 'refunds', 'order_corrections', 'order_cancellations',
             'couriers', 'delivery_zones', 'shipments',
-            'warranty_policies', 'warranty_registrations', 'warranty_claims', 'warranty_claim_history'];
+            'warranty_policies', 'warranty_registrations', 'warranty_claims', 'warranty_claim_history',
+            'service_jobs', 'service_notes', 'service_parts', 'service_history'];
         if (!in_array($table, $allowed, true)) {
             throw new \RuntimeException("exists rule not allowed for table {$table}");
         }

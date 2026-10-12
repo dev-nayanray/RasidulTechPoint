@@ -28,6 +28,7 @@ use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\PurchaseOrderController;
 use App\Controllers\Admin\PosController;
 use App\Controllers\Admin\RoleController;
+use App\Controllers\Admin\ServiceController;
 use App\Controllers\Admin\SettingsController;
 use App\Controllers\Admin\SupplierController;
 use App\Controllers\Admin\UserController;
@@ -368,6 +369,22 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // Service jobs (Prompt 28)
+    $router->get('/service', [ServiceController::class, 'index'])->middleware('permission:service.manage');
+    $router->get('/service/jobs', [ServiceController::class, 'jobIndex'])->middleware('permission:service.manage');
+    $router->get('/service/jobs/create', [ServiceController::class, 'jobCreateForm'])->middleware('permission:service.manage');
+    $router->post('/service/jobs', [ServiceController::class, 'jobStore'])->middleware('permission:service.manage');
+    $router->get('/service/jobs/{id}', [ServiceController::class, 'jobShow'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/assign', [ServiceController::class, 'jobAssign'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/diagnose', [ServiceController::class, 'jobDiagnose'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/notes', [ServiceController::class, 'jobAddNote'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/parts', [ServiceController::class, 'jobAddPart'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/labor', [ServiceController::class, 'jobSetLabor'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/transition', [ServiceController::class, 'jobTransition'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/quality-check', [ServiceController::class, 'jobQualityCheck'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/close', [ServiceController::class, 'jobClose'])->middleware('permission:service.manage');
+    $router->post('/service/jobs/{id}/cancel', [ServiceController::class, 'jobCancel'])->middleware('permission:service.manage');
 
     // Notifications
     $router->get('/notifications', [NotificationController::class, 'index'])

@@ -30,6 +30,7 @@ use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\PurchaseOrderController;
 use App\Controllers\Admin\PosController;
+use App\Controllers\Admin\ProfitController;
 use App\Controllers\Admin\ReturnController;
 use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\ServiceController;
@@ -373,6 +374,11 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // COGS & profit (Prompt 33)
+    $router->get('/profit', [ProfitController::class, 'dashboard'])->middleware('permission:finance.view');
+    $router->get('/profit/cogs', [ProfitController::class, 'cogsReport'])->middleware('permission:finance.view');
+    $router->get('/profit/pnl', [ProfitController::class, 'profitAndLoss'])->middleware('permission:finance.view');
 
     // Cashbook & balances (Prompt 32)
     $router->get('/cashbook', [CashbookController::class, 'index'])->middleware('permission:finance.view');

@@ -17,8 +17,11 @@ $startsAt = $isEdit ? (substr((string) ($coupon['starts_at'] ?? ''), 0, 16)) : (
 $endsAt = $isEdit ? (substr((string) ($coupon['ends_at'] ?? ''), 0, 16)) : ($coupon['ends_at'] ?? old('ends_at', ''));
 $usageLimit = $isEdit ? ($coupon['usage_limit'] ?? '') : ($coupon['usage_limit'] ?? old('usage_limit', ''));
 $usagePerCustomer = $isEdit ? ($coupon['usage_limit_per_customer'] ?? 1) : ($coupon['usage_limit_per_customer'] ?? old('usage_limit_per_customer', 1));
-$appliesTo = $isEdit ? ($coupon['applies_to'] ?? 'all') : ($coupon['applies_to'] ?? old('applies_to', 'all'));
-$eligibilityMode = $isEdit ? ($coupon['eligibility_mode'] ?? 'include') : ($coupon['eligibility_mode'] ?? old('eligibility_mode', 'include'));
+// IMPORTANT: do not name these "appliesTo" / "eligibilityMode" — those names
+// already hold the full option arrays passed from the controller. Renaming
+// to *Value avoids clobbering the foreach loops below.
+$appliesToValue = $isEdit ? ($coupon['applies_to'] ?? 'all') : ($coupon['applies_to'] ?? old('applies_to', 'all'));
+$eligibilityModeValue = $isEdit ? ($coupon['eligibility_mode'] ?? 'include') : ($coupon['eligibility_mode'] ?? old('eligibility_mode', 'include'));
 
 $selectedProductIds = $isEdit ? array_column($coupon['target_products'] ?? [], 'id') : (array) (old('target_product_ids', []));
 $selectedCategoryIds = $isEdit ? array_column($coupon['target_categories'] ?? [], 'id') : (array) (old('target_category_ids', []));
@@ -63,7 +66,7 @@ $selectedCategoryIds = $isEdit ? array_column($coupon['target_categories'] ?? []
         <label for="field-applies_to" class="block text-sm font-medium text-slate-700">Applies to</label>
         <select id="field-applies_to" name="applies_to" class="input" data-coupon-applies>
             <?php foreach ($appliesTo as $a): ?>
-                <option value="<?= e($a) ?>" <?= $a === $appliesTo ? 'selected' : '' ?>><?= e(ucfirst($a)) ?></option>
+                <option value="<?= e($a) ?>" <?= $a === $appliesToValue ? 'selected' : '' ?>><?= e(ucfirst($a)) ?></option>
             <?php endforeach; ?>
         </select>
     </div>
@@ -71,7 +74,7 @@ $selectedCategoryIds = $isEdit ? array_column($coupon['target_categories'] ?? []
         <label for="field-eligibility_mode" class="block text-sm font-medium text-slate-700">Eligibility mode</label>
         <select id="field-eligibility_mode" name="eligibility_mode" class="input">
             <?php foreach ($eligibilityModes as $m): ?>
-                <option value="<?= e($m) ?>" <?= $m === $eligibilityMode ? 'selected' : '' ?>><?= e(ucfirst($m)) ?></option>
+                <option value="<?= e($m) ?>" <?= $m === $eligibilityModeValue ? 'selected' : '' ?>><?= e(ucfirst($m)) ?></option>
             <?php endforeach; ?>
         </select>
         <p class="text-xs text-slate-500">Include = coupon applies ONLY to listed items. Exclude = coupon applies to everything EXCEPT listed items.</p>

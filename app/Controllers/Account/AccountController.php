@@ -454,9 +454,13 @@ final class AccountController
     // ====== Helpers ======
 
     /**
-     * Resolve the authenticated user's customer record. Throws 403
-     * if the user has no linked customer row (shouldn't happen for
-     * customer-role users, but guards against edge cases).
+     * Resolve the authenticated user's customer record. If the user has
+     * no linked customer row (e.g. created via bin/create-admin.php or
+     * by an admin via staff-user management), auto-create a minimal
+     * customer profile so they can access the storefront account area
+     * without a 403. The auto-creation uses the user's name + email
+     * from the users table; the phone defaults to a placeholder that
+     * the customer can update in their profile.
      */
     private function requireCustomer(): array
     {
@@ -464,9 +468,40 @@ final class AccountController
         if ($userId === 0) {
             throw new ForbiddenException('You must be signed in to access this area.');
         }
-        $customer = (new CustomerRepository())->findByUserId($userId);
+        $repo = new CustomerRepository();
+        $customer = $repo->findByUserId($userId);
         if ($customer === null) {
-            throw new ForbiddenException('No customer profile linked to your account. Please contact support.');
+            // Auto-create a customer profile linked to this user.
+            // This handles admin-created users who also want to shop.
+            $user = current_user();
+            $name = $user['name'] ?? 'Customer';
+            $email = $user['email'] ?? '';
+            $phone = '+8801' . random_int(10000000, 99999999);
+            try {
+                $customerId = $repo->create([
+                    'name' => $name,
+                    'phone' => $phone,
+                    'email' => $email,
+                    'address' => null,
+                    'city' => null,
+                    'account_status' => 'active',
+                ], $userId);
+                $customer = $repo->find($customerId);
+            } catch (\Throwable $e) {
+                // If the phone collides (unlikely with random), try once more.
+                $customerId = $repo->create([
+                    'name' => $name,
+                    'phone' => '+8801' . random_int(10000000, 99999999),
+                    'email' => $email,
+                    'address' => null,
+                    'city' => null,
+                    'account_status' => 'active',
+                ], $userId);
+                $customer = $repo->find($customerId);
+            }
+            if ($customer === null) {
+                throw new ForbiddenException('Could not create a customer profile for your account. Please contact support.');
+            }
         }
         return $customer;
     }

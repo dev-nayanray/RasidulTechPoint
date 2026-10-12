@@ -534,29 +534,29 @@ final class HttpAuthTest extends TestCase
     {
         $this->makeUser('http-dup@test.local', 'Correct-Horse-1', ['customer']);
 
-        // RegisterController lets ValidationException bubble up — duplicate email
-        // fails the `unique:users,email` rule and surfaces as a 422.
-        $this->assertThrows(\App\Exceptions\ValidationException::class, function () {
-            $this->router()->dispatch(
-                Request::synthetic('POST', '/register', [], $this->withCsrf([
-                    'name' => 'Duplicate',
-                    'email' => 'http-dup@test.local',
-                    'phone' => '+8801799000001',
-                    'password' => 'New-Customer-1',
-                    'password_confirmation' => 'New-Customer-1',
-                ])),
-                $this->resolver()
-            );
-        });
+        // RegisterController catches ValidationException and re-renders
+        // the form with inline errors at 422 — no exception thrown.
+        $r = $this->router()->dispatch(
+            Request::synthetic('POST', '/register', [], $this->withCsrf([
+                'name' => 'Duplicate',
+                'email' => 'http-dup@test.local',
+                'phone' => '+8801799000001',
+                'password' => 'New-Customer-1',
+                'password_confirmation' => 'New-Customer-1',
+            ])),
+            $this->resolver()
+        );
+        $this->assertSame(422, $r->status(), 'duplicate email → 422 with form');
+        $this->assertStringContainsString('already in use', $r->body(), 'inline error shown');
     }
 
     public function testPostRegisterRejectsMissingFields(): void
     {
-        $this->assertThrows(\App\Exceptions\ValidationException::class, function () {
-            $this->router()->dispatch(
-                Request::synthetic('POST', '/register', [], $this->withCsrf([])),
-                $this->resolver()
-            );
-        }, 'an empty POST body must be rejected by the validator');
+        $r = $this->router()->dispatch(
+            Request::synthetic('POST', '/register', [], $this->withCsrf([])),
+            $this->resolver()
+        );
+        $this->assertSame(422, $r->status(), 'empty POST → 422 with form');
+        $this->assertStringContainsString('Please fix', $r->body(), 'error summary shown');
     }
 }

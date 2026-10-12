@@ -152,12 +152,14 @@ final class CustomerPanelTest extends TestCase
         $this->assertStringContainsString('/login', $r->headers()['Location'] ?? '');
     }
 
-    public function testTechnicianCannotAccessCustomerAccount(): void
+    public function testTechnicianCanAccessCustomerAccountWithAutoProfile(): void
     {
+        // Technicians (and other staff) may also shop — if they have no
+        // customer profile, one is auto-created on first access to /account.
         $techId = $this->makeTechUser('cp-tech@test.local');
-        $this->assertThrows(ForbiddenException::class, function () use ($techId) {
-            $this->dispatchAs($techId, 'GET', '/account');
-        }, 'technician (no customer profile) blocked from /account');
+        $r = $this->dispatchAs($techId, 'GET', '/account');
+        $this->assertSame(200, $r->status(), 'technician can access /account (auto-profile created)');
+        $this->assertStringContainsString('Hello', $r->body(), 'dashboard renders');
     }
 
     // ====== 3. Profile updates + password changes ======

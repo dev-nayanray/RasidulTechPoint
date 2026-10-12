@@ -22,16 +22,8 @@ final class HomeController
 {
     public function index(): Response
     {
-        // Serve the static homepage HTML directly when it exists.
-        $htmlFile = BASE_PATH . '/public/homepage.html';
-        if (is_file($htmlFile)) {
-            $html = file_get_contents($htmlFile);
-            return Response::html($html)
-                ->header('Content-Type', 'text/html; charset=UTF-8')
-                ->header('Cache-Control', 'public, max-age=300');
-        }
-
-        // Fallback to the default PHP-rendered storefront homepage.
+        // Always render the dynamic PHP view — it pulls real products
+        // from the database + has the complete design CSS inline.
         $catalog = new CatalogRepository();
         $content = new ContentService();
 

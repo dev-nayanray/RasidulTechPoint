@@ -27,6 +27,7 @@ use App\Controllers\Admin\ProductImageController;
 use App\Controllers\Admin\ProductModelController;
 use App\Controllers\Admin\PurchaseOrderController;
 use App\Controllers\Admin\PosController;
+use App\Controllers\Admin\ReturnController;
 use App\Controllers\Admin\RoleController;
 use App\Controllers\Admin\ServiceController;
 use App\Controllers\Admin\SettingsController;
@@ -369,6 +370,19 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // Returns & exchanges (Prompt 29)
+    $router->get('/returns', [ReturnController::class, 'index'])->middleware('permission:orders.view');
+    $router->get('/returns/list', [ReturnController::class, 'list'])->middleware('permission:orders.view');
+    $router->get('/returns/{id}', [ReturnController::class, 'show'])->middleware('permission:orders.view');
+    $router->get('/returns/create/{orderId}', [ReturnController::class, 'createForm'])->middleware('permission:orders.manage');
+    $router->post('/returns', [ReturnController::class, 'store'])->middleware('permission:orders.manage');
+    $router->post('/returns/{id}/approve', [ReturnController::class, 'approve'])->middleware('permission:orders.manage');
+    $router->post('/returns/{id}/reject', [ReturnController::class, 'reject'])->middleware('permission:orders.manage');
+    $router->post('/returns/{id}/receive', [ReturnController::class, 'receive'])->middleware('permission:orders.manage');
+    $router->post('/returns/{id}/inspect', [ReturnController::class, 'inspect'])->middleware('permission:orders.manage');
+    $router->post('/returns/{id}/complete', [ReturnController::class, 'complete'])->middleware('permission:orders.manage');
+    $router->post('/returns/{id}/cancel', [ReturnController::class, 'cancel'])->middleware('permission:orders.manage');
 
     // Service jobs (Prompt 28)
     $router->get('/service', [ServiceController::class, 'index'])->middleware('permission:service.manage');

@@ -189,6 +189,7 @@ const RTP_ADMIN_NAV = [
     'Marketing' => [
         ['marketing.manage', 'Marketing & Content', '/admin/content', 'megaphone', true],
         ['coupons.manage', 'Coupons & Promotions', '/admin/coupons', 'ticket', true],
+        ['content.manage', 'Hero Slider', '/admin/hero-slides', 'layout', true],
     ],
     'Notifications' => [
         ['notifications.view', 'Notifications', '/admin/notifications', 'bell', true],

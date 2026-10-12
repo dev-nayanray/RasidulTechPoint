@@ -24,6 +24,7 @@ use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\DeliveryController;
 use App\Controllers\Admin\ExpenseController;
 use App\Controllers\Admin\FinancialReportController;
+use App\Controllers\Admin\HeroSlideController;
 use App\Controllers\Admin\InspectionController;
 use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\InvoiceRefundController;
@@ -465,6 +466,18 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     // Coupon preview is read-only; any authenticated staff can call it for live
     // discount preview at POS/checkout. No permission beyond auth.
     $router->post('/coupons/preview', [CouponController::class, 'preview']);
+
+    // Hero slides (ZCODE Master Prompt — premium full-width animated slider)
+    $router->get('/hero-slides', [HeroSlideController::class, 'index'])->middleware('permission:content.manage');
+    $router->get('/hero-slides/create', [HeroSlideController::class, 'create'])->middleware('permission:content.manage');
+    $router->post('/hero-slides', [HeroSlideController::class, 'store'])->middleware('permission:content.manage');
+    $router->get('/hero-slides/{id}', [HeroSlideController::class, 'show'])->middleware('permission:content.manage');
+    $router->get('/hero-slides/{id}/edit', [HeroSlideController::class, 'edit'])->middleware('permission:content.manage');
+    $router->post('/hero-slides/{id}/update', [HeroSlideController::class, 'update'])->middleware('permission:content.manage');
+    $router->post('/hero-slides/{id}/toggle', [HeroSlideController::class, 'toggle'])->middleware('permission:content.manage');
+    $router->post('/hero-slides/{id}/duplicate', [HeroSlideController::class, 'duplicate'])->middleware('permission:content.manage');
+    $router->post('/hero-slides/{id}/delete', [HeroSlideController::class, 'delete'])->middleware('permission:content.manage');
+    $router->post('/hero-slides/reorder', [HeroSlideController::class, 'reorder'])->middleware('permission:content.manage');
 
     // Business reports (Prompt 35)
     $router->get('/reports/inventory-valuation', [BusinessReportController::class, 'inventoryValuation'])->middleware('permission:reports.view');

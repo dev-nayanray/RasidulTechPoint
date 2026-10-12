@@ -168,6 +168,44 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
   </div>
 </header>
 
+<?php if (!empty($heroSlides)): ?>
+<div class="hero-slider" data-hero-slider data-duration="<?= (int)($heroSlides[0]['slide_duration'] ?? 5000) ?>" data-autorotate="<?= (int)($heroSlides[0]['auto_rotate'] ?? 1) ?>">
+  <div class="hs-track">
+    <?php foreach ($heroSlides as $i => $slide): ?>
+    <div class="hs-slide hs-anim-<?= e($slide['animation_intensity'] ?? 'normal') ?>" style="background:<?= e($slide['bg_color']) ?>;color:<?= e($slide['text_color']) ?>" role="group" aria-label="<?= e($slide['accessibility_desc'] ?? $slide['headline']) ?>">
+      <?php if (!empty($slide['desktop_image'])): ?>
+        <img class="hs-bg-img" src="<?= e(url($slide['desktop_image'])) ?>" alt="<?= e($slide['image_alt'] ?? '') ?>" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>" width="1920" height="520">
+        <div class="hs-overlay" style="background:linear-gradient(90deg,<?= e($slide['bg_color']) ?>cc,<?= e($slide['bg_color']) ?>33)"></div>
+      <?php endif; ?>
+      <div class="wrap" style="position:relative;z-index:2;width:100%;display:flex;align-items:center;min-height:inherit">
+        <div class="hs-content <?= e($slide['content_position'] ?? 'left') ?>">
+          <?php if (!empty($slide['eyebrow'])): ?><span class="hs-eyebrow"><?= e($slide['eyebrow']) ?></span><?php endif; ?>
+          <h1 class="hs-headline"><?= e($slide['headline']) ?><?php if (!empty($slide['highlight_phrase'])): ?> <span class="hs-highlight"><?= e($slide['highlight_phrase']) ?></span><?php endif; ?></h1>
+          <?php if (!empty($slide['description'])): ?><p class="hs-desc"><?= e($slide['description']) ?></p><?php endif; ?>
+          <div class="hs-ctas">
+            <a class="btn btn-primary" href="<?= e(url($slide['cta1_url'])) ?>"><?= e($slide['cta1_label']) ?></a>
+            <?php if (!empty($slide['cta2_label'])): ?><a class="btn btn-onnavy" href="<?= e(url($slide['cta2_url'] ?? '/shop')) ?>"><?= e($slide['cta2_label']) ?></a><?php endif; ?>
+          </div>
+        </div>
+      </div>
+      <?php if (!empty($slide['product_image'])): ?><img class="hs-product-img <?= e($slide['image_position'] ?? 'right') ?>" src="<?= e(url($slide['product_image'])) ?>" alt="<?= e($slide['image_alt'] ?? '') ?>" loading="lazy"><?php endif; ?>
+    </div>
+    <?php endforeach; ?>
+  </div>
+  <?php if ((int)($heroSlides[0]['show_nav'] ?? 1) === 1 && count($heroSlides) > 1): ?>
+    <button class="hs-nav prev" aria-label="Previous slide" data-hs-prev><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M15 6l-6 6 6 6"></path></svg></button>
+    <button class="hs-nav next" aria-label="Next slide" data-hs-next><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M9 6l6 6-6 6"></path></svg></button>
+  <?php endif; ?>
+  <?php if ((int)($heroSlides[0]['show_pagination'] ?? 1) === 1 && count($heroSlides) > 1): ?>
+    <div class="hs-dots" data-hs-dots>
+      <?php foreach ($heroSlides as $i => $_): ?><button class="hs-dot <?= $i === 0 ? 'active' : '' ?>" data-hs-dot="<?= $i ?>" aria-label="Slide <?= $i + 1 ?>"></button><?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+  <?php if ((int)($heroSlides[0]['auto_rotate'] ?? 1) === 1 && count($heroSlides) > 1): ?>
+    <div class="hs-progress"><div class="hs-progress-bar" data-hs-progress></div></div>
+  <?php endif; ?>
+</div>
+<?php else: ?>
 <section class="hero">
   <div class="wrap">
     <div class="hero-in">
@@ -206,19 +244,12 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
             <path class="lp-keys" d="M52 158h216M48 165h224M45 172h230"></path>
           </svg>
         </div>
-        <?php if (!empty($featured)): ?>
-        <div class="tag">
-          <span class="mono">Featured unit</span>
-          <b><?= e($featured[0]['brand_name'] . ' ' . $featured[0]['name']) ?></b>
-          <span class="sp"><?= e($featured[0]['processor'] ?? '') ?></span>
-          <span class="price"><?= $featured[0]['from_price'] !== null ? money($featured[0]['from_price']) : '—' ?></span>
-        </div>
-        <?php endif; ?>
         <p class="art-note">Illustration. Photos of each exact unit replace this on the live store.</p>
       </div>
     </div>
   </div>
 </section>
+<?php endif; ?>
 
 <section class="sec" id="categories">
   <div class="wrap">
@@ -570,138 +601,110 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
   // Mobile nav drawer toggle.
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-nav-toggle]');
-    if (!t) { return; }
-    var nav = document.querySelector('[data-nav-mobile]');
-    if (!nav) { return; }
-    var open = nav.classList.toggle('open');
-    t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (t) { var n = document.querySelector('[data-nav-mobile]'); if (n) { var o = n.classList.toggle('open'); t.setAttribute('aria-expanded', o?'true':'false'); } }
   });
 
-  // Dropdown panels (account, wishlist, cart).
+  // Dropdown panels.
   document.addEventListener('click', function (e) {
-    var toggle = e.target.closest('[data-dd-toggle]');
-    // Close all open panels first
-    document.querySelectorAll('.dd-panel.open').forEach(function (p) {
-      if (!toggle || p.id !== toggle.getAttribute('data-dd-toggle')) {
-        p.classList.remove('open');
-      }
-    });
-    if (toggle) {
-      e.preventDefault();
-      var panel = document.getElementById(toggle.getAttribute('data-dd-toggle'));
-      if (panel) { panel.classList.toggle('open'); }
-    }
+    var tg = e.target.closest('[data-dd-toggle]');
+    document.querySelectorAll('.dd-panel.open').forEach(function (p) { if (!tg || p.id !== tg.getAttribute('data-dd-toggle')) p.classList.remove('open'); });
+    if (tg) { e.preventDefault(); var p = document.getElementById(tg.getAttribute('data-dd-toggle')); if (p) p.classList.toggle('open'); }
   });
 
   // AJAX live search.
   (function () {
     var input = document.querySelector('[data-search-input]');
-    var dropdown = document.querySelector('[data-sugg-dropdown]');
-    if (!input || !dropdown) return;
-    var timer = null;
-    var lastQ = '';
-
-    function renderResults(data) {
-      if (!data.results || data.results.length === 0) {
-        dropdown.innerHTML = '<div class="s-empty">No laptops found. Try searching by brand like Dell, HP, Lenovo.</div>';
-      } else {
-        var html = data.results.map(function (r) {
-          return '<a class="s-item" href="' + r.url + '">' +
-            '<span class="s-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg></span>' +
-            '<div class="s-info"><div class="s-name">' + escapeHtml(r.brand + ' ' + r.name) + '</div>' +
-            '<div class="s-meta">' + escapeHtml(r.processor) + (r.ram ? ' · ' + escapeHtml(r.ram) : '') + (r.units > 0 ? ' · In stock' : '') + '</div></div>' +
-            '<span class="s-price">' + escapeHtml(r.price) + '</span></a>';
-        }).join('');
-        if (data.more) {
-          html += '<a class="s-more" href="' + data.search_url + '">See all results →</a>';
-        }
-        dropdown.innerHTML = html;
-      }
-      dropdown.classList.add('open');
-    }
-
-    function escapeHtml(s) {
-      var d = document.createElement('div');
-      d.textContent = s || '';
-      return d.innerHTML;
-    }
-
+    var dd = document.querySelector('[data-sugg-dropdown]');
+    if (!input || !dd) return;
+    var timer = null, lastQ = '';
+    function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
     input.addEventListener('input', function () {
       var q = input.value.trim();
-      if (q.length < 2) {
-        dropdown.classList.remove('open');
-        lastQ = '';
-        return;
-      }
-      if (q === lastQ) return;
-      lastQ = q;
+      if (q.length < 2) { dd.classList.remove('open'); lastQ=''; return; }
+      if (q === lastQ) return; lastQ = q;
       clearTimeout(timer);
       timer = setTimeout(function () {
-        fetch('<?= e(url('/search/suggest')) ?>?q=' + encodeURIComponent(q))
-          .then(function (r) { return r.json(); })
-          .then(renderResults)
-          .catch(function () { dropdown.classList.remove('open'); });
+        fetch('<?= e(url('/search/suggest')) ?>?q=' + encodeURIComponent(q)).then(function(r){return r.json()}).then(function(data){
+          if (!data.results || data.results.length === 0) { dd.innerHTML = '<div class="s-empty">No laptops found. Try Dell, HP, Lenovo.</div>'; }
+          else { dd.innerHTML = data.results.map(function(r){return '<a class="s-item" href="'+r.url+'"><span class="s-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg></span><div class="s-info"><div class="s-name">'+esc(r.brand+' '+r.name)+'</div><div class="s-meta">'+esc(r.processor)+(r.ram?' · '+esc(r.ram):'')+(r.units>0?' · In stock':'')+'</div></div><span class="s-price">'+esc(r.price)+'</span></a>'}).join('') + (data.more?'<a class="s-more" href="'+data.search_url+'">See all results →</a>':''); }
+          dd.classList.add('open');
+        }).catch(function(){ dd.classList.remove('open'); });
       }, 250);
     });
-
-    // Close on outside click
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.search')) {
-        dropdown.classList.remove('open');
-      }
-    });
-
-    // Close on Escape
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        dropdown.classList.remove('open');
-        input.blur();
-      }
-    });
+    document.addEventListener('click', function(e){ if(!e.target.closest('.search')) dd.classList.remove('open'); });
+    input.addEventListener('keydown', function(e){ if(e.key==='Escape'){dd.classList.remove('open');input.blur();} });
   })();
 
-  // Compare bar.
+  // Premium Hero Slider.
   (function () {
-    var compareItems = [];
-    var MAX = 2;
-    var bar = document.querySelector('[data-cmp-bar]');
-    if (!bar) return;
+    var slider = document.querySelector('[data-hero-slider]');
+    if (!slider) return;
+    var track = slider.querySelector('.hs-track');
+    var slides = slider.querySelectorAll('.hs-slide');
+    var dots = slider.querySelectorAll('[data-hs-dot]');
+    var prevBtn = slider.querySelector('[data-hs-prev]');
+    var nextBtn = slider.querySelector('[data-hs-next]');
+    var progressBar = slider.querySelector('[data-hs-progress]');
+    var duration = parseInt(slider.getAttribute('data-duration') || '5000');
+    var autoRotate = parseInt(slider.getAttribute('data-autorotate') || '1');
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var current = 0, count = slides.length, timer = null, progressTimer = null, progressStart = 0;
 
-    window.toggleCompare = function (slug, name) {
-      var idx = compareItems.findIndex(function (x) { return x.slug === slug; });
-      if (idx >= 0) {
-        compareItems.splice(idx, 1);
-      } else {
-        if (compareItems.length >= MAX) {
-          alert('You can compare up to ' + MAX + ' laptops at a time.');
-          return;
-        }
-        compareItems.push({ slug: slug, name: name });
-      }
-      renderBar();
-    };
+    function go(n) {
+      current = ((n % count) + count) % count;
+      track.style.transform = 'translateX(-' + (current * 100) + '%)';
+      dots.forEach(function(d,i){ d.classList.toggle('active', i===current); });
+      restartTimer();
+    }
+    function next(){ go(current+1); }
+    function prev(){ go(current-1); }
+    function startTimer(){
+      if (autoRotate !== 1 || count <= 1 || reducedMotion) return;
+      timer = setInterval(next, duration);
+      progressStart = Date.now();
+      progressTimer = setInterval(function(){
+        if (!progressBar) return;
+        var elapsed = Date.now() - progressStart;
+        var pct = Math.min(100, (elapsed / duration) * 100);
+        progressBar.style.width = pct + '%';
+      }, 50);
+    }
+    function stopTimer(){ clearInterval(timer); clearInterval(progressTimer); if(progressBar) progressBar.style.width='0'; }
+    function restartTimer(){ stopTimer(); startTimer(); }
 
-    function renderBar() {
-      if (compareItems.length === 0) {
-        bar.classList.remove('open');
-        return;
-      }
-      bar.classList.add('open');
-      var itemsHtml = compareItems.map(function (x) {
-        return '<span class="cmp-chip">' + escapeHtml(x.name) + ' <button onclick="toggleCompare(\'' + x.slug + '\',\'' + escapeHtml(x.name).replace(/'/g, "\\'") + '\')">×</button></span>';
-      }).join('');
-      var btn = compareItems.length >= 2
-        ? '<a class="cmp-btn" href="/shop/compare?a=' + compareItems[0].slug + '&b=' + compareItems[1].slug + '">Compare Now →</a>'
-        : '<span style="color:rgba(255,255,255,.5);font-size:13px">Select ' + (2 - compareItems.length) + ' more to compare</span>';
-      bar.querySelector('[data-cmp-items]').innerHTML = itemsHtml;
-      bar.querySelector('[data-cmp-action]').innerHTML = btn;
+    if (prevBtn) prevBtn.addEventListener('click', prev);
+    if (nextBtn) nextBtn.addEventListener('click', next);
+    dots.forEach(function(d,i){ d.addEventListener('click', function(){ go(i); }); });
+
+    // Pause on hover.
+    slider.addEventListener('mouseenter', stopTimer);
+    slider.addEventListener('mouseleave', startTimer);
+
+    // Pause when not visible.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if(e.isIntersecting) startTimer(); else stopTimer(); });
+      }).observe(slider);
     }
 
-    function escapeHtml(s) {
-      var d = document.createElement('div');
-      d.textContent = s || '';
-      return d.innerHTML;
-    }
+    // Keyboard nav.
+    slider.setAttribute('tabindex','0');
+    slider.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    });
+
+    // Touch swipe.
+    var touchStart = 0, touchEnd = 0;
+    slider.addEventListener('touchstart', function(e){ touchStart = e.touches[0].clientX; stopTimer(); }, {passive:true});
+    slider.addEventListener('touchend', function(e){
+      touchEnd = e.changedTouches[0].clientX;
+      var diff = touchStart - touchEnd;
+      if (Math.abs(diff) > 40) { if (diff > 0) next(); else prev(); }
+      startTimer();
+    });
+
+    startTimer();
   })();
 </script>
 

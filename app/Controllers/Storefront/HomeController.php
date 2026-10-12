@@ -18,6 +18,7 @@ final class HomeController
         $content = new ContentService();
 
         $featured = $catalog->publishedForStore(limit: 8);
+        $heroSlides = (new \App\Services\HeroSlideService())->published();
         $brands = array_filter(
             $catalog->brands(onlyActive: true),
             fn ($b) => $this->brandHasAvailableUnits((int) $b['id']),
@@ -32,6 +33,7 @@ final class HomeController
         return Response::html(View::partial('storefront/home', [
             'pageTitle' => 'Home',
             'featured' => $featured,
+            'heroSlides' => $heroSlides,
             'brands' => $brands,
             'budgetRanges' => $budgetRanges,
             'faqs' => $faqs,

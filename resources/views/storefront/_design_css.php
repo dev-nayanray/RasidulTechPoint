@@ -398,3 +398,52 @@ section[id]{scroll-margin-top:16px}
 .dash-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
 .dash-stat-num{font-size:clamp(24px,4vw,36px);font-weight:800;letter-spacing:-.02em}
 .dash-stat-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748B;margin-top:2px}
+
+/* === Premium Hero Slider === */
+.hero-slider{position:relative;overflow:hidden;background:#01011D}
+.hs-track{display:flex;transition:transform .6s cubic-bezier(.4,0,.2,1)}
+.hs-slide{min-width:100%;display:flex;align-items:center;min-height:clamp(320px,40vh,520px);position:relative;overflow:hidden}
+.hs-content{max-width:580px;padding:clamp(24px,5vw,56px);position:relative;z-index:2}
+.hs-content.right{margin-left:auto;text-align:right}
+.hs-content.center{margin:0 auto;text-align:center}
+.hs-eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#7AFB01;display:block;margin-bottom:8px}
+.hs-headline{font-size:clamp(30px,5vw,56px);font-weight:800;letter-spacing:-.03em;line-height:1.0;margin:0;text-wrap:balance}
+.hs-highlight{color:#7AFB01}
+.hs-desc{margin-top:14px;font-size:clamp(14px,1.5vw,17px);line-height:1.5;opacity:.85;max-width:440px}
+.hs-ctas{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+.hs-product-img{position:absolute;top:50%;right:8%;transform:translateY(-50%);max-width:42%;max-height:80%;z-index:1;object-fit:contain}
+.hs-product-img.left{left:8%;right:auto}
+.hs-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.3}
+.hs-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(1,1,29,.85),rgba(1,1,29,.3))}
+.hs-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;backdrop-filter:blur(8px)}
+.hs-nav:hover{background:rgba(122,251,1,.2)}
+.hs-nav.prev{left:16px}.hs-nav.next{right:16px}
+.hs-dots{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:8px}
+.hs-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .2s;border:0}
+.hs-dot.active{background:#7AFB01;width:24px;border-radius:4px}
+.hs-progress{position:absolute;bottom:0;left:0;right:0;z-index:10;height:3px;background:rgba(255,255,255,.08)}
+.hs-progress-bar{height:100%;background:#7AFB01;width:0;transition:width .1s linear}
+@media(max-width:768px){
+.hs-slide{min-height:clamp(280px,35vh,360px)}
+.hs-product-img{display:none}
+.hs-content{max-width:90%}
+.hs-nav{width:36px;height:36px}
+}
+@keyframes hsFadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes hsSlideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.hs-anim-subtle .hs-content>*{animation:hsFadeIn .5s ease-out both}
+.hs-anim-subtle .hs-content>*:nth-child(1){animation-delay:.1s}
+.hs-anim-subtle .hs-content>*:nth-child(2){animation-delay:.2s}
+.hs-anim-subtle .hs-content>*:nth-child(3){animation-delay:.3s}
+.hs-anim-subtle .hs-content>*:nth-child(4){animation-delay:.4s}
+.hs-anim-normal .hs-content>*{animation:hsSlideIn .6s ease-out both}
+.hs-anim-normal .hs-content>*:nth-child(1){animation-delay:.1s}
+.hs-anim-normal .hs-content>*:nth-child(2){animation-delay:.25s}
+.hs-anim-normal .hs-content>*:nth-child(3){animation-delay:.4s}
+.hs-anim-normal .hs-content>*:nth-child(4){animation-delay:.55s}
+.hs-anim-bold .hs-content>*{animation:hsSlideIn .8s cubic-bezier(.16,1,.3,1) both}
+.hs-anim-bold .hs-content>*:nth-child(1){animation-delay:.1s}
+.hs-anim-bold .hs-content>*:nth-child(2){animation-delay:.3s}
+.hs-anim-bold .hs-content>*:nth-child(3){animation-delay:.5s}
+.hs-anim-bold .hs-content>*:nth-child(4){animation-delay:.7s}
+@media(prefers-reduced-motion:reduce){.hs-track{transition:none}.hs-content>*{animation:none!important}}

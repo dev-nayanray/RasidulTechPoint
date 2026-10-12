@@ -10,46 +10,32 @@ use App\Services\SettingService;
 use App\Support\Response;
 use App\Support\View;
 
-/**
- * Homepage controller.
- *
- * Serves the static premium homepage HTML (public/homepage.html)
- * when it exists — this is the pixel-perfect clone of the uploaded
- * design with demo data. Falls back to the PHP/Tailwind view at
- * resources/views/storefront/home.php when the static file is absent.
- */
 final class HomeController
 {
     public function index(): Response
     {
-        // Always render the dynamic PHP view — it pulls real products
-        // from the database + has the complete design CSS inline.
         $catalog = new CatalogRepository();
         $content = new ContentService();
 
         $featured = $catalog->publishedForStore(limit: 8);
-
         $brands = array_filter(
             $catalog->brands(onlyActive: true),
             fn ($b) => $this->brandHasAvailableUnits((int) $b['id']),
         );
-
         $budgetRanges = $this->budgetRanges();
         $faqs = $content->publishedFaqs();
 
+        // home.php is self-contained (has its own DOCTYPE, header, footer,
+        // and inline CSS). Render WITHOUT a layout to avoid double header/footer.
         return Response::html(View::render('storefront/home', [
             'pageTitle' => 'Home',
             'featured' => $featured,
             'brands' => $brands,
             'budgetRanges' => $budgetRanges,
             'faqs' => $faqs,
-            'heroBlock' => $content->publishedBlock('home_hero') ?? '',
-            'whyChooseBlock' => $content->publishedBlock('home_why_choose') ?? '',
-            'howWeCheckBlock' => $content->publishedBlock('home_how_we_check') ?? '',
-            'finalCtaBlock' => $content->publishedBlock('home_final_cta') ?? '',
             'metaTitle' => 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops',
             'metaDescription' => 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.',
-        ]));
+        ], layout: null));
     }
 
     private function budgetRanges(): array

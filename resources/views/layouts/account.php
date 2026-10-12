@@ -36,8 +36,11 @@ $navItems = [
     <?php if (!empty($metaDescription)): ?><meta name="description" content="<?= e($metaDescription) ?>"><?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
+    <style>
+<?php include BASE_PATH . '/resources/views/storefront/_design_css.php'; ?>
+    </style>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans antialiased">
 

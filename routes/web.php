@@ -17,6 +17,7 @@ use App\Controllers\Admin\CrmController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\DeliveryController;
+use App\Controllers\Admin\ExpenseController;
 use App\Controllers\Admin\InspectionController;
 use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\InvoiceRefundController;
@@ -371,6 +372,20 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // Expense management (Prompt 31)
+    $router->get('/expenses', [ExpenseController::class, 'index'])->middleware('permission:finance.view');
+    $router->get('/expenses/entries', [ExpenseController::class, 'entryIndex'])->middleware('permission:finance.view');
+    $router->get('/expenses/entries/create', [ExpenseController::class, 'entryCreateForm'])->middleware('permission:expenses.manage');
+    $router->post('/expenses/entries', [ExpenseController::class, 'entryStore'])->middleware('permission:expenses.manage');
+    $router->get('/expenses/entries/{id}', [ExpenseController::class, 'entryShow'])->middleware('permission:finance.view');
+    $router->post('/expenses/entries/{id}/approve', [ExpenseController::class, 'entryApprove'])->middleware('permission:expenses.manage');
+    $router->post('/expenses/entries/{id}/reject', [ExpenseController::class, 'entryReject'])->middleware('permission:expenses.manage');
+    $router->post('/expenses/entries/{id}/paid', [ExpenseController::class, 'entryMarkPaid'])->middleware('permission:expenses.manage');
+    $router->get('/expenses/categories', [ExpenseController::class, 'categoryIndex'])->middleware('permission:finance.view');
+    $router->post('/expenses/categories', [ExpenseController::class, 'categoryStore'])->middleware('permission:expenses.manage');
+    $router->post('/expenses/categories/{id}/update', [ExpenseController::class, 'categoryUpdate'])->middleware('permission:expenses.manage');
+    $router->get('/expenses/report', [ExpenseController::class, 'report'])->middleware('permission:finance.view');
 
     // CRM & follow-ups (Prompt 30)
     $router->get('/crm', [CrmController::class, 'index'])->middleware('permission:crm.view');

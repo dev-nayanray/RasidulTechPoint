@@ -156,7 +156,7 @@ const RTP_ADMIN_NAV = [
     ],
     'Finance' => [
         ['payments.view', 'Payments', '/admin/payments', 'credit-card', true],
-        ['finance.view', 'Expenses', '/admin/expenses', 'wallet', false],
+        ['finance.view', 'Expenses', '/admin/expenses', 'wallet', true],
     ],
     'Warranty & Service' => [
         ['warranty.manage', 'Warranty & Repairs', '/admin/warranty', 'shield', true],

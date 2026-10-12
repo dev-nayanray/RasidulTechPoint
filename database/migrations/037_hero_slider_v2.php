@@ -87,13 +87,14 @@ return [
                      ghost_word, product_id, theme_preset, visual_type, cta1_label, cta1_url, cta2_label, cta2_url,
                      status, is_active, sort_order, accessibility_desc)
                  VALUES
-                    (:nav_label, :nav_label, :badge_text, :category_label, :headline, :description,
+                    (:internal_name, :nav_label, :badge_text, :category_label, :headline, :description,
                      :specs, :chips, :currency_symbol, :price, :old_price, :installment_months, :monthly_price,
                      :installment_note, :ghost_word, :product_id, :theme_preset, :visual_type, :primary_cta_label,
                      :primary_cta_url, :secondary_cta_label, :secondary_cta_url, :status, :is_active, :sort_order,
                      :accessibility_desc)'
             );
             $stmt->execute([
+                ':internal_name' => $ref['nav_label'],
                 ':nav_label' => $ref['nav_label'],
                 ':badge_text' => $ref['badge_text'],
                 ':category_label' => $ref['category_label'],
@@ -122,10 +123,10 @@ return [
             ]);
         };
 
-        $applyRef = function (PDO $pdo, int $id, array $ref) use ($insertRef): void {
+        $applyRef = function (PDO $pdo, int $id, array $ref): void {
             $stmt = $pdo->prepare(
                 'UPDATE hero_slides SET
-                    internal_name = :nav_label, nav_label = :nav_label, badge_text = :badge_text,
+                    internal_name = :internal_name, nav_label = :nav_label, badge_text = :badge_text,
                     category_label = :category_label, headline = :headline, description = :description,
                     specs = :specs, chips = :chips,
                     currency_symbol = :currency_symbol, price = :price, old_price = :old_price,
@@ -140,6 +141,7 @@ return [
             );
             $stmt->execute([
                 ':id' => $id,
+                ':internal_name' => $ref['nav_label'],
                 ':nav_label' => $ref['nav_label'],
                 ':badge_text' => $ref['badge_text'],
                 ':category_label' => $ref['category_label'],
@@ -284,6 +286,40 @@ return [
                 $check->execute([$ref['nav_label']]);
                 if (!$check->fetch()) {
                     $insertRef($pdo, $ref);
+                }
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // 4) Safety net — guarantee at least 3 ACTIVE + PUBLISHED slides so
+        //    the homepage slider always renders demo content. Only activates
+        //    existing reference slides (never user-created custom slides) and
+        //    only when fewer than 3 active+published rows exist. Never
+        //    deactivates anything.
+        // ------------------------------------------------------------------
+        $activePublished = (int) $pdo->query(
+            "SELECT COUNT(*) FROM hero_slides WHERE is_active = 1 AND status = 'published'"
+        )->fetchColumn();
+        if ($activePublished < 3) {
+            $refNavs = array_map(fn($r) => $r['nav_label'], $referenceSlides());
+            // Activate inactive reference slides first.
+            foreach ($refNavs as $nav) {
+                if ($activePublished >= 3) break;
+                $stmt = $pdo->prepare(
+                    "UPDATE hero_slides SET is_active = 1, status = 'published' WHERE nav_label = ? AND (is_active = 0 OR status <> 'published')"
+                );
+                $stmt->execute([$nav]);
+                $activePublished += $stmt->rowCount();
+            }
+            // Still short? Insert any missing reference slides (additive) until
+            // we hit the 3 active+published floor.
+            foreach ($referenceSlides() as $ref) {
+                if ($activePublished >= 3) break;
+                $check = $pdo->prepare('SELECT 1 FROM hero_slides WHERE nav_label = ? LIMIT 1');
+                $check->execute([$ref['nav_label']]);
+                if (!$check->fetch()) {
+                    $insertRef($pdo, $ref);
+                    $activePublished++;
                 }
             }
         }

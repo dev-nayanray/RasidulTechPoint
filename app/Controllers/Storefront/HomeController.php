@@ -6,6 +6,7 @@ namespace App\Controllers\Storefront;
 
 use App\Repositories\CatalogRepository;
 use App\Services\ContentService;
+use App\Services\HeroSlideService;
 use App\Services\SettingService;
 use App\Support\Response;
 use App\Support\View;
@@ -16,9 +17,11 @@ final class HomeController
     {
         $catalog = new CatalogRepository();
         $content = new ContentService();
+        $heroSvc = new HeroSlideService();
 
         $featured = $catalog->publishedForStore(limit: 8);
-        $heroSlides = (new \App\Services\HeroSlideService())->published();
+        $heroSlides = $heroSvc->published();
+        $heroSettings = $heroSvc->settings();
         $brands = array_filter(
             $catalog->brands(onlyActive: true),
             fn ($b) => $this->brandHasAvailableUnits((int) $b['id']),
@@ -34,6 +37,7 @@ final class HomeController
             'pageTitle' => 'Home',
             'featured' => $featured,
             'heroSlides' => $heroSlides,
+            'heroSettings' => $heroSettings,
             'brands' => $brands,
             'budgetRanges' => $budgetRanges,
             'faqs' => $faqs,

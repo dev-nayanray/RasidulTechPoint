@@ -24,9 +24,10 @@
 <meta name="description" content="<?= e($metaDescription ?? 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.') ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 <?php include BASE_PATH . '/resources/views/storefront/_design_css.php'; ?>
+<?php include BASE_PATH . '/resources/views/storefront/hero/_slider_css.php'; ?>
 </style>
 </head>
 <body>
@@ -169,42 +170,7 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
 </header>
 
 <?php if (!empty($heroSlides)): ?>
-<div class="hero-slider" data-hero-slider data-duration="<?= (int)($heroSlides[0]['slide_duration'] ?? 5000) ?>" data-autorotate="<?= (int)($heroSlides[0]['auto_rotate'] ?? 1) ?>">
-  <div class="hs-track">
-    <?php foreach ($heroSlides as $i => $slide): ?>
-    <div class="hs-slide hs-anim-<?= e($slide['animation_intensity'] ?? 'normal') ?>" style="background:<?= e($slide['bg_color']) ?>;color:<?= e($slide['text_color']) ?>" role="group" aria-label="<?= e($slide['accessibility_desc'] ?? $slide['headline']) ?>">
-      <?php if (!empty($slide['desktop_image'])): ?>
-        <img class="hs-bg-img" src="<?= e(url($slide['desktop_image'])) ?>" alt="<?= e($slide['image_alt'] ?? '') ?>" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>" width="1920" height="520">
-        <div class="hs-overlay" style="background:linear-gradient(90deg,<?= e($slide['bg_color']) ?>cc,<?= e($slide['bg_color']) ?>33)"></div>
-      <?php endif; ?>
-      <div class="wrap" style="position:relative;z-index:2;width:100%;display:flex;align-items:center;min-height:inherit">
-        <div class="hs-content <?= e($slide['content_position'] ?? 'left') ?>">
-          <?php if (!empty($slide['eyebrow'])): ?><span class="hs-eyebrow"><?= e($slide['eyebrow']) ?></span><?php endif; ?>
-          <h1 class="hs-headline"><?= e($slide['headline']) ?><?php if (!empty($slide['highlight_phrase'])): ?> <span class="hs-highlight"><?= e($slide['highlight_phrase']) ?></span><?php endif; ?></h1>
-          <?php if (!empty($slide['description'])): ?><p class="hs-desc"><?= e($slide['description']) ?></p><?php endif; ?>
-          <div class="hs-ctas">
-            <a class="btn btn-primary" href="<?= e(url($slide['cta1_url'])) ?>"><?= e($slide['cta1_label']) ?></a>
-            <?php if (!empty($slide['cta2_label'])): ?><a class="btn btn-onnavy" href="<?= e(url($slide['cta2_url'] ?? '/shop')) ?>"><?= e($slide['cta2_label']) ?></a><?php endif; ?>
-          </div>
-        </div>
-      </div>
-      <?php if (!empty($slide['product_image'])): ?><img class="hs-product-img <?= e($slide['image_position'] ?? 'right') ?>" src="<?= e(url($slide['product_image'])) ?>" alt="<?= e($slide['image_alt'] ?? '') ?>" loading="lazy"><?php endif; ?>
-    </div>
-    <?php endforeach; ?>
-  </div>
-  <?php if ((int)($heroSlides[0]['show_nav'] ?? 1) === 1 && count($heroSlides) > 1): ?>
-    <button class="hs-nav prev" aria-label="Previous slide" data-hs-prev><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M15 6l-6 6 6 6"></path></svg></button>
-    <button class="hs-nav next" aria-label="Next slide" data-hs-next><svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M9 6l6 6-6 6"></path></svg></button>
-  <?php endif; ?>
-  <?php if ((int)($heroSlides[0]['show_pagination'] ?? 1) === 1 && count($heroSlides) > 1): ?>
-    <div class="hs-dots" data-hs-dots>
-      <?php foreach ($heroSlides as $i => $_): ?><button class="hs-dot <?= $i === 0 ? 'active' : '' ?>" data-hs-dot="<?= $i ?>" aria-label="Slide <?= $i + 1 ?>"></button><?php endforeach; ?>
-    </div>
-  <?php endif; ?>
-  <?php if ((int)($heroSlides[0]['auto_rotate'] ?? 1) === 1 && count($heroSlides) > 1): ?>
-    <div class="hs-progress"><div class="hs-progress-bar" data-hs-progress></div></div>
-  <?php endif; ?>
-</div>
+<?php include BASE_PATH . '/resources/views/storefront/hero/_slider.php'; ?>
 <?php else: ?>
 <section class="hero">
   <div class="wrap">
@@ -635,76 +601,131 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
     input.addEventListener('keydown', function(e){ if(e.key==='Escape'){dd.classList.remove('open');input.blur();} });
   })();
 
-  // Premium Hero Slider.
+  // Premium Hero Slider v2 — reference (hero-slider.html) faithful port.
   (function () {
-    var slider = document.querySelector('[data-hero-slider]');
-    if (!slider) return;
-    var track = slider.querySelector('.hs-track');
-    var slides = slider.querySelectorAll('.hs-slide');
-    var dots = slider.querySelectorAll('[data-hs-dot]');
-    var prevBtn = slider.querySelector('[data-hs-prev]');
-    var nextBtn = slider.querySelector('[data-hs-next]');
-    var progressBar = slider.querySelector('[data-hs-progress]');
-    var duration = parseInt(slider.getAttribute('data-duration') || '5000');
-    var autoRotate = parseInt(slider.getAttribute('data-autorotate') || '1');
-    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var current = 0, count = slides.length, timer = null, progressTimer = null, progressStart = 0;
+    var hero = document.getElementById('hero');
+    if (!hero) return;
+    var slides = [].slice.call(hero.querySelectorAll('.slide'));
+    var bgs = [].slice.call(hero.querySelectorAll('.bg'));
+    var inds = [].slice.call(hero.querySelectorAll('.ind'));
+    var viewport = hero.querySelector('[data-hero-slides]');
+    var toggle = hero.querySelector('[data-toggle]');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var cur = 0;
+    var userPlaying = !reduce.matches && !hero.classList.contains('is-paused');
+    var hover = false, focus = false;
+    if (slides.length === 0) return;
 
-    function go(n) {
-      current = ((n % count) + count) % count;
-      track.style.transform = 'translateX(-' + (current * 100) + '%)';
-      dots.forEach(function(d,i){ d.classList.toggle('active', i===current); });
-      restartTimer();
-    }
-    function next(){ go(current+1); }
-    function prev(){ go(current-1); }
-    function startTimer(){
-      if (autoRotate !== 1 || count <= 1 || reducedMotion) return;
-      timer = setInterval(next, duration);
-      progressStart = Date.now();
-      progressTimer = setInterval(function(){
-        if (!progressBar) return;
-        var elapsed = Date.now() - progressStart;
-        var pct = Math.min(100, (elapsed / duration) * 100);
-        progressBar.style.width = pct + '%';
-      }, 50);
-    }
-    function stopTimer(){ clearInterval(timer); clearInterval(progressTimer); if(progressBar) progressBar.style.width='0'; }
-    function restartTimer(){ stopTimer(); startTimer(); }
-
-    if (prevBtn) prevBtn.addEventListener('click', prev);
-    if (nextBtn) nextBtn.addEventListener('click', next);
-    dots.forEach(function(d,i){ d.addEventListener('click', function(){ go(i); }); });
-
-    // Pause on hover.
-    slider.addEventListener('mouseenter', stopTimer);
-    slider.addEventListener('mouseleave', startTimer);
-
-    // Pause when not visible.
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function(entries){
-        entries.forEach(function(e){ if(e.isIntersecting) startTimer(); else stopTimer(); });
-      }).observe(slider);
+    function sync() {
+      var paused = !userPlaying || hover || focus || document.hidden;
+      hero.classList.toggle('is-paused', paused);
+      if (viewport) viewport.setAttribute('aria-live', userPlaying && !paused ? 'off' : 'polite');
     }
 
-    // Keyboard nav.
-    slider.setAttribute('tabindex','0');
-    slider.addEventListener('keydown', function(e){
-      if (e.key === 'ArrowLeft') prev();
-      if (e.key === 'ArrowRight') next();
+    function go(n, dir) {
+      if (slides.length <= 1) return;
+      n = (n + slides.length) % slides.length;
+      if (n === cur) return;
+      hero.style.setProperty('--dir', String(dir || (n > cur ? 1 : -1)));
+      slides[cur].classList.remove('is-active');
+      slides[cur].inert = true;
+      slides[cur].setAttribute('aria-hidden', 'true');
+      if (bgs[cur]) bgs[cur].classList.remove('is-active');
+      if (inds[cur]) inds[cur].classList.remove('is-active');
+      if (inds[cur]) { var b = inds[cur].querySelector('button'); if (b) b.removeAttribute('aria-current'); }
+      cur = n;
+      slides[cur].classList.add('is-active');
+      slides[cur].inert = false;
+      slides[cur].removeAttribute('aria-hidden');
+      if (bgs[cur]) bgs[cur].classList.add('is-active');
+      if (inds[cur]) inds[cur].classList.add('is-active');
+      if (inds[cur]) { var b2 = inds[cur].querySelector('button'); if (b2) b2.setAttribute('aria-current', 'true'); }
+      // Reset the active progress bar so it animates again
+      if (inds[cur]) {
+        var fill = inds[cur].querySelector('.fill');
+        if (fill) {
+          fill.style.animation = 'none';
+          // force reflow
+          void fill.offsetWidth;
+          fill.style.animation = '';
+        }
+      }
+    }
+
+    function next() { go(cur + 1, 1); }
+    function prev() { go(cur - 1, -1); }
+
+    if (hero.querySelector('[data-prev]')) hero.querySelector('[data-prev]').addEventListener('click', prev);
+    if (hero.querySelector('[data-next]')) hero.querySelector('[data-next]').addEventListener('click', next);
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        userPlaying = !userPlaying;
+        toggle.setAttribute('aria-label', userPlaying ? 'Pause slideshow' : 'Play slideshow');
+        var ip = toggle.querySelector('.i-pause');
+        var ipy = toggle.querySelector('.i-play');
+        if (ip) ip.hidden = !userPlaying;
+        if (ipy) ipy.hidden = userPlaying;
+        sync();
+      });
+    }
+    inds.forEach(function (li) {
+      var btn = li.querySelector('button');
+      var fill = li.querySelector('.fill');
+      if (fill) fill.addEventListener('animationend', function () {
+        if (!hero.classList.contains('is-paused')) go(cur + 1, 1);
+      });
+      if (btn) btn.addEventListener('click', function () { go(parseInt(this.getAttribute('data-go'), 10)); });
     });
 
-    // Touch swipe.
-    var touchStart = 0, touchEnd = 0;
-    slider.addEventListener('touchstart', function(e){ touchStart = e.touches[0].clientX; stopTimer(); }, {passive:true});
-    slider.addEventListener('touchend', function(e){
-      touchEnd = e.changedTouches[0].clientX;
-      var diff = touchStart - touchEnd;
-      if (Math.abs(diff) > 40) { if (diff > 0) next(); else prev(); }
-      startTimer();
-    });
+    if (viewport) {
+      viewport.style.touchAction = 'pan-y';
+      hero.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { hover = true; sync(); } });
+      hero.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = false; sync(); } });
+      hero.addEventListener('focusin', function (e) { try { focus = e.target.matches && e.target.matches(':focus-visible'); } catch (err) { focus = true; } sync(); });
+      hero.addEventListener('focusout', function () { focus = false; sync(); });
+      document.addEventListener('visibilitychange', sync);
+      hero.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') prev();
+        else if (e.key === 'ArrowRight') next();
+        else if (e.key === 'Home') go(0);
+        else if (e.key === 'End') go(slides.length - 1);
+      });
+      hero.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[href="#"]');
+        if (a) e.preventDefault();
+      });
+      var startX = null;
+      viewport.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') startX = e.clientX; });
+      viewport.addEventListener('pointerup', function (e) {
+        if (startX === null) return;
+        var dx = e.clientX - startX;
+        startX = null;
+        if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1, dx < 0 ? 1 : -1);
+      });
+      viewport.addEventListener('pointercancel', function () { startX = null; });
+    }
 
-    startTimer();
+    // Gentle laptop tilt following the mouse — rAF-throttled.
+    if (!reduce.matches && window.matchMedia('(hover: hover)').matches) {
+      var raf = 0;
+      hero.addEventListener('pointermove', function (e) {
+        if (e.pointerType !== 'mouse') return;
+        var r = hero.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5;
+        var y = (e.clientY - r.top) / r.height - 0.5;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(function () {
+          hero.style.setProperty('--ry', (x * 8).toFixed(2) + 'deg');
+          hero.style.setProperty('--rx', (-y * 5).toFixed(2) + 'deg');
+        });
+      });
+      hero.addEventListener('pointerleave', function () {
+        hero.style.setProperty('--ry', '0deg');
+        hero.style.setProperty('--rx', '0deg');
+      });
+    }
+
+    sync();
   })();
 </script>
 

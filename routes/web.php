@@ -50,6 +50,7 @@ use App\Controllers\Auth\RegisterController;
 use App\Controllers\Storefront\CartController;
 use App\Controllers\Storefront\CheckoutController;
 use App\Controllers\Storefront\HomeController;
+use App\Controllers\Storefront\HeroSliderController;
 use App\Controllers\Storefront\PageController;
 use App\Controllers\Storefront\ShopController;
 use App\Support\Router;
@@ -73,6 +74,9 @@ $router->post('/contact', [PageController::class, 'contactStore'])->middleware('
 
 // Cart + checkout (Marketing-Website Prompt 3)
 $router->get('/search/suggest', [ShopController::class, 'searchSuggest'])->name('search.suggest');
+
+// Hero slider public API (cached, filtered)
+$router->get('/api/hero-slider', [HeroSliderController::class, 'api'])->name('api.hero-slider');
 $router->get('/cart', [CartController::class, 'index'])->name('cart');
 $router->post('/cart/add', [CartController::class, 'add'])->middleware('csrf')->name('cart.add');
 $router->post('/cart/remove', [CartController::class, 'remove'])->middleware('csrf')->name('cart.remove');
@@ -471,8 +475,11 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->get('/hero-slides', [HeroSlideController::class, 'index'])->middleware('permission:content.manage');
     $router->get('/hero-slides/create', [HeroSlideController::class, 'create'])->middleware('permission:content.manage');
     $router->post('/hero-slides', [HeroSlideController::class, 'store'])->middleware('permission:content.manage');
+    $router->get('/hero-slides/settings', [HeroSlideController::class, 'settings'])->middleware('permission:content.manage');
+    $router->post('/hero-slides/settings', [HeroSlideController::class, 'updateSettings'])->middleware('permission:content.manage');
     $router->get('/hero-slides/{id}', [HeroSlideController::class, 'show'])->middleware('permission:content.manage');
     $router->get('/hero-slides/{id}/edit', [HeroSlideController::class, 'edit'])->middleware('permission:content.manage');
+    $router->get('/hero-slides/{id}/preview', [HeroSlideController::class, 'preview'])->middleware('permission:content.manage');
     $router->post('/hero-slides/{id}/update', [HeroSlideController::class, 'update'])->middleware('permission:content.manage');
     $router->post('/hero-slides/{id}/toggle', [HeroSlideController::class, 'toggle'])->middleware('permission:content.manage');
     $router->post('/hero-slides/{id}/duplicate', [HeroSlideController::class, 'duplicate'])->middleware('permission:content.manage');

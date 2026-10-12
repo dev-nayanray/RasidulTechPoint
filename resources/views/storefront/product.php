@@ -189,7 +189,14 @@ $fromPrice = $lowestPrice !== null ? money($lowestPrice) : '—';
                         </div>
                         <div class="text-right">
                             <p class="font-bold text-navy-700"><?= money($unit['selling_price']) ?></p>
-                            <a href="<?= e(url('/contact?unit=' . $unit['sku'])) ?>" class="text-xs font-semibold text-brand-blue hover:underline">Reserve →</a>
+                            <form method="post" action="<?= e(url('/cart/add')) ?>" class="mt-1 inline" data-loading-form>
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="unit_id" value="<?= (int) $unit['id'] ?>">
+                                <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-brand-blue px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">
+                                    <?= \App\Support\View::component('icon', ['name' => 'shopping-cart', 'class' => 'h-3.5 w-3.5']) ?>
+                                    Add to cart
+                                </button>
+                            </form>
                         </div>
                     </li>
                 <?php endforeach; ?>

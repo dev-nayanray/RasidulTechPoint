@@ -210,6 +210,25 @@ final class PaymentRepository
         return $row === false ? null : $row;
     }
 
+    /**
+     * Find an active payment method by its code. Used by the storefront
+     * checkout to validate that the customer's selected method is
+     * actually enabled. Returns null when the code doesn't exist or
+     * the method is disabled.
+     */
+    public function findByCode(string $code, bool $activeOnly = false): ?array
+    {
+        $sql = 'SELECT * FROM payment_methods_catalog WHERE code = ?';
+        if ($activeOnly) {
+            $sql .= ' AND is_active = 1';
+        }
+        $sql .= ' LIMIT 1';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$code]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row === false ? null : $row;
+    }
+
     public function updateMethod(int $id, ?string $label, ?string $instructions, ?int $isActive, ?int $displayOrder): void
     {
         $stmt = $this->pdo->prepare(

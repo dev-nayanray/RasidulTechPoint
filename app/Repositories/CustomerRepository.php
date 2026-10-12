@@ -127,6 +127,21 @@ final class CustomerRepository
     }
 
     /**
+     * Find a customer by phone. Used by the guest checkout flow to
+     * resolve an existing customer record before placing an order
+     * (so a returning customer doesn't get a duplicate row).
+     */
+    public function findByPhone(string $phone): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM customers WHERE phone = ? AND deleted_at IS NULL LIMIT 1'
+        );
+        $stmt->execute([$phone]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row === false ? null : $row;
+    }
+
+    /**
      * Create a customer. Throws PDOException on duplicate phone/email thanks
      * to the unique indexes — callers should catch it for friendly errors.
      */

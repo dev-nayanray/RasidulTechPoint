@@ -45,6 +45,8 @@ use App\Controllers\Admin\WarrantyController;
 use App\Controllers\Auth\LoginController;
 use App\Controllers\Auth\PasswordResetController;
 use App\Controllers\Auth\RegisterController;
+use App\Controllers\Storefront\CartController;
+use App\Controllers\Storefront\CheckoutController;
 use App\Controllers\Storefront\HomeController;
 use App\Controllers\Storefront\PageController;
 use App\Controllers\Storefront\ShopController;
@@ -63,6 +65,16 @@ $router->get('/categories/{slug}', [ShopController::class, 'category'])->name('s
 $router->get('/about', [PageController::class, 'about'])->name('about');
 $router->get('/contact', [PageController::class, 'contact'])->name('contact');
 $router->post('/contact', [PageController::class, 'contactStore'])->middleware('csrf')->name('contact.store');
+
+// Cart + checkout (Marketing-Website Prompt 3)
+$router->get('/cart', [CartController::class, 'index'])->name('cart');
+$router->post('/cart/add', [CartController::class, 'add'])->middleware('csrf')->name('cart.add');
+$router->post('/cart/remove', [CartController::class, 'remove'])->middleware('csrf')->name('cart.remove');
+$router->post('/cart/clear', [CartController::class, 'clear'])->middleware('csrf')->name('cart.clear');
+$router->post('/cart/sync-prices', [CartController::class, 'syncPrices'])->middleware('csrf')->name('cart.sync');
+$router->get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+$router->post('/checkout', [CheckoutController::class, 'store'])->middleware('csrf')->name('checkout.store');
+$router->get('/checkout/confirmation/{reference}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 
 // ---------------------------------------------------------------- AUTH ----
 $router->group(['middleware' => ['guest', 'csrf']], function (Router $router): void {

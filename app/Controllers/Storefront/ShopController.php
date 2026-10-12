@@ -13,6 +13,39 @@ use App\Support\View;
 
 final class ShopController
 {
+    /**
+     * AJAX search suggestions for the header search bar.
+     * Returns JSON: {results: [{name, brand, slug, price, units}]}
+     * Used by the live search dropdown on every page.
+     */
+    public function searchSuggest(Request $request): Response
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (mb_strlen($q) < 2) {
+            return Response::json(['results' => [], 'more' => false]);
+        }
+        $catalog = new CatalogRepository();
+        $products = $catalog->publishedForStore($q, 0, 0, 8, 0);
+        $results = [];
+        foreach ($products as $p) {
+            $results[] = [
+                'name' => $p['name'],
+                'brand' => $p['brand_name'] ?? '',
+                'slug' => $p['slug'],
+                'price' => $p['from_price'] !== null ? '৳' . number_format((float) $p['from_price']) : '—',
+                'units' => (int) ($p['available_units'] ?? 0),
+                'url' => url('/shop/' . $p['slug']),
+                'processor' => $p['processor'] ?? '',
+                'ram' => isset($p['ram_gb']) ? $p['ram_gb'] . ' GB' : '',
+            ];
+        }
+        return Response::json([
+            'results' => $results,
+            'more' => count($products) >= 8,
+            'search_url' => url('/shop?q=' . urlencode($q)),
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         [$page] = paginate($request->query('page', 1), 24, 24, 24);

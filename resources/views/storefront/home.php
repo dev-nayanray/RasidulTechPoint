@@ -58,28 +58,89 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
         </span>
         <span><span class="wm-a">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
       </a>
-      <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search">
+      <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search" data-search-form>
         <div class="search-box">
           <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
           <label class="sr-only" for="site-search">Search laptops</label>
-          <input id="site-search" type="search" name="q" placeholder="Search laptops by brand or model" value="<?= e($_GET['q'] ?? '') ?>">
+          <input id="site-search" type="search" name="q" placeholder="Search laptops by brand or model…" value="<?= e($_GET['q'] ?? '') ?>" autocomplete="off" data-search-input>
           <button type="submit" class="search-go" aria-label="Search">
             <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
           </button>
         </div>
+        <div class="sugg" data-sugg-dropdown></div>
       </form>
       <div class="icons">
-        <a class="icon-btn hide-xs" href="<?= e(url($auth ? '/account' : '/login')) ?>" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>">
-          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
-        </a>
-        <a class="icon-btn" href="<?= e(url('/account/wishlist')) ?>" aria-label="Wishlist">
-          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>
-          <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
-        </a>
-        <a class="icon-btn" href="<?= e(url('/cart')) ?>" aria-label="Shopping cart">
-          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>
-          <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
-        </a>
+        <div class="dd-wrap" data-dd-wrap>
+          <button class="icon-btn hide-xs" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>" data-dd-toggle="account-dd">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
+          </button>
+          <div class="dd-panel" id="account-dd">
+            <?php if ($auth): ?>
+              <div class="dd-head">Signed in as <?= e(explode(' ', $auth['name'])[0]) ?></div>
+              <a class="dd-item" href="<?= e(url('/account')) ?>">
+                <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>
+                <div><div class="dd-item-name">Dashboard</div></div>
+              </a>
+              <a class="dd-item" href="<?= e(url('/account/orders')) ?>">
+                <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path></svg>
+                <div><div class="dd-item-name">My Orders</div></div>
+              </a>
+              <a class="dd-item" href="<?= e(url('/account/warranty')) ?>">
+                <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6z"></path></svg>
+                <div><div class="dd-item-name">Warranty</div></div>
+              </a>
+              <a class="dd-item" href="<?= e(url('/account/profile')) ?>">
+                <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
+                <div><div class="dd-item-name">Profile</div></div>
+              </a>
+              <div class="dd-foot">
+                <form method="post" action="<?= e(url('/logout')) ?>" style="flex:1">
+                  <?= csrf_field() ?>
+                  <button type="submit" class="dd-link ghost" style="width:100%;color:#dc2626">Sign out</button>
+                </form>
+              </div>
+            <?php else: ?>
+              <div class="dd-head">Welcome</div>
+              <div class="dd-foot" style="flex-direction:column;gap:8px">
+                <a href="<?= e(url('/login')) ?>" class="dd-link primary">Sign in</a>
+                <a href="<?= e(url('/register')) ?>" class="dd-link ghost">Create account</a>
+              </div>
+            <?php endif; ?>
+          </div>
+        </div>
+        <div class="dd-wrap" data-dd-wrap>
+          <a class="icon-btn" href="<?= e(url('/account/wishlist')) ?>" aria-label="Wishlist" data-dd-toggle="wishlist-dd">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>
+            <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
+          </a>
+          <div class="dd-panel" id="wishlist-dd">
+            <div class="dd-head">Wishlist <?php if ($wishlistCount > 0): ?><span style="color:#7AFB01">(<?= $wishlistCount ?>)</span><?php endif; ?></div>
+            <div class="dd-empty" data-wishlist-items>
+              <?php if ($wishlistCount > 0): ?>You have <?= $wishlistCount ?> saved item(s).<?php else: ?>Your wishlist is empty. Save laptops you're interested in.<?php endif; ?>
+            </div>
+            <div class="dd-foot">
+              <a href="<?= e(url('/account/wishlist')) ?>" class="dd-link ghost" style="flex:1">View all</a>
+            </div>
+          </div>
+        </div>
+        <div class="dd-wrap" data-dd-wrap>
+          <a class="icon-btn" href="<?= e(url('/cart')) ?>" aria-label="Shopping cart" data-dd-toggle="cart-dd">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>
+            <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
+          </a>
+          <div class="dd-panel" id="cart-dd">
+            <div class="dd-head">Shopping Cart <?php if ($cartCount > 0): ?><span style="color:#7AFB01">(<?= $cartCount ?>)</span><?php endif; ?></div>
+            <div class="dd-empty" data-cart-items>
+              <?php if ($cartCount > 0): ?>You have <?= $cartCount ?> item(s) in your cart.<?php else: ?>Your cart is empty. <a href="<?= e(url('/shop')) ?>" style="color:#2563EB;font-weight:700">Browse laptops</a><?php endif; ?>
+            </div>
+            <?php if ($cartCount > 0): ?>
+            <div class="dd-foot">
+              <a href="<?= e(url('/cart')) ?>" class="dd-link ghost" style="flex:1">View cart</a>
+              <a href="<?= e(url('/checkout')) ?>" class="dd-link primary" style="flex:1">Checkout</a>
+            </div>
+            <?php endif; ?>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -515,6 +576,141 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
     var open = nav.classList.toggle('open');
     t.setAttribute('aria-expanded', open ? 'true' : 'false');
   });
+
+  // Dropdown panels (account, wishlist, cart).
+  document.addEventListener('click', function (e) {
+    var toggle = e.target.closest('[data-dd-toggle]');
+    // Close all open panels first
+    document.querySelectorAll('.dd-panel.open').forEach(function (p) {
+      if (!toggle || p.id !== toggle.getAttribute('data-dd-toggle')) {
+        p.classList.remove('open');
+      }
+    });
+    if (toggle) {
+      e.preventDefault();
+      var panel = document.getElementById(toggle.getAttribute('data-dd-toggle'));
+      if (panel) { panel.classList.toggle('open'); }
+    }
+  });
+
+  // AJAX live search.
+  (function () {
+    var input = document.querySelector('[data-search-input]');
+    var dropdown = document.querySelector('[data-sugg-dropdown]');
+    if (!input || !dropdown) return;
+    var timer = null;
+    var lastQ = '';
+
+    function renderResults(data) {
+      if (!data.results || data.results.length === 0) {
+        dropdown.innerHTML = '<div class="s-empty">No laptops found. Try searching by brand like Dell, HP, Lenovo.</div>';
+      } else {
+        var html = data.results.map(function (r) {
+          return '<a class="s-item" href="' + r.url + '">' +
+            '<span class="s-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg></span>' +
+            '<div class="s-info"><div class="s-name">' + escapeHtml(r.brand + ' ' + r.name) + '</div>' +
+            '<div class="s-meta">' + escapeHtml(r.processor) + (r.ram ? ' · ' + escapeHtml(r.ram) : '') + (r.units > 0 ? ' · In stock' : '') + '</div></div>' +
+            '<span class="s-price">' + escapeHtml(r.price) + '</span></a>';
+        }).join('');
+        if (data.more) {
+          html += '<a class="s-more" href="' + data.search_url + '">See all results →</a>';
+        }
+        dropdown.innerHTML = html;
+      }
+      dropdown.classList.add('open');
+    }
+
+    function escapeHtml(s) {
+      var d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    input.addEventListener('input', function () {
+      var q = input.value.trim();
+      if (q.length < 2) {
+        dropdown.classList.remove('open');
+        lastQ = '';
+        return;
+      }
+      if (q === lastQ) return;
+      lastQ = q;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        fetch('<?= e(url('/search/suggest')) ?>?q=' + encodeURIComponent(q))
+          .then(function (r) { return r.json(); })
+          .then(renderResults)
+          .catch(function () { dropdown.classList.remove('open'); });
+      }, 250);
+    });
+
+    // Close on outside click
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.search')) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    // Close on Escape
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        dropdown.classList.remove('open');
+        input.blur();
+      }
+    });
+  })();
+
+  // Compare bar.
+  (function () {
+    var compareItems = [];
+    var MAX = 2;
+    var bar = document.querySelector('[data-cmp-bar]');
+    if (!bar) return;
+
+    window.toggleCompare = function (slug, name) {
+      var idx = compareItems.findIndex(function (x) { return x.slug === slug; });
+      if (idx >= 0) {
+        compareItems.splice(idx, 1);
+      } else {
+        if (compareItems.length >= MAX) {
+          alert('You can compare up to ' + MAX + ' laptops at a time.');
+          return;
+        }
+        compareItems.push({ slug: slug, name: name });
+      }
+      renderBar();
+    };
+
+    function renderBar() {
+      if (compareItems.length === 0) {
+        bar.classList.remove('open');
+        return;
+      }
+      bar.classList.add('open');
+      var itemsHtml = compareItems.map(function (x) {
+        return '<span class="cmp-chip">' + escapeHtml(x.name) + ' <button onclick="toggleCompare(\'' + x.slug + '\',\'' + escapeHtml(x.name).replace(/'/g, "\\'") + '\')">×</button></span>';
+      }).join('');
+      var btn = compareItems.length >= 2
+        ? '<a class="cmp-btn" href="/shop/compare?a=' + compareItems[0].slug + '&b=' + compareItems[1].slug + '">Compare Now →</a>'
+        : '<span style="color:rgba(255,255,255,.5);font-size:13px">Select ' + (2 - compareItems.length) + ' more to compare</span>';
+      bar.querySelector('[data-cmp-items]').innerHTML = itemsHtml;
+      bar.querySelector('[data-cmp-action]').innerHTML = btn;
+    }
+
+    function escapeHtml(s) {
+      var d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+  })();
 </script>
+
+<!-- Compare bar (fixed bottom) -->
+<div class="cmp-bar" data-cmp-bar>
+  <div class="cmp-items" data-cmp-items></div>
+  <div data-cmp-action></div>
+  <button class="cmp-close" onclick="document.querySelector('[data-cmp-bar]').classList.remove('open');compareItems=[];">×</button>
+</div>
+
 </body>
 </html>

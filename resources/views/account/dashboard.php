@@ -7,85 +7,97 @@
  *  @var int $wishlistCount
  */
 ?>
-<h1 class="text-2xl font-bold tracking-tight text-navy-700">Hello, <?= e(explode(' ', $customer['name'])[0]) ?>!</h1>
-<p class="mt-1 text-sm text-slate-500">Here's a summary of your account activity at Rasidul Tech Point.</p>
+<div class="dash-hero">
+  <p class="dash-greeting">Hello, <span class="name"><?= e(explode(' ', $customer['name'])[0]) ?></span> 👋</p>
+  <p class="dash-sub">Original • Tested • Reliable — your Dubai-imported laptop dashboard</p>
+  <div class="dash-quick">
+    <a href="<?= e(url('/shop')) ?>"><svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M3 4h2.5l2 11h11l2-8H6.5"/></svg> Shop Laptops</a>
+    <a href="<?= e(url('/account/orders')) ?>"><svg class="ic ic-sm" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/></svg> My Orders</a>
+    <a href="<?= e(url('/account/wishlist')) ?>"><svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3"/></svg> Wishlist</a>
+    <a href="<?= e(url('/account/support')) ?>"><svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M3 11l18-5v12L3 14z"/></svg> Support</a>
+  </div>
+  <div class="dash-stats">
+    <div class="dash-stat">
+      <div class="dash-stat-num" style="color:#7AFB01"><?= (int) $orderStats['total'] ?></div>
+      <div class="dash-stat-lbl">Total Orders</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-num" style="color:#fbbf24"><?= (int)($orderStats['pending'] + $orderStats['confirmed'] + $orderStats['processing']) ?></div>
+      <div class="dash-stat-lbl">In Progress</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-num" style="color:#4ade80"><?= (int) $orderStats['completed'] ?></div>
+      <div class="dash-stat-lbl">Completed</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-num" style="color:#7AFB01"><?= (int) $warrantyCount ?></div>
+      <div class="dash-stat-lbl">Warranty</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-num" style="color:#7AFB01"><?= (int) $serviceCount ?></div>
+      <div class="dash-stat-lbl">Service Jobs</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-num" style="color:#fbbf24"><?= (int) $unreadNotifications ?></div>
+      <div class="dash-stat-lbl">Notifications</div>
+    </div>
+  </div>
+</div>
 
 <?php if ($orderStats['total'] === 0 && $warrantyCount === 0 && $serviceCount === 0): ?>
-    <?php /* New customer empty state */ ?>
-    <div class="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-        <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-brand-blue">
-            <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-6 w-6']) ?>
-        </span>
-        <p class="mt-4 font-semibold text-navy-700">Welcome to Rasidul Tech Point!</p>
-        <p class="mt-1 text-sm text-slate-500 max-w-md mx-auto">You haven't placed any orders yet. Browse our Dubai-imported, quality-checked laptops to get started.</p>
-        <a href="<?= e(url('/shop')) ?>" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-blue px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition">Browse Laptops</a>
-    </div>
+<div style="margin-top:20px;padding:32px;text-align:center;border:2px dashed #D5DEE9;border-radius:16px;background:#fff">
+  <p style="font-size:20px;font-weight:800;color:#01011D">Welcome to Rasidul Tech Point!</p>
+  <p style="margin-top:8px;color:#475569;font-size:14px;max-width:420px;margin-left:auto;margin-right:auto">You haven't placed any orders yet. Browse our Dubai-imported, quality-checked laptops — each one individually inspected.</p>
+  <a href="<?= e(url('/shop')) ?>" class="btn btn-primary" style="margin-top:16px">Browse Laptops →</a>
+</div>
 <?php else: ?>
 
-<?php /* Stats cards */ ?>
-<div class="mt-6 grid gap-3 grid-cols-2 lg:grid-cols-4">
-    <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4">
-        <p class="text-xs uppercase tracking-wider text-slate-400">Total Orders</p>
-        <p class="mt-1 text-2xl font-bold text-navy-700"><?= (int) $orderStats['total'] ?></p>
-    </div>
-    <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4">
-        <p class="text-xs uppercase tracking-wider text-slate-400">Pending / Processing</p>
-        <p class="mt-1 text-2xl font-bold text-amber-600"><?= (int) ($orderStats['pending'] + $orderStats['confirmed'] + $orderStats['processing']) ?></p>
-    </div>
-    <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4">
-        <p class="text-xs uppercase tracking-wider text-slate-400">Warranty Active</p>
-        <p class="mt-1 text-2xl font-bold text-brand-green"><?= (int) $warrantyCount ?></p>
-    </div>
-    <div class="rounded-xl bg-white ring-1 ring-slate-200 p-4">
-        <p class="text-xs uppercase tracking-wider text-slate-400">Service Jobs</p>
-        <p class="mt-1 text-2xl font-bold text-brand-blue"><?= (int) $serviceCount ?></p>
-    </div>
-</div>
-
-<?php /* Quick actions */ ?>
-<div class="mt-4 flex flex-wrap gap-2">
-    <a href="<?= e(url('/shop')) ?>" class="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition">
-        <?= \App\Support\View::component('icon', ['name' => 'shopping-cart', 'class' => 'h-4 w-4']) ?> Shop Laptops
-    </a>
-    <a href="<?= e(url('/account/orders')) ?>" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-700 hover:bg-slate-50 transition">
-        <?= \App\Support\View::component('icon', ['name' => 'clipboard', 'class' => 'h-4 w-4']) ?> View Orders
-    </a>
-    <a href="<?= e(url('/account/wishlist')) ?>" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-700 hover:bg-slate-50 transition">
-        <?= \App\Support\View::component('icon', ['name' => 'heart', 'class' => 'h-4 w-4']) ?> Wishlist (<?= (int) $wishlistCount ?>)
-    </a>
-    <a href="<?= e(url('/account/support')) ?>" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-navy-700 hover:bg-slate-50 transition">
-        <?= \App\Support\View::component('icon', ['name' => 'megaphone', 'class' => 'h-4 w-4']) ?> Support
-    </a>
-</div>
-
-<?php /* Recent orders */ ?>
-<div class="mt-6">
-    <div class="flex items-center justify-between">
-        <h2 class="text-base font-semibold text-navy-700">Recent orders</h2>
-        <a href="<?= e(url('/account/orders')) ?>" class="text-sm font-semibold text-brand-blue hover:underline">View all →</a>
+<div style="margin-top:24px;display:grid;gap:16px;grid-template-columns:1fr">
+  <div style="background:#fff;border:1px solid #D5DEE9;border-radius:16px;padding:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:800;color:#01011D">Recent Orders</h2>
+      <a href="<?= e(url('/account/orders')) ?>" style="font-size:13px;font-weight:700;color:#2563EB">View all →</a>
     </div>
     <?php if ($recentOrders === []): ?>
-        <p class="mt-3 text-sm text-slate-500">You haven't placed any orders yet.</p>
+      <p style="color:#64748B;font-size:14px">No orders yet.</p>
     <?php else: ?>
-        <div class="mt-3 space-y-2">
-            <?php foreach ($recentOrders as $order): ?>
-                <a href="<?= e(url('/account/orders/' . $order['reference'])) ?>" class="block rounded-xl bg-white ring-1 ring-slate-200 p-4 hover:ring-brand-blue transition">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <p class="font-mono text-sm font-semibold text-navy-700"><?= e($order['reference']) ?></p>
-                            <p class="text-xs text-slate-500"><?= e(local_datetime($order['created_at'])) ?></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-navy-700"><?= money($order['total']) ?></p>
-                            <div class="mt-1 flex gap-1.5 justify-end">
-                                <?= \App\Support\View::component('badge', ['status' => $order['status']]) ?>
-                                <?= \App\Support\View::component('badge', ['status' => $order['payment_status']]) ?>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            <?php endforeach; ?>
-        </div>
+      <div style="display:grid;gap:10px">
+        <?php foreach (array_slice($recentOrders, 0, 5) as $order): ?>
+          <a href="<?= e(url('/account/orders/' . $order['reference'])) ?>" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#F1F5F9;border-radius:12px;transition:background .12s;text-decoration:none" onmouseover="this.style.background='#E3ECFD'" onmouseout="this.style.background='#F1F5F9'">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#01011D"><?= e($order['reference']) ?></div>
+              <div style="font-size:11px;color:#64748B;margin-top:2px"><?= e(local_datetime($order['created_at'])) ?></div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:800;font-size:16px;color:#01011D"><?= money($order['total']) ?></div>
+              <div style="margin-top:4px;display:flex;gap:4px;justify-content:flex-end">
+                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(37,99,235,.1);color:#2563EB;text-transform:uppercase"><?= e(ucfirst($order['status'])) ?></span>
+                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(220,38,38,.1);color:#dc2626;text-transform:uppercase"><?= e(ucfirst($order['payment_status'])) ?></span>
+              </div>
+            </div>
+          </a>
+        <?php endforeach; ?>
+      </div>
     <?php endif; ?>
+  </div>
+</div>
+
+<div style="margin-top:16px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))">
+  <a href="<?= e(url('/account/warranty')) ?>" style="display:flex;align-items:center;gap:12px;padding:16px;background:#fff;border:1px solid #D5DEE9;border-radius:14px;transition:border-color .15s;text-decoration:none">
+    <span style="width:40px;height:40px;border-radius:10px;background:rgba(22,163,74,.1);display:flex;align-items:center;justify-content:center;color:#16A34A"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6z"/></svg></span>
+    <div><div style="font-weight:700;color:#01011D;font-size:14px">Warranty</div><div style="font-size:12px;color:#64748B"><?= $warrantyCount ?> registration(s)</div></div>
+  </a>
+  <a href="<?= e(url('/account/service-jobs')) ?>" style="display:flex;align-items:center;gap:12px;padding:16px;background:#fff;border:1px solid #D5DEE9;border-radius:14px;transition:border-color .15s;text-decoration:none">
+    <span style="width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,.1);display:flex;align-items:center;justify-content:center;color:#2563EB"><svg class="ic" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg></span>
+    <div><div style="font-weight:700;color:#01011D;font-size:14px">Repairs</div><div style="font-size:12px;color:#64748B"><?= $serviceCount ?> service job(s)</div></div>
+  </a>
+  <a href="<?= e(url('/account/wishlist')) ?>" style="display:flex;align-items:center;gap:12px;padding:16px;background:#fff;border:1px solid #D5DEE9;border-radius:14px;transition:border-color .15s;text-decoration:none">
+    <span style="width:40px;height:40px;border-radius:10px;background:rgba(122,251,1,.1);display:flex;align-items:center;justify-content:center;color:#7AFB01"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3"/></svg></span>
+    <div><div style="font-weight:700;color:#01011D;font-size:14px">Wishlist</div><div style="font-size:12px;color:#64748B"><?= $wishlistCount ?> saved item(s)</div></div>
+  </a>
+  <a href="<?= e(url('/account/notifications')) ?>" style="display:flex;align-items:center;gap:12px;padding:16px;background:#fff;border:1px solid #D5DEE9;border-radius:14px;transition:border-color .15s;text-decoration:none">
+    <span style="width:40px;height:40px;border-radius:10px;background:rgba(251,191,36,.1);display:flex;align-items:center;justify-content:center;color:#fbbf24"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></span>
+    <div><div style="font-weight:700;color:#01011D;font-size:14px">Notifications</div><div style="font-size:12px;color:#64748B"><?= $unreadNotifications ?> unread</div></div>
+  </a>
 </div>
 <?php endif; ?>

@@ -71,6 +71,7 @@ $router->get('/contact', [PageController::class, 'contact'])->name('contact');
 $router->post('/contact', [PageController::class, 'contactStore'])->middleware('csrf')->name('contact.store');
 
 // Cart + checkout (Marketing-Website Prompt 3)
+$router->get('/search/suggest', [ShopController::class, 'searchSuggest'])->name('search.suggest');
 $router->get('/cart', [CartController::class, 'index'])->name('cart');
 $router->post('/cart/add', [CartController::class, 'add'])->middleware('csrf')->name('cart.add');
 $router->post('/cart/remove', [CartController::class, 'remove'])->middleware('csrf')->name('cart.remove');

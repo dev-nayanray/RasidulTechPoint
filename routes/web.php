@@ -12,6 +12,7 @@ declare(strict_types=1);
 use App\Controllers\Account\AccountController;
 use App\Controllers\Admin\AuditLogController;
 use App\Controllers\Admin\BrandController;
+use App\Controllers\Admin\BusinessReportController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CashbookController;
 use App\Controllers\Admin\CrmController;
@@ -375,6 +376,17 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // Business reports (Prompt 35)
+    $router->get('/reports/inventory-valuation', [BusinessReportController::class, 'inventoryValuation'])->middleware('permission:reports.view');
+    $router->get('/reports/stock-aging', [BusinessReportController::class, 'stockAging'])->middleware('permission:reports.view');
+    $router->get('/reports/purchasing', [BusinessReportController::class, 'purchasing'])->middleware('permission:reports.view');
+    $router->get('/reports/supplier', [BusinessReportController::class, 'supplier'])->middleware('permission:reports.view');
+    $router->get('/reports/customer', [BusinessReportController::class, 'customer'])->middleware('permission:reports.view');
+    $router->get('/reports/staff', [BusinessReportController::class, 'staff'])->middleware('permission:reports.view');
+    $router->get('/reports/inspection', [BusinessReportController::class, 'inspection'])->middleware('permission:reports.view');
+    $router->get('/reports/warranty', [BusinessReportController::class, 'warranty'])->middleware('permission:reports.view');
+    $router->get('/reports/repair', [BusinessReportController::class, 'repair'])->middleware('permission:reports.view');
 
     // Financial reporting (Prompt 34)
     $router->get('/reports', [FinancialReportController::class, 'index'])->middleware('permission:reports.view');

@@ -13,6 +13,7 @@ use App\Controllers\Account\AccountController;
 use App\Controllers\Admin\AuditLogController;
 use App\Controllers\Admin\BrandController;
 use App\Controllers\Admin\CategoryController;
+use App\Controllers\Admin\CashbookController;
 use App\Controllers\Admin\CrmController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
@@ -372,6 +373,22 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // Cashbook & balances (Prompt 32)
+    $router->get('/cashbook', [CashbookController::class, 'index'])->middleware('permission:finance.view');
+    $router->get('/cashbook/accounts', [CashbookController::class, 'accountIndex'])->middleware('permission:finance.view');
+    $router->post('/cashbook/accounts', [CashbookController::class, 'accountStore'])->middleware('permission:expenses.manage');
+    $router->get('/cashbook/accounts/{id}', [CashbookController::class, 'accountShow'])->middleware('permission:finance.view');
+    $router->post('/cashbook/accounts/{id}/update', [CashbookController::class, 'accountUpdate'])->middleware('permission:expenses.manage');
+    $router->get('/cashbook/movements', [CashbookController::class, 'movementIndex'])->middleware('permission:finance.view');
+    $router->get('/cashbook/movements/{id}', [CashbookController::class, 'movementShow'])->middleware('permission:finance.view');
+    $router->post('/cashbook/movements', [CashbookController::class, 'movementStore'])->middleware('permission:expenses.manage');
+    $router->post('/cashbook/movements/{id}/verify', [CashbookController::class, 'movementVerify'])->middleware('permission:expenses.manage');
+    $router->post('/cashbook/movements/{id}/dispute', [CashbookController::class, 'movementDispute'])->middleware('permission:expenses.manage');
+    $router->get('/cashbook/transfer', [CashbookController::class, 'transferForm'])->middleware('permission:expenses.manage');
+    $router->post('/cashbook/transfer', [CashbookController::class, 'transferStore'])->middleware('permission:expenses.manage');
+    $router->get('/cashbook/accounts/{id}/reconcile', [CashbookController::class, 'reconcileForm'])->middleware('permission:finance.view');
+    $router->post('/cashbook/accounts/{id}/reconcile', [CashbookController::class, 'reconcileStore'])->middleware('permission:expenses.manage');
 
     // Expense management (Prompt 31)
     $router->get('/expenses', [ExpenseController::class, 'index'])->middleware('permission:finance.view');

@@ -169,7 +169,7 @@ const RTP_ADMIN_NAV = [
         ['crm.view', 'Customer CRM', '/admin/crm', 'heart', true],
     ],
     'Reports' => [
-        ['reports.view', 'Reports & Analytics', '/admin/reports', 'bar-chart', false],
+        ['reports.view', 'Reports & Analytics', '/admin/reports', 'bar-chart', true],
     ],
     'Staff & Roles' => [
         ['users.view', 'Staff Users', '/admin/users', 'user', true],

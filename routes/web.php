@@ -19,6 +19,7 @@ use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\DeliveryController;
 use App\Controllers\Admin\ExpenseController;
+use App\Controllers\Admin\FinancialReportController;
 use App\Controllers\Admin\InspectionController;
 use App\Controllers\Admin\InventoryController;
 use App\Controllers\Admin\InvoiceRefundController;
@@ -374,6 +375,17 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // Financial reporting (Prompt 34)
+    $router->get('/reports', [FinancialReportController::class, 'index'])->middleware('permission:reports.view');
+    $router->get('/reports/sales', [FinancialReportController::class, 'sales'])->middleware('permission:reports.view');
+    $router->get('/reports/payments', [FinancialReportController::class, 'payments'])->middleware('permission:reports.view');
+    $router->get('/reports/refunds', [FinancialReportController::class, 'refunds'])->middleware('permission:reports.view');
+    $router->get('/reports/expenses', [FinancialReportController::class, 'expenses'])->middleware('permission:reports.view');
+    $router->get('/reports/gross-profit', [FinancialReportController::class, 'grossProfit'])->middleware('permission:reports.view');
+    $router->get('/reports/receivables', [FinancialReportController::class, 'receivables'])->middleware('permission:reports.view');
+    $router->get('/reports/payables', [FinancialReportController::class, 'payables'])->middleware('permission:reports.view');
+    $router->get('/reports/reconciliation', [FinancialReportController::class, 'reconciliation'])->middleware('permission:reports.view');
 
     // COGS & profit (Prompt 33)
     $router->get('/profit', [ProfitController::class, 'dashboard'])->middleware('permission:finance.view');

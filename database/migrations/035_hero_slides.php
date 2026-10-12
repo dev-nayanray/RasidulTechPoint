@@ -26,8 +26,12 @@ declare(strict_types=1);
 
 return [
     'up' => function (PDO $pdo): void {
+        // Use IF NOT EXISTS so the migration is idempotent and safe to
+        // re-run after a partial failure (MySQL DDL auto-commits, so a
+        // failed INSERT after a successful CREATE TABLE leaves the table
+        // in place but the migration is not recorded as applied).
         $pdo->exec("
-            CREATE TABLE hero_slides (
+            CREATE TABLE IF NOT EXISTS hero_slides (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 internal_name VARCHAR(120) NOT NULL DEFAULT 'Slide',
                 eyebrow VARCHAR(80) NULL,
@@ -70,7 +74,15 @@ return [
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
 
-        // Seed 3 default slides matching the brand.
+        // Seed 3 default slides matching the brand — only if the table
+        // is empty (so re-runs on a partially-failed migration don't
+        // duplicate rows, and admins who deleted all slides don't get
+        // the defaults re-injected on the next migration run).
+        $count = (int) $pdo->query('SELECT COUNT(*) FROM hero_slides')->fetchColumn();
+        if ($count > 0) {
+            return;
+        }
+
         $defaults = [
             [
                 'Find Your Next Laptop.',
@@ -100,7 +112,7 @@ return [
             [$headline, $desc, $cta1Label, $cta1Url, $eyebrow, $bg, $textColor] = $row;
             $stmt->execute([
                 'Slide ' . ($i + 1), $headline, $desc, $cta1Label, $cta1Url,
-                $eyebrow, $bg, $textColor, $i, $i
+                $eyebrow, $bg, $textColor, $i,
             ]);
         }
     },

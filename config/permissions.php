@@ -166,7 +166,7 @@ const RTP_ADMIN_NAV = [
         ['delivery.manage', 'Courier & Delivery', '/admin/delivery', 'map-pin', true],
     ],
     'CRM' => [
-        ['crm.view', 'Customer CRM', '/admin/crm', 'heart', false],
+        ['crm.view', 'Customer CRM', '/admin/crm', 'heart', true],
     ],
     'Reports' => [
         ['reports.view', 'Reports & Analytics', '/admin/reports', 'bar-chart', false],

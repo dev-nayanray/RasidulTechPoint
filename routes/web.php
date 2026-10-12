@@ -13,6 +13,7 @@ use App\Controllers\Account\AccountController;
 use App\Controllers\Admin\AuditLogController;
 use App\Controllers\Admin\BrandController;
 use App\Controllers\Admin\CategoryController;
+use App\Controllers\Admin\CrmController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\DeliveryController;
@@ -370,6 +371,23 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/warranty/claims/{id}/start', [WarrantyController::class, 'claimStart'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/complete', [WarrantyController::class, 'claimComplete'])->middleware('permission:warranty.manage');
     $router->post('/warranty/claims/{id}/cancel', [WarrantyController::class, 'claimCancel'])->middleware('permission:warranty.manage');
+
+    // CRM & follow-ups (Prompt 30)
+    $router->get('/crm', [CrmController::class, 'index'])->middleware('permission:crm.view');
+    $router->get('/crm/leads', [CrmController::class, 'leadIndex'])->middleware('permission:crm.view');
+    $router->get('/crm/leads/create', [CrmController::class, 'leadCreateForm'])->middleware('permission:crm.view');
+    $router->post('/crm/leads', [CrmController::class, 'leadStore'])->middleware('permission:crm.view');
+    $router->get('/crm/leads/{id}', [CrmController::class, 'leadShow'])->middleware('permission:crm.view');
+    $router->post('/crm/leads/{id}/status', [CrmController::class, 'leadUpdateStatus'])->middleware('permission:crm.view');
+    $router->post('/crm/leads/{id}/assign', [CrmController::class, 'leadAssign'])->middleware('permission:crm.view');
+    $router->post('/crm/leads/{id}/followup', [CrmController::class, 'leadFollowup'])->middleware('permission:crm.view');
+    $router->post('/crm/leads/{id}/communication', [CrmController::class, 'leadLogCommunication'])->middleware('permission:crm.view');
+    $router->post('/crm/followups/{id}/complete', [CrmController::class, 'followupComplete'])->middleware('permission:crm.view');
+    $router->get('/crm/quotations', [CrmController::class, 'quotationIndex'])->middleware('permission:crm.view');
+    $router->get('/crm/quotations/{id}', [CrmController::class, 'quotationShow'])->middleware('permission:crm.view');
+    $router->post('/crm/quotations/{id}/send', [CrmController::class, 'quotationSend'])->middleware('permission:crm.view');
+    $router->post('/crm/quotations/{id}/accept', [CrmController::class, 'quotationAccept'])->middleware('permission:crm.view');
+    $router->post('/crm/quotations/{id}/reject', [CrmController::class, 'quotationReject'])->middleware('permission:crm.view');
 
     // Returns & exchanges (Prompt 29)
     $router->get('/returns', [ReturnController::class, 'index'])->middleware('permission:orders.view');

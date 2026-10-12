@@ -40,8 +40,8 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
 <div class="announce">
   <div class="wrap">
     <div class="announce-in">
-      <span>Authentic Dubai Imports | Quality Checked | Warranty Available</span>
-      <a href="<?= e(url('/contact')) ?>">Contact support</a>
+      <span>Dubai Imported | 100% Authentic Used Laptops | Tested &amp; Quality Checked</span>
+      <a href="<?= e(url('/contact')) ?>">Call: 01401-400041</a>
     </div>
   </div>
 </div>
@@ -53,8 +53,10 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
       </button>
       <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-        <span class="logomark"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg></span>
-        <span><span class="wm-a">Rasidul</span><span class="wm-b">TECH POINT</span></span>
+        <span class="logomark" style="background:#01011D;padding:2px;overflow:hidden">
+          <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="Rasidul Tech Point" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+        </span>
+        <span><span class="wm-a">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
       </a>
       <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search">
         <div class="search-box">
@@ -109,9 +111,9 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
   <div class="wrap">
     <div class="hero-in">
       <div style="display:flex;flex-direction:column;gap:24px;align-items:flex-start">
-        <span class="stamp mono">Dubai Imported | Authentic Used</span>
-        <h1>Premium Laptops. <span class="hl">Smarter Prices.</span></h1>
-        <p class="lead">Discover quality-checked Dubai-imported laptops for study, work, business, and everyday use.</p>
+        <span class="stamp mono">Dubai Imported | 100% Authentic</span>
+        <h1>Premium Laptops. <span class="hl" style="color:#7AFB01">Smarter Prices.</span></h1>
+        <p class="lead">Original • Tested • Reliable — quality-checked Dubai-imported laptops for study, work, business, and everyday use.</p>
         <div class="hero-ctas">
           <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Shop Laptops</a>
           <a class="btn btn-onnavy" href="<?= e(url('/shop?budget=1')) ?>">Explore Budget Deals</a>
@@ -439,42 +441,46 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
     <div class="foot-grid">
       <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
         <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-          <span class="logomark" style="background:#fff;color:#14243A"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg></span>
-          <span><span class="wm-a" style="color:#fff">Rasidul</span><span class="wm-b" style="color:#7FA4F5">TECH POINT</span></span>
+          <span class="logomark" style="background:#fff;padding:2px;overflow:hidden">
+            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+          </span>
+          <span><span class="wm-a" style="color:#fff">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
         </a>
-        <p style="max-width:300px">Dubai-imported used laptops, inspected one unit at a time, for Bangladesh.</p>
+        <p style="max-width:300px">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable. Serving Khulna, Dhaka &amp; all of Bangladesh.</p>
       </div>
       <div>
         <h4 class="mono">Shop</h4>
         <ul>
           <li><a href="<?= e(url('/shop')) ?>">All laptops</a></li>
           <li><a href="<?= e(url('/shop?budget=1')) ?>">Budget deals</a></li>
-          <li><a href="#brands">Browse brands</a></li>
+          <li><a href="<?= e(url('/shop?sort=brands')) ?>">Browse brands</a></li>
         </ul>
       </div>
       <div>
         <h4 class="mono">Support</h4>
         <ul>
-          <li><a href="<?= e(url('/contact')) ?>">Contact</a></li>
+          <li><a href="<?= e(url('/contact')) ?>">Contact us</a></li>
           <li><a href="<?= e(url('/page/warranty')) ?>">Warranty &amp; service</a></li>
           <li><a href="<?= e(url('/page/returns')) ?>">Returns</a></li>
-          <li><a href="#inspection">How we check laptops</a></li>
+          <li><a href="<?= e(url('/about')) ?>">How we check laptops</a></li>
         </ul>
       </div>
       <div>
-        <h4 class="mono">About</h4>
+        <h4 class="mono">Contact</h4>
         <ul>
-          <li><a href="<?= e(url('/about')) ?>">About us</a></li>
-          <li><a href="<?= e(url('/contact')) ?>">Contact</a></li>
+          <li><a href="tel:+8801401400041">+880 1401-400041</a></li>
+          <li><a href="mailto:rasidultechpoint@gmail.com">rasidultechpoint@gmail.com</a></li>
+          <li>Shop 110, Ground Floor, Jalil Tower, Khulna 9100</li>
+          <li>Service: Khulna, Dhaka, Bagerhat, Satkhira, Jessore</li>
         </ul>
       </div>
     </div>
     <div class="foot-bottom">
-      <span>&copy; <?= date('Y') ?> Rasidul Tech Point. All rights reserved.</span>
+      <span>&copy; <?= date('Y') ?> Rasidul Tech Point — Dubai Imported | Authentic Used Laptops</span>
       <div class="legal">
-        <a href="<?= e(url('/page/privacy')) ?>" style="color:#B7C4D6;background:none;border:0;cursor:pointer;font-size:14px">Privacy Policy</a>
-        <a href="<?= e(url('/page/terms')) ?>" style="color:#B7C4D6;background:none;border:0;cursor:pointer;font-size:14px">Terms</a>
-        <a href="<?= e(url('/page/returns')) ?>" style="color:#B7C4D6;background:none;border:0;cursor:pointer;font-size:14px">Return Policy</a>
+        <a href="<?= e(url('/page/privacy')) ?>" style="color:#B7C4D6">Privacy Policy</a>
+        <a href="<?= e(url('/page/terms')) ?>" style="color:#B7C4D6">Terms</a>
+        <a href="<?= e(url('/page/returns')) ?>" style="color:#B7C4D6">Return Policy</a>
       </div>
     </div>
   </div>

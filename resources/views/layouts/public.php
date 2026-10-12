@@ -43,10 +43,8 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
     <?php /* ====== Announcement bar (configurable copy; quiet, honest) ====== */ ?>
     <div class="announce">
         <div class="wrap announce-in">
-            <span>Dubai-imported used laptops</span>
-            <span>·</span>
-            <span>Inspected one unit at a time</span>
-            <a href="<?= e(url('/contact')) ?>">Support</a>
+            <span>Dubai Imported | 100% Authentic Used Laptops | Tested &amp; Quality Checked</span>
+            <a href="<?= e(url('/contact')) ?>">Call: 01401-400041</a>
         </div>
     </div>
 
@@ -58,12 +56,12 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
                     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
                 </button>
                 <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-                    <span class="logomark">
-                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>
+                    <span class="logomark" style="background:#01011D;padding:2px;overflow:hidden">
+                        <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
                     </span>
                     <span>
                         <span class="wm-a">Rasidul</span>
-                        <span class="wm-b">TECH POINT</span>
+                        <span class="wm-b" style="color:#7AFB01">TECH POINT</span>
                     </span>
                 </a>
                 <form class="search" action="<?= e(url('/shop')) ?>" method="get" role="search">
@@ -159,10 +157,10 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
                 <div>
                     <h4 class="mono">Contact</h4>
                     <ul>
-                        <li><?= $businessAddress !== '' ? e($businessAddress) : '<span class="ph">[Store address]</span>' ?></li>
-                        <li><?= $businessHours !== '' ? e($businessHours) : '<span class="ph">[Business hours]</span>' ?></li>
-                        <li><?= $businessPhone !== '' ? '<a href="tel:' . e(preg_replace('/[^0-9+]/', '', $businessPhone)) . '">' . e($businessPhone) . '</a>' : '<span class="ph">[Phone number]</span>' ?></li>
-                        <li><?= $businessEmail !== '' ? '<a href="mailto:' . e($businessEmail) . '">' . e($businessEmail) . '</a>' : '<span class="ph">[Email address]</span>' ?></li>
+                        <li><a href="tel:+8801401400041">+880 1401-400041</a></li>
+                        <li><a href="mailto:rasidultechpoint@gmail.com">rasidultechpoint@gmail.com</a></li>
+                        <li>Shop 110, Ground Floor, Jalil Tower, Khulna 9100</li>
+                        <li>Service: Khulna, Dhaka, Bagerhat, Satkhira, Jessore</li>
                     </ul>
                 </div>
             </div>

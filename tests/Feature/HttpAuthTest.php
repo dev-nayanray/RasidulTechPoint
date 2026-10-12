@@ -65,8 +65,11 @@ final class HttpAuthTest extends TestCase
         $this->assertMatchesRegularExpression('/Sign in/i', $response->body());
     }
 
-    public function testPostLoginWithValidCredentialsRedirectsToDashboard(): void
+    public function testPostLoginWithStaffCredentialsIsBouncedToConsoleLogin(): void
     {
+        // /login is the customer page: staff credentials are valid but must
+        // not open a staff session there — the attempt is rolled back and
+        // the visitor is pointed at the management console entry point.
         $id = $this->makeUser('http-login@test.local', 'Correct-Horse-1', ['manager']);
 
         $response = $this->router()->dispatch(
@@ -78,9 +81,129 @@ final class HttpAuthTest extends TestCase
         );
 
         $this->assertSame(302, $response->status());
-        $this->assertMatchesRegularExpression('#/admin/dashboard$#', $response->headers()['Location'] ?? '');
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '');
+        $this->assertNull(Session::get('user_id'), 'customer login page must not open a staff session');
+        $this->assertFalse(AuthService::check());
+    }
+
+    public function testPostLoginWithCustomerCredentialsRedirectsToAccount(): void
+    {
+        $id = $this->makeUser('http-login-cust@test.local', 'Correct-Horse-1', ['customer']);
+
+        $response = $this->router()->dispatch(
+            Request::synthetic('POST', '/login', [], $this->withCsrf([
+                'email' => 'http-login-cust@test.local',
+                'password' => 'Correct-Horse-1',
+            ])),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/account$#', $response->headers()['Location'] ?? '');
         $this->assertSame($id, Session::get('user_id'), 'session must carry the authenticated user id');
         $this->assertTrue(AuthService::check());
+    }
+
+    // ------------------------------------------------ CONSOLE LOGIN (/rtp-admin) --
+
+    public function testGetConsoleLoginRendersForGuest(): void
+    {
+        $response = $this->router()->dispatch(
+            Request::synthetic('GET', '/rtp-admin'),
+            $this->resolver()
+        );
+
+        $this->assertSame(200, $response->status());
+        $this->assertMatchesRegularExpression('/Management console/i', $response->body());
+        $this->assertStringNotContainsString(url('/register'), $response->body(), 'console login must not offer registration');
+    }
+
+    public function testGuestMiddlewareBouncesAuthenticatedStaffAwayFromConsoleLogin(): void
+    {
+        $id = $this->makeUser('http-console-auth@test.local', 'Correct-Horse-1', ['manager']);
+        $this->actingAs($id);
+
+        $response = $this->router()->dispatch(
+            Request::synthetic('GET', '/rtp-admin'),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/admin/dashboard$#', $response->headers()['Location'] ?? '');
+    }
+
+    public function testPostConsoleLoginWithStaffCredentialsRedirectsToDashboard(): void
+    {
+        $id = $this->makeUser('http-console-ok@test.local', 'Correct-Horse-1', ['manager']);
+
+        $response = $this->router()->dispatch(
+            Request::synthetic('POST', '/rtp-admin', [], $this->withCsrf([
+                'email' => 'http-console-ok@test.local',
+                'password' => 'Correct-Horse-1',
+            ])),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/admin/dashboard$#', $response->headers()['Location'] ?? '');
+        $this->assertSame($id, Session::get('user_id'), 'session must carry the authenticated staff id');
+        $this->assertTrue(AuthService::check());
+    }
+
+    public function testPostConsoleLoginWithCustomerCredentialsIsRejectedGenerically(): void
+    {
+        $id = $this->makeUser('http-console-cust@test.local', 'Correct-Horse-1', ['customer']);
+
+        $response = $this->router()->dispatch(
+            Request::synthetic('POST', '/rtp-admin', [], $this->withCsrf([
+                'email' => 'http-console-cust@test.local',
+                'password' => 'Correct-Horse-1',
+            ])),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '');
+        $this->assertNull(Session::get('user_id'), 'valid customer credentials must not open a session on the console page');
+        $this->assertFalse(AuthService::check());
+        $this->assertSame(
+            'These credentials do not match our records.',
+            Session::getFlash('error'),
+            'rejection must use the exact same generic message as a wrong password'
+        );
+    }
+
+    public function testPostConsoleLoginWithWrongPasswordFlashesGenericError(): void
+    {
+        $this->makeUser('http-console-bad@test.local', 'Correct-Horse-1', ['manager']);
+
+        $response = $this->router()->dispatch(
+            Request::synthetic('POST', '/rtp-admin', [], $this->withCsrf([
+                'email' => 'http-console-bad@test.local',
+                'password' => 'wrong-password',
+            ])),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '');
+        $this->assertFalse(AuthService::check());
+        $this->assertSame('These credentials do not match our records.', Session::getFlash('error'));
+    }
+
+    public function testPostConsoleLoginRequiresCsrf(): void
+    {
+        $this->makeUser('http-console-csrf@test.local', 'Correct-Horse-1', ['manager']);
+
+        $this->assertThrows(CsrfTokenMismatchException::class, function () {
+            $this->router()->dispatch(
+                Request::synthetic('POST', '/rtp-admin', [], [
+                    'email' => 'http-console-csrf@test.local',
+                    'password' => 'Correct-Horse-1',
+                ]),
+                $this->resolver()
+            );
+        });
     }
 
     public function testPostLoginWithWrongPasswordFlashesGenericError(): void
@@ -185,7 +308,7 @@ final class HttpAuthTest extends TestCase
 
     // -------------------------------------------------------------- LOGOUT --
 
-    public function testPostLogoutDestroysSessionAndRedirectsToLogin(): void
+    public function testPostLogoutDestroysStaffSessionAndRedirectsToConsoleLogin(): void
     {
         $id = $this->makeUser('http-logout@test.local', 'Correct-Horse-1', ['manager']);
         $this->actingAs($id);
@@ -197,9 +320,23 @@ final class HttpAuthTest extends TestCase
         );
 
         $this->assertSame(302, $response->status());
-        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '');
         $this->assertFalse(AuthService::check(), 'logout must invalidate the in-memory user');
         $this->assertNull(Session::get('user_id'), 'logout must clear the session user_id');
+    }
+
+    public function testPostLogoutForCustomerRedirectsToCustomerLogin(): void
+    {
+        $id = $this->makeUser('http-logout-cust@test.local', 'Correct-Horse-1', ['customer']);
+        $this->actingAs($id);
+
+        $response = $this->router()->dispatch(
+            Request::synthetic('POST', '/logout', [], $this->withCsrf([])),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
     }
 
     public function testPostLogoutRequiresCsrf(): void
@@ -217,7 +354,7 @@ final class HttpAuthTest extends TestCase
 
     // ---------------------------------------------------- PROTECTED ROUTES --
 
-    public function testAdminDashboardRedirectsAnonymousUserToLogin(): void
+    public function testAdminDashboardRedirectsAnonymousUserToConsoleLogin(): void
     {
         $response = $this->router()->dispatch(
             Request::synthetic('GET', '/admin/dashboard'),
@@ -225,8 +362,19 @@ final class HttpAuthTest extends TestCase
         );
 
         $this->assertSame(302, $response->status());
-        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '', 'console URLs send guests to the console login');
         $this->assertSame('/admin/dashboard', Session::get('intended'), 'intended path must be saved for after login');
+    }
+
+    public function testAccountAreaStillRedirectsAnonymousUserToCustomerLogin(): void
+    {
+        $response = $this->router()->dispatch(
+            Request::synthetic('GET', '/account'),
+            $this->resolver()
+        );
+
+        $this->assertSame(302, $response->status());
+        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '', 'customer URLs keep using the customer login');
     }
 
     public function testCustomerIsForbiddenFromAdminDashboard(): void
@@ -377,7 +525,7 @@ final class HttpAuthTest extends TestCase
         );
 
         $this->assertSame(302, $response->status());
-        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '', 'staff are sent to the console login after a reset');
 
         // Verify the password was actually updated.
         $hash = $this->pdo()->prepare('SELECT password FROM users WHERE id = ?');
@@ -448,16 +596,16 @@ final class HttpAuthTest extends TestCase
 
     // ---------------------------------------------------- SESSION EXPIRY --
 
-    public function testIntendedPathIsRestoredAfterLogin(): void
+    public function testIntendedPathIsRestoredAfterConsoleLogin(): void
     {
         // Step 1: anonymous user hits /admin/settings → saved as intended.
         $this->router()->dispatch(Request::synthetic('GET', '/admin/settings'), $this->resolver());
         $this->assertSame('/admin/settings', Session::get('intended'));
 
-        // Step 2: user signs in with the right role.
+        // Step 2: staff member signs in at the management console entry point.
         $id = $this->makeUser('http-intended@test.local', 'Correct-Horse-1', ['owner']);
         $response = $this->router()->dispatch(
-            Request::synthetic('POST', '/login', [], $this->withCsrf([
+            Request::synthetic('POST', '/rtp-admin', [], $this->withCsrf([
                 'email' => 'http-intended@test.local',
                 'password' => 'Correct-Horse-1',
             ])),
@@ -481,14 +629,14 @@ final class HttpAuthTest extends TestCase
 
         $this->assertFalse(AuthService::check(), 'a deactivated user must be treated as signed out on the next refresh');
 
-        // Subsequent request must be bounced back to /login.
+        // Subsequent request must be bounced back to the console login.
         $response = $this->router()->dispatch(
             Request::synthetic('GET', '/admin/dashboard'),
             $this->resolver()
         );
 
         $this->assertSame(302, $response->status());
-        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '');
     }
 
     // -------------------------------------------------------- REGISTER --

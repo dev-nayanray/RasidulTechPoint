@@ -84,10 +84,11 @@ final class RouterTest extends TestCase
             $r->get('/dashboard', fn () => Response::html('DASH'));
         });
 
-        // Without a session the auth middleware must intercept.
+        // Without a session the auth middleware must intercept. /admin paths
+        // send guests to the management console login, not /login.
         $response = $r->dispatch(Request::synthetic('GET', '/admin/dashboard'), $this->resolver());
         $this->assertSame(302, $response->status());
-        $this->assertMatchesRegularExpression('#/login$#', $response->headers()['Location'] ?? '');
+        $this->assertMatchesRegularExpression('#/rtp-admin$#', $response->headers()['Location'] ?? '');
     }
 
     public function testGuestMiddlewareRoutesStaffToConsole(): void

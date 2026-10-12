@@ -62,6 +62,11 @@ $map = [
     'permissions' => 'bg-purple-50 text-purple-700 border-purple-200',
     'specific_users' => 'bg-amber-50 text-amber-700 border-amber-200',
     'all_staff' => 'bg-slate-100 text-slate-700 border-slate-200',
+    // contact inquiries
+    'new' => 'bg-amber-50 text-amber-700 border-amber-200',
+    'responded' => 'bg-green-50 text-green-700 border-green-200',
+    'closed' => 'bg-slate-100 text-slate-500 border-slate-200',
+    'spam' => 'bg-red-50 text-red-700 border-red-200',
 ];
 $classes = $map[$label] ?? 'bg-slate-100 text-slate-700 border-slate-200';
 $text = str_replace('_', ' ', $label);

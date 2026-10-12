@@ -6,6 +6,7 @@
  * @var list<array> $recentMovements
  * @var list<array> $recentAudit
  * @var list<array> $lowStock
+ * @var ?array{total:int,new:int} $inquiryStats
  * @var array<string,string> $limitations
  * @var array<string,string> $metricDefinitions
  * @var string $range
@@ -63,6 +64,19 @@ $rangeOptions = ['today' => 'Today', '7d' => 'Last 7 days', '30d' => 'Last 30 da
     </span><?php endif; ?>.
     All times stored in UTC; presentation converts through <?= e(\App\Support\Config::get('app.timezone', 'UTC')) ?>.
 </p>
+
+<?php if ($inquiryStats !== null): ?>
+    <a href="<?= e(url('/admin/contact-inquiries')) ?>" class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-5 hover:ring-2 hover:ring-blue-500/40 transition">
+        <div>
+            <p class="text-xs uppercase tracking-wider text-slate-400">Contact inquiries</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900">
+                <?= number_format($inquiryStats['new']) ?><span class="text-base font-semibold text-slate-400"> new</span>
+                <span class="ml-2 text-sm font-medium text-slate-500">/ <?= number_format($inquiryStats['total']) ?> total</span>
+            </p>
+        </div>
+        <span class="text-sm font-medium text-blue-700">Review submissions →</span>
+    </a>
+<?php endif; ?>
 
 <?php
 if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>

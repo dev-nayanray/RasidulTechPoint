@@ -65,6 +65,7 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
                     <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
                     <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
                     <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/about')) ?>">About Us</a>
+                    <a class="hover:text-blue-200 whitespace-nowrap" href="<?= e(url('/faq')) ?>">FAQ</a>
                 </nav>
 
                 <?php /* Right-side icons */ ?>
@@ -114,6 +115,7 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
                 <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
                 <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
                 <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/about')) ?>">About Us</a>
+                <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/faq')) ?>">FAQ</a>
                 <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/contact')) ?>">Contact</a>
                 <?php if ($auth): ?>
                     <a class="rounded-lg px-3 py-2 hover:bg-white/10" href="<?= e(url('/account')) ?>">My Account</a>
@@ -157,8 +159,11 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
                 <p class="font-semibold text-white">Support</p>
                 <ul class="mt-3 space-y-2 text-slate-400">
                     <li><a class="hover:text-white" href="<?= e(url('/contact')) ?>">Contact us</a></li>
+                    <li><a class="hover:text-white" href="<?= e(url('/faq')) ?>">FAQ</a></li>
                     <li><a class="hover:text-white" href="<?= e(url('/page/warranty')) ?>">Warranty &amp; service</a></li>
                     <li><a class="hover:text-white" href="<?= e(url('/page/returns')) ?>">Return policy</a></li>
+                    <li><a class="hover:text-white" href="<?= e(url('/page/shipping')) ?>">Shipping &amp; delivery</a></li>
+                    <li><a class="hover:text-white" href="<?= e(url('/page/inspection-process')) ?>">Inspection process</a></li>
                 </ul>
             </div>
 

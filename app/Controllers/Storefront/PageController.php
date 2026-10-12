@@ -51,6 +51,45 @@ final class PageController
         ]));
     }
 
+    /**
+     * Dedicated FAQ page. Answers come exclusively from published CMS
+     * FAQ entries — never fabricated. Empty state points to the admin.
+     */
+    public function faq(): Response
+    {
+        return Response::html(View::render('storefront/faq', [
+            'pageTitle' => 'FAQ',
+            'metaTitle' => 'Frequently Asked Questions — Rasidul Tech Point',
+            'metaDescription' => 'Answers to common questions about buying Dubai-imported used laptops from Rasidul Tech Point.',
+            'faqs' => (new ContentService())->publishedFaqs(),
+        ]));
+    }
+
+    /**
+     * Generic CMS page: /page/{slug}. Renders any PUBLISHED content page
+     * (warranty, returns, privacy, terms, shipping, inspection process…).
+     * Unpublished or unknown slugs are a clean 404 — never a draft leak.
+     */
+    public function cmsPage(string $slug): Response
+    {
+        if (preg_match('/^[a-z0-9-]+$/', $slug) !== 1) {
+            throw new \App\Exceptions\NotFoundException('Page not found.');
+        }
+        $page = (new ContentService())->findPage($slug);
+        if ($page === null || trim((string) $page['body']) === '') {
+            throw new \App\Exceptions\NotFoundException('Page not found.');
+        }
+
+        return Response::html(View::render('storefront/page', [
+            'pageTitle' => (string) $page['title'],
+            'metaTitle' => ($page['meta_title'] !== null && $page['meta_title'] !== ''
+                ? (string) $page['meta_title']
+                : (string) $page['title'] . ' — Rasidul Tech Point'),
+            'metaDescription' => (string) ($page['meta_description'] ?? ''),
+            'page' => $page,
+        ]));
+    }
+
     public function contact(): Response
     {
         $content = new ContentService();

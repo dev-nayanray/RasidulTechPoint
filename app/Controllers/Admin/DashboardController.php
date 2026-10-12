@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers\Admin;
 
+use App\Services\AuthService;
 use App\Services\DashboardService;
 use App\Support\Request;
 use App\Support\Response;
@@ -44,6 +45,7 @@ final class DashboardController
             'recentAudit' => $service->recentAudit(),
             'lowStock' => $service->lowStockAlerts(),
             'limitations' => $service->limitations(),
+            'inquiryStats' => AuthService::can('contact_inquiries.view') ? $service->contactInquiryStats() : null,
             'range' => $request->query('range', 'mtd'),
             'rangeLabel' => $rangeLabel,
             'from' => $request->query('from', ''),

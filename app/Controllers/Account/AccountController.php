@@ -13,6 +13,7 @@ use App\Repositories\OrderRepository;
 use App\Services\AuditService;
 use App\Services\ContentService;
 use App\Services\NotificationService;
+use App\Services\OrderService;
 use App\Services\SettingService;
 use App\Support\Database\Connection;
 use App\Support\Request;
@@ -44,10 +45,10 @@ final class AccountController
         $orderRepo = new OrderRepository();
         $recentOrders = $orderRepo->forCustomer($customerId, 5);
 
-        $orderStats = [
-            'total' => (int) $pdo->prepare('SELECT COUNT(*) FROM orders WHERE customer_id = ?')->execute([$customerId]) ? 0 : 0,
-            'pending' => 0, 'processing' => 0, 'completed' => 0, 'cancelled' => 0,
-        ];
+        // Every status must be pre-seeded: the dashboard view sums keys like
+        // $orderStats['confirmed'] directly, and a missing key is a 500 for
+        // customers who simply have no order in that status yet.
+        $orderStats = array_fill_keys(array_merge(['total'], OrderService::ORDER_STATUSES), 0);
         $stmt = $pdo->prepare('SELECT status, COUNT(*) as c FROM orders WHERE customer_id = ? GROUP BY status');
         $stmt->execute([$customerId]);
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
@@ -55,10 +56,14 @@ final class AccountController
             $orderStats['total'] += (int) $row['c'];
         }
 
-        $warrantyCount = (int) $pdo->query("SELECT COUNT(*) FROM warranty_registrations WHERE customer_id = {$customerId}")->fetchColumn();
-        $serviceCount = (int) $pdo->query("SELECT COUNT(*) FROM service_jobs WHERE customer_id = {$customerId}")->fetchColumn();
+        $countStmt = $pdo->prepare(
+            'SELECT (SELECT COUNT(*) FROM warranty_registrations WHERE customer_id = ?),
+                    (SELECT COUNT(*) FROM service_jobs WHERE customer_id = ?),
+                    (SELECT COUNT(*) FROM wishlist_items WHERE customer_id = ?)'
+        );
+        $countStmt->execute([$customerId, $customerId, $customerId]);
+        [$warrantyCount, $serviceCount, $wishlistCount] = array_map('intval', $countStmt->fetch(PDO::FETCH_NUM));
         $unreadNotifications = NotificationService::unreadCount($userId);
-        $wishlistCount = (int) $pdo->query("SELECT COUNT(*) FROM wishlist_items WHERE customer_id = {$customerId}")->fetchColumn();
 
         return Response::html(View::render('account/dashboard', [
             'pageTitle' => 'Dashboard',

@@ -17,6 +17,7 @@ use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\CashbookController;
 use App\Controllers\Admin\CrmController;
 use App\Controllers\Admin\ContentController;
+use App\Controllers\Admin\ContactInquiryController;
 use App\Controllers\Admin\CouponController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\DashboardController;
@@ -63,6 +64,9 @@ $router->get('/brands/{slug}', [ShopController::class, 'brand'])->name('shop.bra
 $router->get('/categories/{slug}', [ShopController::class, 'category'])->name('shop.category');
 
 $router->get('/about', [PageController::class, 'about'])->name('about');
+$router->get('/faq', [PageController::class, 'faq'])->name('faq');
+// CMS-driven policy/info pages (warranty, returns, privacy, terms, shipping, …)
+$router->get('/page/{slug}', [PageController::class, 'cmsPage'])->name('cms.page');
 $router->get('/contact', [PageController::class, 'contact'])->name('contact');
 $router->post('/contact', [PageController::class, 'contactStore'])->middleware('csrf')->name('contact.store');
 
@@ -80,6 +84,12 @@ $router->get('/checkout/confirmation/{reference}', [CheckoutController::class, '
 $router->group(['middleware' => ['guest', 'csrf']], function (Router $router): void {
     $router->get('/login', [LoginController::class, 'show'])->name('login');
     $router->post('/login', [LoginController::class, 'store'])->name('login.attempt');
+
+    // Management console entry point (staff only — customer credentials are
+    // rejected with a generic error). Deliberately NOT /admin/login.
+    $router->get('/rtp-admin', [LoginController::class, 'adminShow'])->name('admin.login');
+    $router->post('/rtp-admin', [LoginController::class, 'adminStore'])->name('admin.login.attempt');
+
     $router->get('/register', [RegisterController::class, 'show'])->name('register');
     $router->post('/register', [RegisterController::class, 'store'])->name('register.store');
     $router->get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
@@ -369,6 +379,18 @@ $router->group(['prefix' => 'admin', 'middleware' => ['auth', 'csrf']], function
     $router->post('/delivery/shipments/{id}/fail', [DeliveryController::class, 'shipmentFail'])->middleware('permission:delivery.manage');
     $router->post('/delivery/shipments/{id}/return', [DeliveryController::class, 'shipmentReturn'])->middleware('permission:delivery.manage');
     $router->post('/delivery/shipments/{id}/cancel', [DeliveryController::class, 'shipmentCancel'])->middleware('permission:delivery.manage');
+
+    // Contact inquiries (public /contact form triage)
+    $router->get('/contact-inquiries', [ContactInquiryController::class, 'index'])
+        ->middleware('permission:contact_inquiries.view');
+    $router->get('/contact-inquiries/{id}', [ContactInquiryController::class, 'show'])
+        ->middleware('permission:contact_inquiries.view');
+    $router->post('/contact-inquiries/{id}/status', [ContactInquiryController::class, 'updateStatus'])
+        ->middleware('permission:contact_inquiries.manage');
+    $router->post('/contact-inquiries/{id}/note', [ContactInquiryController::class, 'updateNote'])
+        ->middleware('permission:contact_inquiries.manage');
+    $router->post('/contact-inquiries/{id}/delete', [ContactInquiryController::class, 'destroy'])
+        ->middleware('permission:contact_inquiries.manage');
 
     // Customers
     $router->get('/customers', [CustomerController::class, 'index'])->middleware('permission:customers.view');

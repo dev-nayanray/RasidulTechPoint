@@ -116,6 +116,20 @@ final class AuthService
         Session::destroy();
     }
 
+    /**
+     * Undo an authentication within the current request WITHOUT destroying
+     * the session — used when a successful attempt must be rolled back
+     * (e.g. customer credentials posted to the management console login).
+     * Flash data and the CSRF token survive so the form can re-render with
+     * an error, unlike logout() which kills the whole session.
+     */
+    public static function deauthenticate(): void
+    {
+        Session::regenerate();
+        Session::forget('user_id');
+        self::flushState();
+    }
+
     public static function check(): bool
     {
         return self::$user !== null;
@@ -181,6 +195,19 @@ final class AuthService
         );
         $stmt->execute([$userId]);
         return array_map('strval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
+    }
+
+    /**
+     * Whether this user id belongs to a staff member (management console
+     * user). Mirrors the can('dashboard.view') split used to route logins:
+     * 'owner' short-circuits, otherwise the permission rows decide.
+     */
+    public static function isStaff(int $userId): bool
+    {
+        if (in_array('owner', self::rolesFor($userId), true)) {
+            return true;
+        }
+        return in_array('dashboard.view', self::permissionsFor($userId), true);
     }
 
     /**

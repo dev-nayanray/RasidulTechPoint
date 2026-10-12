@@ -162,6 +162,32 @@ final class CustomerPanelTest extends TestCase
         $this->assertStringContainsString('Hello', $r->body(), 'dashboard renders');
     }
 
+    public function testDashboardRendersForCustomerWithoutConfirmedOrders(): void
+    {
+        // Regression: the dashboard stats card sums $orderStats['confirmed'] —
+        // a customer whose orders are all in other statuses must not 500.
+        $userId = $this->makeCustomerUser('cp-dash@test.local');
+        $stmt = $this->pdo()->prepare('SELECT id FROM customers WHERE user_id = ?');
+        $stmt->execute([$userId]);
+        $custId = (int) $stmt->fetchColumn();
+
+        $insert = $this->pdo()->prepare(
+            'INSERT INTO orders (reference, customer_id, channel, status, payment_status, subtotal, discount, total)
+             VALUES (?, ?, "online", ?, "unpaid", 100, 0, 100)'
+        );
+        $insert->execute(['RTP-DASH-PEND', $custId, 'pending']);
+        $insert->execute(['RTP-DASH-COMP', $custId, 'completed']);
+
+        $r = $this->dispatchAs($userId, 'GET', '/account');
+        $this->assertSame(200, $r->status(), 'dashboard renders when no order has confirmed status');
+        $body = $r->body();
+        $this->assertStringContainsString('Total Orders', $body, 'stats cards render');
+        $this->assertStringContainsString('RTP-DASH-PEND', $body, 'recent orders render');
+
+        // Cleanup
+        $this->pdo()->exec("DELETE FROM orders WHERE reference LIKE 'RTP-DASH-%'");
+    }
+
     // ====== 3. Profile updates + password changes ======
 
     public function testProfileUpdate(): void

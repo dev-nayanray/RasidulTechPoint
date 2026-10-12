@@ -90,7 +90,14 @@ final class PasswordResetController
             'account' => $account['email'],
         ], $request);
 
+        // Send the user to the login page that matches their account so a
+        // staff member is not bounced by the customer-only /login form.
+        $stmt = \App\Support\Database\Connection::pdo()->prepare('SELECT id FROM users WHERE email = ?');
+        $stmt->execute([strtolower(trim((string) $account['email']))]);
+        $userId = (int) $stmt->fetchColumn();
+        $login = $userId !== 0 && AuthService::isStaff($userId) ? '/rtp-admin' : '/login';
+
         flash_success('Your password has been reset. You can sign in now.');
-        return Response::redirect(url('/login'));
+        return Response::redirect(url($login));
     }
 }

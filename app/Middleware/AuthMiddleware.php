@@ -37,7 +37,12 @@ final class AuthMiddleware extends Middleware
                 return Response::json(['error' => 'Unauthenticated.'], 401);
             }
             Session::set('intended', $request->path());
-            return Response::redirect(url('/login'));
+            // Console URLs send their guests to the console login; everything
+            // else uses the customer login page.
+            $login = str_starts_with($request->path(), '/admin')
+                ? '/rtp-admin'
+                : '/login';
+            return Response::redirect(url($login));
         }
 
         return $next($request);

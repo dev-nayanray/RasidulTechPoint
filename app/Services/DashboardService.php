@@ -259,6 +259,15 @@ final class DashboardService
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /** @return array{total:int,new:int} real counts from contact_inquiries */
+    public function contactInquiryStats(): array
+    {
+        $row = Connection::pdo()->query(
+            "SELECT COUNT(*) AS total, COALESCE(SUM(status = 'new'), 0) AS new FROM contact_inquiries"
+        )->fetch(PDO::FETCH_ASSOC);
+        return ['total' => (int) $row['total'], 'new' => (int) $row['new']];
+    }
+
     /** @return list<array<string,mixed>> */
     public function recentMovements(int $limit = 8, ?int $locationId = null): array
     {

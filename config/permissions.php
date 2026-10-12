@@ -44,6 +44,9 @@ const RTP_PERMISSIONS = [
     'customers.view',
     'customers.create',
     'customers.manage',
+    // Contact form inquiries
+    'contact_inquiries.view',
+    'contact_inquiries.manage',
     // Payments & finance
     'payments.view',
     'payments.manage',
@@ -86,6 +89,7 @@ const RTP_ROLE_PERMISSIONS = [
         'inventory.view', 'inventory.receive', 'inventory.adjust', 'inventory.approve',
         'purchases.view', 'purchases.manage', 'inspections.manage', 'pos.access', 'pos.authorize_discount',
         'orders.view', 'orders.manage', 'customers.view', 'customers.manage',
+        'contact_inquiries.view', 'contact_inquiries.manage',
         'payments.view', 'payments.manage', 'payments.refund', 'finance.view', 'expenses.manage',
         'warranty.manage', 'service.manage', 'delivery.manage', 'crm.view',
         'reports.view', 'reports.export', 'notifications.view', 'notifications.manage',
@@ -159,6 +163,7 @@ const RTP_ADMIN_NAV = [
     ],
     'Customers' => [
         ['customers.view', 'Customers', '/admin/customers', 'users', true],
+        ['contact_inquiries.view', 'Contact Inquiries', '/admin/contact-inquiries', 'mail', true],
     ],
     'Finance' => [
         ['payments.view', 'Payments', '/admin/payments', 'credit-card', true],

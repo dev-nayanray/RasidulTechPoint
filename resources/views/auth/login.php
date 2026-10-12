@@ -1,5 +1,5 @@
 <h1 class="text-lg font-semibold text-slate-900">Sign in</h1>
-<p class="mt-1 text-sm text-slate-500">Access your account or the management console.</p>
+<p class="mt-1 text-sm text-slate-500">Track your orders, warranties, and service jobs.</p>
 
 <form method="post" action="<?= e(url('/login')) ?>" class="mt-6 space-y-4" novalidate data-loading-form>
     <?= csrf_field() ?>

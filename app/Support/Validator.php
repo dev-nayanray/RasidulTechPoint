@@ -213,7 +213,8 @@ final class Validator
             'return_requests', 'return_items', 'return_history',
             'crm_leads', 'crm_inquiries', 'crm_quotations', 'crm_followups', 'crm_communications',
             'expense_categories', 'expense_entries',
-            'cash_accounts', 'cash_movements'];
+            'cash_accounts', 'cash_movements',
+            'content_blocks', 'banners', 'content_pages', 'faqs', 'seo_metadata'];
         if (!in_array($table, $allowed, true)) {
             throw new \RuntimeException("unique rule not allowed for table {$table}");
         }
@@ -242,7 +243,8 @@ final class Validator
             'return_requests', 'return_items', 'return_history',
             'crm_leads', 'crm_inquiries', 'crm_quotations', 'crm_followups', 'crm_communications',
             'expense_categories', 'expense_entries',
-            'cash_accounts', 'cash_movements'];
+            'cash_accounts', 'cash_movements',
+            'content_blocks', 'banners', 'content_pages', 'faqs', 'seo_metadata'];
         if (!in_array($table, $allowed, true)) {
             throw new \RuntimeException("exists rule not allowed for table {$table}");
         }

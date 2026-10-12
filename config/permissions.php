@@ -176,7 +176,7 @@ const RTP_ADMIN_NAV = [
         ['roles.manage', 'Roles & Permissions', '/admin/roles', 'key', true],
     ],
     'Marketing' => [
-        ['marketing.manage', 'Marketing & Content', '/admin/marketing', 'megaphone', false],
+        ['marketing.manage', 'Marketing & Content', '/admin/content', 'megaphone', true],
     ],
     'Notifications' => [
         ['notifications.view', 'Notifications', '/admin/notifications', 'bell', true],

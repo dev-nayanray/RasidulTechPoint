@@ -62,6 +62,7 @@ $router->get('/categories/{slug}', [ShopController::class, 'category'])->name('s
 
 $router->get('/about', [PageController::class, 'about'])->name('about');
 $router->get('/contact', [PageController::class, 'contact'])->name('contact');
+$router->post('/contact', [PageController::class, 'contactStore'])->middleware('csrf')->name('contact.store');
 
 // ---------------------------------------------------------------- AUTH ----
 $router->group(['middleware' => ['guest', 'csrf']], function (Router $router): void {

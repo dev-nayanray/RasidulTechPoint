@@ -20,7 +20,7 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#14243A">
     <title><?= e($pageTitle ?? 'Admin') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
-    <link rel="icon" href="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" type="image/jpeg">
+    <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -47,7 +47,7 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
             <!-- Brand header — sticky at top of sidebar -->
             <div class="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5 bg-navy-800/40 backdrop-blur-sm">
                 <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 hover:bg-white/20 transition-colors" title="Dashboard" aria-label="RTP home">
-                    <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
+                    <img src="<?= e(url('assets/img/logo-mark.svg')) ?>" width="100%" height="100%" alt="RTP" style="display:block;border-radius:inherit">
                 </a>
                 <span class="min-w-0 leading-tight" data-sidebar-label>
                     <span class="block truncate text-sm font-semibold text-white"><?= e(\App\Support\Config::get('app.name')) ?></span>

@@ -22,9 +22,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($metaTitle ?? 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops') ?></title>
 <meta name="description" content="<?= e($metaDescription ?? 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.') ?>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<?php /* Fonts are self-hosted (see hero/_slider_css.php): the site CSP is font-src 'self', so Google Fonts is blocked. */ ?>
+<link rel="preload" href="<?= e(url('assets/fonts/bricolage-grotesque-latin-var.woff2')) ?>" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="<?= e(url('assets/fonts/figtree-latin-var.woff2')) ?>" as="font" type="font/woff2" crossorigin>
 <style>
 <?php include BASE_PATH . '/resources/views/storefront/_design_css.php'; ?>
 </style>
@@ -62,7 +62,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
         </span>
         <span><span class="wm-a">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
       </a>
-      <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search" data-search-form>
+      <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search" data-search-form data-suggest-url="<?= e(url('/search/suggest')) ?>">
         <div class="search-box">
           <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
           <label class="sr-only" for="site-search">Search laptops</label>
@@ -566,250 +566,9 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
 </nav>
 
 </div>
-<script>
-  // Mobile nav drawer toggle.
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-nav-toggle]');
-    if (t) { var n = document.querySelector('[data-nav-mobile]'); if (n) { var o = n.classList.toggle('open'); t.setAttribute('aria-expanded', o?'true':'false'); } }
-  });
-
-  // Dropdown panels.
-  document.addEventListener('click', function (e) {
-    var tg = e.target.closest('[data-dd-toggle]');
-    document.querySelectorAll('.dd-panel.open').forEach(function (p) { if (!tg || p.id !== tg.getAttribute('data-dd-toggle')) p.classList.remove('open'); });
-    if (tg) { e.preventDefault(); var p = document.getElementById(tg.getAttribute('data-dd-toggle')); if (p) p.classList.toggle('open'); }
-  });
-
-  // AJAX live search.
-  (function () {
-    var input = document.querySelector('[data-search-input]');
-    var dd = document.querySelector('[data-sugg-dropdown]');
-    if (!input || !dd) return;
-    var timer = null, lastQ = '';
-    function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
-    input.addEventListener('input', function () {
-      var q = input.value.trim();
-      if (q.length < 2) { dd.classList.remove('open'); lastQ=''; return; }
-      if (q === lastQ) return; lastQ = q;
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        fetch('<?= e(url('/search/suggest')) ?>?q=' + encodeURIComponent(q)).then(function(r){return r.json()}).then(function(data){
-          if (!data.results || data.results.length === 0) { dd.innerHTML = '<div class="s-empty">No laptops found. Try Dell, HP, Lenovo.</div>'; }
-          else { dd.innerHTML = data.results.map(function(r){return '<a class="s-item" href="'+r.url+'"><span class="s-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg></span><div class="s-info"><div class="s-name">'+esc(r.brand+' '+r.name)+'</div><div class="s-meta">'+esc(r.processor)+(r.ram?' · '+esc(r.ram):'')+(r.units>0?' · In stock':'')+'</div></div><span class="s-price">'+esc(r.price)+'</span></a>'}).join('') + (data.more?'<a class="s-more" href="'+data.search_url+'">See all results →</a>':''); }
-          dd.classList.add('open');
-        }).catch(function(){ dd.classList.remove('open'); });
-      }, 250);
-    });
-    document.addEventListener('click', function(e){ if(!e.target.closest('.search')) dd.classList.remove('open'); });
-    input.addEventListener('keydown', function(e){ if(e.key==='Escape'){dd.classList.remove('open');input.blur();} });
-  })();
-
-  // Premium Hero Slider v2 — reference (hero-slider.html) faithful port.
-  // Drive autoplay with setTimeout + rAF progress bar (CSS animationend was
-  // fragile across browsers and didn't restart reliably on slide change).
-  // Theme vars are set inline on each <article.slide>; we mirror them onto
-  // the hero root so the background, controls and announcement bar re-tint
-  // whenever the active slide changes.
-  (function () {
-    var hero = document.getElementById('hero');
-    if (!hero) { console.warn('[hero-slider] #hero element not found — slider JS skipped'); return; }
-    var slides = [].slice.call(hero.querySelectorAll('.slide'));
-    if (slides.length === 0) { console.warn('[hero-slider] no .slide elements found'); return; }
-    console.info('[hero-slider] init: ' + slides.length + ' slides found, autoplay=' + (!hero.classList.contains('is-paused')));
-    var bgs = [].slice.call(hero.querySelectorAll('.bg'));
-    var inds = [].slice.call(hero.querySelectorAll('.ind'));
-    var viewport = hero.querySelector('[data-hero-slides]');
-    var toggle = hero.querySelector('[data-toggle]');
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    // Read duration from the inline --hero-dur CSS var (defaults to 7000ms).
-    var dur = parseInt(getComputedStyle(hero).getPropertyValue('--hero-dur')) || 7000;
-
-    // Initial "is-paused" comes from the server (set when autoplay_enabled=0).
-    var autoplayEnabled = !hero.classList.contains('is-paused');
-    var userPlaying = autoplayEnabled && !reduce.matches && slides.length > 1;
-    var cur = 0;
-    var count = slides.length;
-    var timer = null;
-    var progressRaf = null;
-    var progressStart = 0;
-    var hover = false, focus = false;
-
-    // Mirror the active slide's --bg/--ink/etc. onto the hero root so the
-    // background, announcement bar and controls re-tint on every change.
-    function applyTheme(slideEl) {
-      var style = slideEl.getAttribute('style') || '';
-      // Strip previously-applied theme vars (keep --hero-dur, --dir, --ry, --rx)
-      var keep = ['--hero-dur','--dir','--ry','--rx'];
-      var toRemove = [];
-      for (var i = 0; i < hero.style.length; i++) {
-        var prop = hero.style[i];
-        if (prop.indexOf('--') === 0 && keep.indexOf(prop) === -1) toRemove.push(prop);
-      }
-      toRemove.forEach(function (p) { hero.style.removeProperty(p); });
-      // Apply the slide's vars
-      style.split(';').forEach(function (decl) {
-        var m = decl.match(/^\s*(--[a-zA-Z0-9_-]+)\s*:\s*(.+)\s*$/);
-        if (m && keep.indexOf(m[1]) === -1) hero.style.setProperty(m[1], m[2]);
-      });
-    }
-
-    function setPaused(paused) {
-      hero.classList.toggle('is-paused', paused);
-      if (viewport) viewport.setAttribute('aria-live', !paused && userPlaying ? 'off' : 'polite');
-    }
-    function isPaused() {
-      return !userPlaying || hover || focus || document.hidden;
-    }
-    function sync() { setPaused(isPaused()); }
-
-    function clearProgress() {
-      if (progressRaf) cancelAnimationFrame(progressRaf);
-      progressRaf = null;
-      // Reset all fills
-      inds.forEach(function (li) {
-        var fill = li.querySelector('.fill');
-        if (fill) fill.style.transform = 'scaleX(0)';
-      });
-    }
-
-    function startProgress() {
-      clearProgress();
-      if (!userPlaying || count <= 1 || reduce.matches) return;
-      progressStart = performance.now();
-      (function tick(now) {
-        var activeInd = inds[cur];
-        if (activeInd) {
-          var fill = activeInd.querySelector('.fill');
-          if (fill) {
-            var elapsed = now - progressStart;
-            var pct = Math.min(1, elapsed / dur);
-            fill.style.transform = 'scaleX(' + pct + ')';
-          }
-        }
-        if (now - progressStart >= dur) {
-          // Advance
-          next();
-          return;
-        }
-        progressRaf = requestAnimationFrame(tick);
-      })(performance.now());
-    }
-
-    function go(n, dir) {
-      if (count <= 1) return;
-      n = ((n % count) + count) % count;
-      if (n === cur) return;
-      hero.style.setProperty('--dir', String(dir || (n > cur ? 1 : -1)));
-      // Swap the hero-root theme class so the chrome (inds, controls, bg)
-      // re-tints to the incoming slide's palette.
-      var oldT = (slides[cur].className.match(/hs-t\d+/) || [])[0];
-      var newT = (slides[n].className.match(/hs-t\d+/) || [])[0];
-      if (oldT && newT && oldT !== newT) {
-        hero.classList.remove(oldT);
-        hero.classList.add(newT);
-      }
-      slides[cur].classList.remove('is-active');
-      try { slides[cur].inert = true; } catch (e) {}
-      slides[cur].setAttribute('inert', '');
-      slides[cur].setAttribute('aria-hidden', 'true');
-      if (bgs[cur]) bgs[cur].classList.remove('is-active');
-      if (inds[cur]) inds[cur].classList.remove('is-active');
-      if (inds[cur]) { var b = inds[cur].querySelector('button'); if (b) b.removeAttribute('aria-current'); }
-      cur = n;
-      slides[cur].classList.add('is-active');
-      try { slides[cur].inert = false; } catch (e) {}
-      slides[cur].removeAttribute('inert');
-      slides[cur].removeAttribute('aria-hidden');
-      if (bgs[cur]) bgs[cur].classList.add('is-active');
-      if (inds[cur]) inds[cur].classList.add('is-active');
-      if (inds[cur]) { var b2 = inds[cur].querySelector('button'); if (b2) b2.setAttribute('aria-current', 'true'); }
-      applyTheme(slides[cur]);
-      startProgress();
-    }
-
-    function next() { go(cur + 1, 1); }
-    function prev() { go(cur - 1, -1); }
-
-    // Apply initial theme from first slide
-    applyTheme(slides[0]);
-    // Start autoplay
-    startProgress();
-
-    if (hero.querySelector('[data-prev]')) hero.querySelector('[data-prev]').addEventListener('click', prev);
-    if (hero.querySelector('[data-next]')) hero.querySelector('[data-next]').addEventListener('click', next);
-    if (toggle) {
-      toggle.addEventListener('click', function () {
-        userPlaying = !userPlaying;
-        toggle.setAttribute('aria-label', userPlaying ? 'Pause slideshow' : 'Play slideshow');
-        var ip = toggle.querySelector('.i-pause');
-        var ipy = toggle.querySelector('.i-play');
-        if (ip) ip.hidden = !userPlaying;
-        if (ipy) ipy.hidden = userPlaying;
-        sync();
-        if (userPlaying && !isPaused()) startProgress();
-        else clearProgress();
-      });
-    }
-    inds.forEach(function (li) {
-      var btn = li.querySelector('button');
-      if (btn) btn.addEventListener('click', function () { go(parseInt(this.getAttribute('data-go'), 10)); });
-    });
-
-    if (viewport) {
-      viewport.style.touchAction = 'pan-y';
-      hero.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { hover = true; if (userPlaying) { clearProgress(); sync(); } } });
-      hero.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = false; if (userPlaying && !isPaused()) startProgress(); sync(); } });
-      hero.addEventListener('focusin', function (e) { try { focus = e.target.matches && e.target.matches(':focus-visible'); } catch (err) { focus = true; } if (userPlaying) { clearProgress(); sync(); } });
-      hero.addEventListener('focusout', function () { focus = false; if (userPlaying && !isPaused()) startProgress(); sync(); });
-      document.addEventListener('visibilitychange', function () {
-        if (document.hidden) { clearProgress(); sync(); }
-        else if (userPlaying && !isPaused()) startProgress();
-      });
-      hero.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
-        else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
-        else if (e.key === 'Home') { e.preventDefault(); go(0); }
-        else if (e.key === 'End') { e.preventDefault(); go(count - 1); }
-      });
-      hero.addEventListener('click', function (e) {
-        var a = e.target.closest && e.target.closest('a[href="#"]');
-        if (a) e.preventDefault();
-      });
-      var startX = null;
-      viewport.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') startX = e.clientX; });
-      viewport.addEventListener('pointerup', function (e) {
-        if (startX === null) return;
-        var dx = e.clientX - startX;
-        startX = null;
-        if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1, dx < 0 ? 1 : -1);
-      });
-      viewport.addEventListener('pointercancel', function () { startX = null; });
-    }
-
-    // Gentle laptop tilt following the mouse — rAF-throttled.
-    if (!reduce.matches && window.matchMedia('(hover: hover)').matches) {
-      var raf = 0;
-      hero.addEventListener('pointermove', function (e) {
-        if (e.pointerType !== 'mouse') return;
-        var r = hero.getBoundingClientRect();
-        var x = (e.clientX - r.left) / r.width - 0.5;
-        var y = (e.clientY - r.top) / r.height - 0.5;
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(function () {
-          hero.style.setProperty('--ry', (x * 8).toFixed(2) + 'deg');
-          hero.style.setProperty('--rx', (-y * 5).toFixed(2) + 'deg');
-        });
-      });
-      hero.addEventListener('pointerleave', function () {
-        hero.style.setProperty('--ry', '0deg');
-        hero.style.setProperty('--rx', '0deg');
-      });
-    }
-
-    sync();
-  })();
-</script>
+<?php /* External modules only: the site CSP is script-src 'self', which blocks inline scripts. */ ?>
+<script type="module" src="<?= e(url('assets/js/storefront-home.js')) ?>"></script>
+<script type="module" src="<?= e(url('assets/js/hero-slider.js')) ?>"></script>
 
 <!-- Compare bar (fixed bottom) -->
 <div class="cmp-bar" data-cmp-bar>

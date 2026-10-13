@@ -115,3 +115,11 @@ The battery covers:
    `X-Content-Type-Options: nosniff`.
 6. A traceable error (e.g. stopped DB) shows the generic 500 page — no stack
    trace, no credentials.
+
+## Front-end code and the CSP
+
+The Content-Security-Policy is `script-src 'self'; font-src 'self'`. Inline
+`<script>` blocks, `onclick=`-style attributes and Google Fonts are blocked
+without any visible error. Put JavaScript in `public/assets/js/` and load it
+with `<script type="module" src="...">`, and self-host fonts under
+`public/assets/fonts/`. See `docs/HERO_SLIDER.md` for a worked example.

@@ -10,7 +10,8 @@ use App\Support\Request;
 use App\Support\Response;
 
 /**
- * Applies baseline security headers to every response.
+ * Applies baseline security headers to every response, unless the response
+ * already carries that header (set deliberately by its controller).
  */
 final class SecurityHeadersMiddleware extends Middleware
 {
@@ -26,7 +27,9 @@ final class SecurityHeadersMiddleware extends Middleware
             'permissions_policy' => 'Permissions-Policy',
             'content_security_policy' => 'Content-Security-Policy',
         ] as $key => $header) {
-            if (!empty($headers[$key])) {
+            // A controller may set a stricter or more specific value on purpose
+            // (for example, the admin hero preview allows same-origin framing).
+            if (!empty($headers[$key]) && !array_key_exists($header, $response->headers())) {
                 $response->header($header, (string) $headers[$key]);
             }
         }

@@ -607,12 +607,220 @@ final class HeroSlideTest extends TestCase
         $this->assertStringContainsString('aria-roledescription="carousel"', $html);
     }
 
-    public function testHomepageFallsBackWhenNoSlides(): void
+    public function testHomepageFallsBackToReferenceSlidesWhenNoSlides(): void
     {
-        // No slides — DB wiped in setUp.
+        // No slides in the DB (wiped in setUp). HomeController deliberately
+        // renders the 4 built-in reference slides so the hero never disappears.
         $resp = (new \App\Controllers\Storefront\HomeController())->index();
         $html = $resp->body();
-        $this->assertStringNotContainsString('id="hero"', $html);
-        $this->assertStringContainsString('Premium Laptops.', $html);
+        $this->assertStringContainsString('id="hero"', $html);
+        $this->assertSame(4, preg_match_all('/<article class="hs-slide /', $html));
+        $this->assertStringContainsString('Aero 14', $html);
+        $this->assertStringContainsString('data-autoplay="1"', $html);
+    }
+
+    // ------------------------------------------------ CSP + ISOLATION --
+    // Regression: the site CSP is "script-src 'self'; font-src 'self'", so an
+    // inline script (no autoplay, only slide 1) and Google Fonts (wrong fonts)
+    // were silently blocked on the homepage.
+
+    private function homeHtml(): string
+    {
+        return (new \App\Controllers\Storefront\HomeController())->index()->body();
+    }
+
+    public function testHomepageHasNoInlineScriptBlockedByCsp(): void
+    {
+        $html = $this->homeHtml();
+        $this->assertSame(0, preg_match_all('/<script(?![^>]*\bsrc=)[^>]*>/i', $html), 'inline <script> would be blocked by script-src self');
+        // The compare bar's close button still has a legacy onclick (outside the hero, untouched here).
+        $withoutLegacy = (string) preg_replace('/<button class="cmp-close"[^>]*>/', '<button>', $html);
+        $this->assertSame(0, preg_match('/\son(click|change|input|submit|load)=/i', $withoutLegacy), 'inline event handlers are blocked by CSP');
+        $this->assertStringContainsString('<script type="module" src="', $html);
+        $this->assertStringContainsString('assets/js/hero-slider.js', $html);
+        $this->assertStringContainsString('assets/js/storefront-home.js', $html);
+    }
+
+    public function testHomepageDoesNotDependOnGoogleFonts(): void
+    {
+        $html = $this->homeHtml();
+        $this->assertStringNotContainsString('fonts.googleapis.com', $html);
+        $this->assertStringNotContainsString('fonts.gstatic.com', $html);
+        $this->assertStringContainsString('assets/fonts/bricolage-grotesque-latin-var.woff2', $html);
+    }
+
+    public function testSelfHostedFontAndScriptFilesExist(): void
+    {
+        foreach ([
+            'assets/fonts/bricolage-grotesque-latin-var.woff2',
+            'assets/fonts/figtree-latin-var.woff2',
+            'assets/fonts/ibm-plex-mono-latin-400.woff2',
+            'assets/fonts/ibm-plex-mono-latin-500.woff2',
+            'assets/js/hero-slider.js',
+            'assets/js/storefront-home.js',
+            'assets/js/admin-hero-index.js',
+            'assets/js/admin-hero-form.js',
+        ] as $rel) {
+            $this->assertTrue(is_file(BASE_PATH . '/public/' . $rel), $rel . ' must exist');
+            $this->assertGreaterThan(0, (int) filesize(BASE_PATH . '/public/' . $rel), $rel . ' must not be empty');
+        }
+    }
+
+    public function testSliderCssIsScopedAndDoesNotTouchSiteVariables(): void
+    {
+        $css = \App\Support\View::partial('storefront/hero/_slider_css', []);
+        // Tokens must live on .hs-hero. A :root block would override the
+        // site-wide --bg / --line / --muted used by the rest of the page.
+        $this->assertSame(0, preg_match('/:root\s*\{/', $css), 'no :root rules');
+        $this->assertStringContainsString('.hs-hero{--font-display', preg_replace('/\s+/', '', $css), 'tokens are declared on .hs-hero');
+        $this->assertStringContainsString('@font-face', $css);
+        // Generic class names collide with the storefront CSS (.ghost draws a
+        // dashed box, .btn-ghost is white, .chip is a pill, .eyebrow::before).
+        foreach (['.ghost{', '.btn-ghost{', '.chip{', '.eyebrow', '.specs{', '.wrap{', '.btn{', '.hero{'] as $generic) {
+            $this->assertStringNotContainsString($generic, $css, $generic . ' must be hs- prefixed');
+        }
+    }
+
+    public function testHeroMarkupUsesNamespacedClassesOnly(): void
+    {
+        $html = $this->homeHtml();
+        $hero = substr($html, (int) strpos($html, '<section class="hs-hero'));
+        $hero = substr($hero, 0, (int) strpos($hero, '</section>'));
+        $this->assertStringNotContainsString('class="slide ', $hero);
+        $this->assertStringNotContainsString('class="btn ', $hero);
+        $this->assertStringNotContainsString('class="ghost', $hero);
+        $this->assertStringNotContainsString('class="chip', $hero);
+        $this->assertStringContainsString('hs-btn hs-btn-primary', $hero);
+        $this->assertStringContainsString('class="hs-ghost"', $hero);
+        $this->assertStringContainsString('hs-chip hs-c1', $hero);
+    }
+
+    // --------------------------------------------------- ALL SLIDES SHOW --
+    public function testEverySlideAndIndicatorIsRendered(): void
+    {
+        $ownerId = $this->makeOwner('hs-all@test.local');
+        $svc = new HeroSlideService();
+        foreach (['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'] as $i => $name) {
+            $svc->create($this->validPayload(['nav_label' => $name, 'headline' => $name . ' headline', 'sort_order' => $i]), $ownerId);
+        }
+        $html = $this->homeHtml();
+        $this->assertSame(5, preg_match_all('/<article class="hs-slide /', $html));
+        $this->assertSame(5, preg_match_all('/<li class="hs-ind/', $html));
+        $this->assertSame(5, preg_match_all('/<div class="hs-bg /', $html));
+        foreach (['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'] as $name) {
+            $this->assertStringContainsString($name . ' headline', $html);
+        }
+        // Exactly one slide is active and reachable on first paint.
+        $this->assertSame(1, preg_match_all('/<article class="hs-slide hs-t\d+ is-active"/', $html));
+        $this->assertSame(4, preg_match_all('/<article class="hs-slide hs-t\d+"[^>]*aria-hidden="true"/', $html));
+    }
+
+    public function testSlideRendersEveryContentField(): void
+    {
+        $ownerId = $this->makeOwner('hs-fields@test.local');
+        (new HeroSlideService())->create($this->validPayload(), $ownerId);
+        $html = $this->homeHtml();
+        foreach (['New', 'Ultrabook / 14 inch', 'Light. Strong. Fast.', 'A tiny laptop that punches above its weight.',
+                  '16 GB LPDDR5X', '1 TB NVMe SSD', 'Wi-Fi 7', '$1,299', '$1,499', '$108/mo', '0% interest, free setup',
+                  'Shop Now', 'Compare specs', '2.8K', 'OLED panel', '18 h', 'battery life', '1.12 kg', 'magnesium body'] as $needle) {
+            $this->assertStringContainsString($needle, $html, $needle . ' missing from the rendered slide');
+        }
+        $this->assertStringContainsString('<svg viewBox="0 0 320 200"', $html);
+    }
+
+    // ------------------------------------------------ AUTOPLAY SETTINGS --
+    public function testAutoplayInitialStateComesFromSettingsAsDataAttributes(): void
+    {
+        $ownerId = $this->makeOwner('hs-auto@test.local');
+        $svc = new HeroSlideService();
+        $svc->create($this->validPayload(['nav_label' => 'One', 'sort_order' => 0]), $ownerId);
+        $svc->create($this->validPayload(['nav_label' => 'Two', 'sort_order' => 1]), $ownerId);
+
+        $svc->updateSettings(['autoplay_enabled' => 1, 'autoplay_interval_ms' => 5000, 'pause_on_hover' => 1, 'announcement_enabled' => 1, 'announcement_items' => ['x'], 'max_slides' => 8], $ownerId);
+        $html = $this->homeHtml();
+        $this->assertStringContainsString('data-autoplay="1"', $html);
+        $this->assertStringContainsString('data-interval="5000"', $html);
+        $this->assertStringContainsString('data-pause-hover="1"', $html);
+        $this->assertStringNotContainsString('hs-hero hs-t0 is-paused', $html);
+        $this->assertStringContainsString('aria-label="Pause slideshow"', $html);
+
+        $svc->updateSettings(['autoplay_enabled' => 0, 'autoplay_interval_ms' => 5000, 'pause_on_hover' => 0, 'announcement_enabled' => 1, 'announcement_items' => ['x'], 'max_slides' => 8], $ownerId);
+        $html = $this->homeHtml();
+        $this->assertStringContainsString('data-autoplay="0"', $html);
+        $this->assertStringContainsString('data-pause-hover="0"', $html);
+        $this->assertStringContainsString('hs-hero hs-t0 is-paused', $html);
+        $this->assertStringContainsString('aria-label="Play slideshow"', $html);
+    }
+
+    public function testSingleSlideHidesControlsAndDisablesAutoplay(): void
+    {
+        $ownerId = $this->makeOwner('hs-single@test.local');
+        (new HeroSlideService())->create($this->validPayload(), $ownerId);
+        $html = $this->homeHtml();
+        $this->assertSame(1, preg_match_all('/<article class="hs-slide /', $html));
+        $this->assertStringNotContainsString('class="hs-bar"', $html);
+        $this->assertStringNotContainsString('data-toggle', $html);
+        $this->assertStringContainsString('data-autoplay="0"', $html);
+    }
+
+    // ---------------------------------------------------------- LINKS --
+    public function testAbsoluteCtaUrlsAreNotPrefixedWithTheSiteUrl(): void
+    {
+        $ownerId = $this->makeOwner('hs-links@test.local');
+        (new HeroSlideService())->create($this->validPayload([
+            'cta1_url' => 'https://example.com/deal',
+            'cta2_url' => '/shop?compare=1',
+        ]), $ownerId);
+        $html = $this->homeHtml();
+        $this->assertStringContainsString('href="https://example.com/deal"', $html);
+        $this->assertStringNotContainsString('/https://example.com', $html);
+        $this->assertStringContainsString(url('/shop?compare=1'), str_replace('&amp;', '&', $html));
+    }
+
+    // ------------------------------------------------- ADMIN HTTP FIXES --
+    public function testReorderAcceptsTheCommaSeparatedIdsTheAdminScriptPosts(): void
+    {
+        $ownerId = $this->makeOwner('hs-reorder@test.local');
+        $svc = new HeroSlideService();
+        $a = $svc->create($this->validPayload(['nav_label' => 'A', 'sort_order' => 0]), $ownerId);
+        $b = $svc->create($this->validPayload(['nav_label' => 'B', 'sort_order' => 1]), $ownerId);
+        $c = $svc->create($this->validPayload(['nav_label' => 'C', 'sort_order' => 2]), $ownerId);
+
+        $resp = $this->dispatchAs($ownerId, 'POST', '/admin/hero-slides/reorder', ['ids' => "{$c},{$a},{$b}"]);
+        $this->assertSame(200, $resp->status());
+        $navs = array_column($svc->all(), 'nav_label');
+        $this->assertSame(['C', 'A', 'B'], $navs, 'comma separated ids must reorder every slide');
+    }
+
+    public function testPreviewAllowsSameOriginFramingWhileOtherPagesStayDenied(): void
+    {
+        $ownerId = $this->makeOwner('hs-frame@test.local');
+        $id = (new HeroSlideService())->create($this->validPayload(), $ownerId);
+
+        $preview = $this->dispatchAs($ownerId, 'GET', "/admin/hero-slides/{$id}/preview");
+        $this->assertSame(200, $preview->status());
+        $this->assertSame('SAMEORIGIN', $preview->headers()['X-Frame-Options'] ?? null);
+        $this->assertStringContainsString("frame-ancestors 'self'", $preview->headers()['Content-Security-Policy'] ?? '');
+        $this->assertStringContainsString("script-src 'self'", $preview->headers()['Content-Security-Policy'] ?? '');
+        $this->assertStringNotContainsString('fonts.googleapis.com', $preview->body());
+        $this->assertStringContainsString('class="hs-hero"', $preview->body());
+
+        $edit = $this->dispatchAs($ownerId, 'GET', "/admin/hero-slides/{$id}/edit");
+        $this->assertSame('DENY', $edit->headers()['X-Frame-Options'] ?? null, 'every other page still forbids framing');
+        $this->assertStringContainsString("frame-ancestors 'none'", $edit->headers()['Content-Security-Policy'] ?? '');
+    }
+
+    public function testAdminPagesLoadTheirScriptsFromExternalFiles(): void
+    {
+        $ownerId = $this->makeOwner('hs-adminjs@test.local');
+        $id = (new HeroSlideService())->create($this->validPayload(), $ownerId);
+        $list = $this->dispatchAs($ownerId, 'GET', '/admin/hero-slides')->body();
+        $form = $this->dispatchAs($ownerId, 'GET', "/admin/hero-slides/{$id}/edit")->body();
+        $this->assertStringContainsString('assets/js/admin-hero-index.js', $list);
+        $this->assertStringContainsString('assets/js/admin-hero-form.js', $form);
+        // The layout's own pre-paint sidebar script is not part of the hero pages;
+        // the hero views themselves must contribute no inline script.
+        $this->assertStringNotContainsString("// Reorder via drag-and-drop", $list);
+        $this->assertStringNotContainsString('// Theme preset', $form);
     }
 }

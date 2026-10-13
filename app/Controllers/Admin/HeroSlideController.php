@@ -8,6 +8,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ValidationException;
 use App\Services\AuditService;
 use App\Services\HeroSlideService;
+use App\Support\Config;
 use App\Support\Request;
 use App\Support\Response;
 use App\Support\View;
@@ -151,7 +152,17 @@ final class HeroSlideController
 
     public function reorder(Request $request): Response
     {
-        $ids = array_map('intval', (array) $request->input('ids', []));
+        // The admin list script posts "3,1,2" (comma separated); API callers and
+        // tests post an array. Accept both. A bare (array) cast of the string
+        // would keep only the first id and silently drop the new order.
+        $raw = $request->input('ids', []);
+        if (is_string($raw)) {
+            $raw = preg_split('/\s*,\s*/', trim($raw), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        }
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', (array) $raw),
+            static fn (int $id): bool => $id > 0
+        )));
         if ($ids !== []) {
             (new HeroSlideService())->reorder($ids);
         }
@@ -196,7 +207,31 @@ final class HeroSlideController
         }
         $html = View::partial('storefront/hero/_slide', ['slide' => $slide, 'i' => 0, 'isActive' => true]);
         $vars = $svc->cssVars($slide);
-        return Response::html('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>body{margin:0;background:#0b0f14}</style>' . View::partial('storefront/hero/_slider_css', []) . '</head><body class="hero-preview"><section class="hero is-active" style="min-height:clamp(360px,60vh,560px);' . $vars . '">' . $html . '</section></body></html>');
+
+        // Fonts come from _slider_css.php (self-hosted). Google Fonts is blocked
+        // by the site CSP, so it is not linked here.
+        $page = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<title>Hero slide preview</title>'
+            . '<style>body{margin:0;background:#0b0f14}</style>'
+            . View::partial('storefront/hero/_slider_css', [])
+            . '</head><body class="hero-preview">'
+            . '<section class="hs-hero" style="min-height:clamp(360px,60vh,560px);' . $vars . '">' . $html . '</section>'
+            . '</body></html>';
+
+        // The editor shows this page in an iframe. Site-wide headers forbid all
+        // framing (X-Frame-Options: DENY, frame-ancestors 'none'), which would
+        // leave the live preview blank, so allow same-origin framing here only.
+        $csp = str_replace(
+            "frame-ancestors 'none'",
+            "frame-ancestors 'self'",
+            (string) Config::get('security.headers.content_security_policy', '')
+        );
+        $response = Response::html($page)->header('X-Frame-Options', 'SAMEORIGIN');
+        if ($csp !== '') {
+            $response->header('Content-Security-Policy', $csp);
+        }
+        return $response;
     }
 
     // ----------------------------------------------------------- helpers

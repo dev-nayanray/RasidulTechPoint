@@ -1,12 +1,17 @@
 <?php /** @var list<array> $models */ ?>
-<div class="flex flex-wrap items-center justify-between gap-3">
-    <p class="text-sm text-slate-500"><?= (int) $total ?> model(s)</p>
-    <?php if (\App\Services\AuthService::can('products.create')): ?>
-        <a href="<?= e(url('/admin/products/create')) ?>" class="btn-primary">Add laptop model</a>
-    <?php endif; ?>
+<div class="admin-page-header">
+    <div class="admin-page-header-title">
+        <h2>Laptop Models</h2>
+        <p class="admin-page-header-sub"><?= (int) $total ?> model(s) in the catalog. Each model can have multiple physical inventory units.</p>
+    </div>
+    <div class="admin-page-header-actions">
+        <?php if (\App\Services\AuthService::can('products.create')): ?>
+            <a href="<?= e(url('/admin/products/create')) ?>" class="btn-primary">+ Add laptop model</a>
+        <?php endif; ?>
+    </div>
 </div>
 
-<form method="get" action="<?= e(url('/admin/products')) ?>" class="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-4" role="search">
+<form method="get" action="<?= e(url('/admin/products')) ?>" class="admin-filter-bar mt-4 sm:grid-cols-4" role="search">
     <label class="space-y-1.5 sm:col-span-2">
         <span class="block text-sm font-medium text-slate-700">Search</span>
         <input name="q" value="<?= e($q) ?>" class="input" placeholder="Model name…">
@@ -19,24 +24,28 @@
         'name' => 'category', 'label' => 'Category', 'value' => (string) $categoryFilter,
         'options' => array_merge(['0' => 'All categories'], array_column($categories, 'name', 'id')),
     ]) ?>
-    <div class="sm:col-span-4 flex gap-2">
-        <button type="submit" class="btn-primary">Apply filters</button>
+    <div class="sm:col-span-4 admin-filter-bar-actions">
+        <button type="submit" class="btn-primary">
+            <?= \App\Support\View::component('icon', ['name' => 'filter', 'class' => 'h-4 w-4']) ?>
+            Apply filters
+        </button>
         <a href="<?= e(url('/admin/products')) ?>" class="btn-secondary">Reset</a>
     </div>
 </form>
 
-<div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-slate-50">
+<div class="admin-card mt-4">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
             <tr>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Model</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Brand</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Category</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Available</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Published</th>
-                <th class="px-4 py-3"></th>
+                <th>Model</th>
+                <th>Brand</th>
+                <th>Category</th>
+                <th>Available</th>
+                <th>Published</th>
+                <th></th>
             </tr>
-        </thead>
+            </thead>
         <tbody class="divide-y divide-slate-100">
             <?php foreach ($models as $model): ?>
                 <tr class="hover:bg-slate-50">
@@ -65,4 +74,5 @@
         'page' => $page, 'pages' => $pages, 'baseUrl' => '/admin/products',
         'queryParams' => array_filter(['q' => $q, 'brand' => $brandFilter, 'category' => $categoryFilter]),
     ]) ?>
+    </div>
 </div>

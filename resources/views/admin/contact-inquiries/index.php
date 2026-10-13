@@ -9,30 +9,33 @@
  */
 ?>
 
-<div class="flex flex-wrap items-end justify-between gap-3">
-    <div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Contact Inquiries</h1>
-        <p class="mt-1 text-sm text-slate-500">Submissions from the public contact form. Every successful form submission is stored here immediately.</p>
+<div class="admin-page-header">
+    <div class="admin-page-header-title">
+        <h2>Contact Inquiries</h2>
+        <p class="admin-page-header-sub">Submissions from the public contact form. Every successful form submission is stored here immediately.</p>
     </div>
 </div>
 
 <?php if ($counts['new'] > 0): ?>
-    <a href="<?= e(url('/admin/contact-inquiries?status=new')) ?>" class="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+    <a href="<?= e(url('/admin/contact-inquiries?status=new')) ?>" class="admin-card" style="display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-color:rgba(37,99,235,.25);background:linear-gradient(135deg,#fff 0%,#F8FAFF 100%);margin-bottom:16px;text-decoration:none">
         <?= \App\Support\View::component('icon', ['name' => 'mail', 'class' => 'h-4 w-4']) ?>
-        <?= (int) $counts['new'] ?> new inquiry(ies) awaiting a reply
+        <span style="font-size:14px;font-weight:600;color:var(--ink)"><?= (int) $counts['new'] ?> new inquiry(ies) awaiting a reply</span>
     </a>
 <?php endif; ?>
 
-<div class="mt-4 grid gap-3 grid-cols-2 lg:grid-cols-4">
-    <?php foreach ([['Total', $counts['total'], 'text-slate-900'], ['New', $counts['new'], 'text-amber-600'], ['Responded', $counts['responded'], 'text-brand-green'], ['Closed', $counts['closed'], 'text-slate-400']] as [$label, $value, $tone]): ?>
-        <div class="rounded-xl border border-slate-200 bg-white p-4">
-            <p class="text-xs uppercase tracking-wider text-slate-400"><?= e($label) ?></p>
-            <p class="mt-1 text-2xl font-bold <?= $tone ?>"><?= (int) $value ?></p>
+<div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <?php foreach ([['Total', $counts['total'], 'slate', 'clipboard'], ['New', $counts['new'], 'amber', 'mail'], ['Responded', $counts['responded'], 'green', 'check-circle'], ['Closed', $counts['closed'], 'slate', 'check-circle']] as [$label, $value, $tone, $icon]): ?>
+        <div class="admin-stat-card">
+            <p class="admin-stat-card-label"><?= e($label) ?></p>
+            <p class="admin-stat-card-value"><?= (int) $value ?></p>
+            <span class="admin-stat-card-ic admin-stat-ic-<?= e($tone) ?>">
+                <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-5 w-5']) ?>
+            </span>
         </div>
     <?php endforeach; ?>
 </div>
 
-<form method="get" action="<?= e(url('/admin/contact-inquiries')) ?>" class="mt-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-6" role="search">
+<form method="get" action="<?= e(url('/admin/contact-inquiries')) ?>" class="admin-filter-bar mt-4 sm:grid-cols-2 lg:grid-cols-6" role="search">
     <div class="lg:col-span-2 space-y-1.5">
         <label for="ci-q" class="block text-sm font-medium text-slate-700">Search</label>
         <input id="ci-q" name="q" value="<?= e($filters['q']) ?>" class="input" placeholder="Inquiry number, name, email, subject…">

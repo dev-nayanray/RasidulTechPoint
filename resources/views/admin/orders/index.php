@@ -3,7 +3,19 @@
  *  @var list<string> $paymentStatuses
  */
 ?>
-<form method="get" action="<?= e(url('/admin/orders')) ?>" class="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-6" role="search">
+<div class="admin-page-header">
+    <div class="admin-page-header-title">
+        <h2>Orders</h2>
+        <p class="admin-page-header-sub">Customer orders from the storefront and POS. Filter by status, payment, channel, or date range.</p>
+    </div>
+    <div class="admin-page-header-actions">
+        <?php if (\App\Services\AuthService::can('orders.manage')): ?>
+            <a href="<?= e(url('/admin/orders/create')) ?>" class="btn-primary">+ New order</a>
+        <?php endif; ?>
+    </div>
+</div>
+
+<form method="get" action="<?= e(url('/admin/orders')) ?>" class="admin-filter-bar mt-4 sm:grid-cols-6" role="search">
     <div class="sm:col-span-3 space-y-1.5">
         <label for="orders-q" class="block text-sm font-medium text-slate-700">Search</label>
         <input id="orders-q" name="q" value="<?= e($q) ?>" class="input" placeholder="Reference, customer or phone…">
@@ -36,25 +48,26 @@
         <button type="submit" class="btn-primary">Apply filters</button>
         <a href="<?= e(url('/admin/orders')) ?>" class="btn-secondary">Reset</a>
         <?php if (\App\Services\AuthService::can('orders.manage')): ?>
-            <a href="<?= e(url('/admin/orders/create')) ?>" class="btn-primary ml-auto">New order</a>
+            <!-- New order button moved to page header -->
         <?php endif; ?>
     </div>
 </form>
 
-<div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-slate-50">
+<div class="admin-card mt-4">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
             <tr>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Reference</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Customer</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Channel</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Status</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Payment</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-500">Placed</th>
-                <th class="px-4 py-3 text-right font-medium text-slate-500">Total</th>
+                <th>Reference</th>
+                <th>Customer</th>
+                <th>Channel</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Placed</th>
+                <th class="num">Total</th>
             </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
+            </thead>
+            <tbody class="divide-y divide-slate-100">
             <?php foreach ($orders as $order): ?>
                 <tr class="hover:bg-slate-50">
                     <td class="px-4 py-3"><a class="font-medium text-blue-700 hover:text-blue-800" href="<?= e(url('/admin/orders/' . $order['id'])) ?>"><?= e($order['reference']) ?></a></td>
@@ -70,4 +83,5 @@
     </table>
     <?php if ($orders === []): ?><p class="px-4 py-10 text-center text-sm text-slate-400">No orders match your filters.</p><?php endif; ?>
     <?= \App\Support\View::component('pagination', ['page' => $page, 'pages' => $pages, 'baseUrl' => '/admin/orders', 'queryParams' => array_filter(['q' => $q, 'status' => $status, 'payment' => $payment, 'channel' => $channel, 'from' => $from, 'to' => $to])]) ?>
+    </div>
 </div>

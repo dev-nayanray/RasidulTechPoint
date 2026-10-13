@@ -18,8 +18,14 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#14243A">
     <title><?= e($pageTitle ?? 'Admin') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
+    <link rel="icon" href="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" type="image/jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
+    <?php include BASE_PATH . '/resources/views/admin/_design_css.php'; ?>
     <script>
         // Apply the persisted sidebar state before first paint to avoid a flash.
         try {
@@ -37,9 +43,11 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
         <div class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" data-sidebar-backdrop></div>
 
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto bg-navy-700 text-slate-200 transition-transform lg:static lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
+        <aside class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto bg-navy-700 text-slate-200 transition-transform duration-200 lg:static lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
             <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-                <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm font-bold text-white" title="Dashboard">RTP</a>
+                <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 hover:bg-white/15 transition-colors" title="Dashboard" aria-label="RTP home">
+                    <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
+                </a>
                 <span class="min-w-0 leading-tight" data-sidebar-label>
                     <span class="block truncate text-sm font-semibold text-white"><?= e(\App\Support\Config::get('app.name')) ?></span>
                     <span class="block text-[11px] text-slate-400">Management console</span>

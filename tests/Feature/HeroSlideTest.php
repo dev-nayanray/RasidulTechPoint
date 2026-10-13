@@ -127,19 +127,23 @@ final class HeroSlideTest extends TestCase
         ], $over);
     }
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
         $this->pdo()->exec('DELETE FROM hero_slides');
+        // Tests that shrink max_slides must not leak into later tests.
+        $this->pdo()->exec('UPDATE hero_settings SET max_slides = 8 WHERE id = 1');
         SimpleCache::forget('hero_slider.public');
     }
 
     // ----------------------------------------------------- SEED + SCHEMA --
     public function testMigrationSeedsFourReferenceSlides(): void
     {
-        // Truncate + re-seed by calling the migration directly
-        $migrator = new \App\Support\Database\Migrator($this->pdo(), BASE_PATH . '/database/migrations');
-        $migrator->migrate(fn () => null);
+        // Wipe, then run migration 037's up() directly (the runner skips it —
+        // the test DB already has it recorded from the suite bootstrap).
+        $this->pdo()->exec('DELETE FROM hero_slides');
+        $migration = require BASE_PATH . '/database/migrations/037_hero_slider_v2.php';
+        $migration['up']($this->pdo());
         $count = (int) $this->pdo()->query("SELECT COUNT(*) FROM hero_slides WHERE nav_label IN ('Aero 14','Forge 16','Studio 16','Pro 15')")->fetchColumn();
         $this->assertGreaterThanOrEqual(4, $count);
     }
@@ -495,11 +499,12 @@ final class HeroSlideTest extends TestCase
     {
         $ownerId = $this->makeOwner('hs-h3@test.local');
         $this->actingAs($ownerId);
-        $resp = $this->router()->dispatch(
-            Request::synthetic('POST', '/admin/hero-slides', [], $this->validPayload()),
-            $this->resolver()
-        );
-        $this->assertSame(419, $resp->status());
+        $this->assertThrows(\App\Exceptions\CsrfTokenMismatchException::class, function () {
+            $this->router()->dispatch(
+                Request::synthetic('POST', '/admin/hero-slides', [], $this->validPayload()),
+                $this->resolver()
+            );
+        }, 'POST /admin/hero-slides must require CSRF');
     }
 
     public function testOwnerCanUpdateSettingsViaHttp(): void

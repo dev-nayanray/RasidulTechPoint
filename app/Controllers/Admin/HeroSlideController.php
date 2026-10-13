@@ -183,7 +183,9 @@ final class HeroSlideController
 
     /**
      * Render a slide's HTML markup for the live preview iframe.
-     * Uses the exact same partial the public site uses.
+     * Uses the exact same partial the public site uses; the slide's full
+     * theme token set is inlined on the section so the preview matches the
+     * public palette without the runtime-generated .hs-t{i} classes.
      */
     public function preview(string $id): Response
     {
@@ -193,7 +195,8 @@ final class HeroSlideController
             throw new NotFoundException('Hero slide not found.');
         }
         $html = View::partial('storefront/hero/_slide', ['slide' => $slide, 'i' => 0, 'isActive' => true]);
-        return Response::html('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>body{margin:0;background:#0b0f14}</style>' . View::partial('storefront/hero/_slider_css', []) . '</head><body class="hero-preview"><section class="hero t0 is-active" style="min-height:clamp(360px,60vh,560px)">' . $html . '</section></body></html>');
+        $vars = $svc->cssVars($slide);
+        return Response::html('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>body{margin:0;background:#0b0f14}</style>' . View::partial('storefront/hero/_slider_css', []) . '</head><body class="hero-preview"><section class="hero is-active" style="min-height:clamp(360px,60vh,560px);' . $vars . '">' . $html . '</section></body></html>');
     }
 
     // ----------------------------------------------------------- helpers

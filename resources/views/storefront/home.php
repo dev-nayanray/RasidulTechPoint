@@ -27,21 +27,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 <?php include BASE_PATH . '/resources/views/storefront/_design_css.php'; ?>
-<?php include BASE_PATH . '/resources/views/storefront/hero/_slider_css.php'; ?>
 </style>
+<?php include BASE_PATH . '/resources/views/storefront/hero/_slider_css.php'; ?>
 </head>
 <body>
 <?php
 $auth = current_user();
 $cartCount = (int) ($_SESSION['cart_count'] ?? 0);
 $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
+// Announcement bar items come from Hero Slider settings (admin-managed).
+$heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['announcement_items'] ?? []) : [];
 ?>
 <div id="top">
 
 <div class="announce">
   <div class="wrap">
     <div class="announce-in">
-      <span>Dubai Imported | 100% Authentic Used Laptops | Tested &amp; Quality Checked</span>
+      <?php if ($heroAnnounce): foreach ($heroAnnounce as $heroAnnItem): ?><span><?= e($heroAnnItem) ?></span><?php endforeach; ?>
+      <?php else: ?><span>Dubai Imported | 100% Authentic Used Laptops | Tested &amp; Quality Checked</span><?php endif; ?>
       <a href="<?= e(url('/contact')) ?>">Call: 01401-400041</a>
     </div>
   </div>
@@ -172,7 +175,7 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
 <?php if (!empty($heroSlides)): ?>
 <?php include BASE_PATH . '/resources/views/storefront/hero/_slider.php'; ?>
 <?php else: ?>
-<section class="hero">
+<section class="hero-fb">
   <div class="wrap">
     <div class="hero-in">
       <div style="display:flex;flex-direction:column;gap:24px;align-items:flex-start">
@@ -627,6 +630,14 @@ $wishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
       n = (n + slides.length) % slides.length;
       if (n === cur) return;
       hero.style.setProperty('--dir', String(dir || (n > cur ? 1 : -1)));
+      // Swap the hero-root theme class so the chrome (inds, controls, bg)
+      // re-tints to the incoming slide's palette.
+      var oldT = (slides[cur].className.match(/hs-t\d+/) || [])[0];
+      var newT = (slides[n].className.match(/hs-t\d+/) || [])[0];
+      if (oldT && newT && oldT !== newT) {
+        hero.classList.remove(oldT);
+        hero.classList.add(newT);
+      }
       slides[cur].classList.remove('is-active');
       slides[cur].inert = true;
       slides[cur].setAttribute('aria-hidden', 'true');

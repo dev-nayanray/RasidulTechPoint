@@ -367,18 +367,6 @@ final class DashboardTest extends TestCase
         $this->assertSame($before['pending_orders'] + 2, $after['pending_orders'], 'only pending+confirmed+processing count');
     }
 
-    // Helper for float delta comparisons.
-    private function assertEqualsWithDelta(mixed $expected, mixed $actual, float $delta, string $message = ''): void
-    {
-        $this->assertions++;
-        if (abs((float) $expected - (float) $actual) > $delta) {
-            throw new \RuntimeException(
-                $message ?: "Failed asserting that " . var_export($actual, true)
-                    . " is within {$delta} of " . var_export($expected, true)
-            );
-        }
-    }
-
     // Type assertions (PHP 8.5 has these as native, but we provide
     // shims in case the TestCase doesn't have them).
     private function assertIsFloat(mixed $v): void

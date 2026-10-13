@@ -1,9 +1,11 @@
 <?php
 /**
  * Hero slider v2 CSS — matches the reference (hero-slider.html) as closely
- * as the existing design system allows. Theme tokens come from CSS vars
- * set per-slide via the .t0..t3 / .t-custom classes (defined inline on
- * each slide element from the service's themeTokens()).
+ * as the existing design system allows. Per-slide palettes (the reference's
+ * .t0..t3 classes) are generated at runtime as .hs-t{i} by _slider.php from
+ * HeroSlideService::cssVars(); this file only carries the shared structure.
+ * The reference's internal announcement bar and nav row are served by the
+ * site-wide header that sits directly above the hero on the homepage.
  */
 ?>
 <style id="hero-slider-v2-css">
@@ -14,12 +16,12 @@
   --hero-ease:cubic-bezier(.2,.7,.2,1);
   --hero-dur:7000ms;
   --hero-gutter:clamp(16px,5vw,80px);
-  /* Default tokens (mist teal) — overridden per slide via .t0..t3 / inline custom */
+  /* Default tokens (mist teal) — the hero root carries the active slide's .hs-t{i} class */
   --bg:#dce6ec;--bg2:#f3f8fa;--ink:#0d1b26;--muted:#3b4d5b;--accent:#086560;--accent-ink:#ffffff;
   --line:rgba(13,27,38,.2);--chip:rgba(255,255,255,.62);--dot:rgba(13,27,38,.16);--ghost:rgba(13,27,38,.16);
   --chassis:#b9c4cc;--chassis-hi:#e4eaee;--bezel:#0a0d10;--glow:rgba(8,101,96,.28);--bar:rgba(13,27,38,.07);
 }
-.hero{position:relative;width:100%;overflow:hidden;isolation:isolate;display:grid;grid-template-rows:auto auto 1fr auto;min-height:clamp(640px,90svh,820px);background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;transition:background-color .8s var(--hero-ease),color .8s var(--hero-ease)}
+.hero{position:relative;width:100%;overflow:hidden;isolation:isolate;display:grid;grid-template-rows:1fr auto;min-height:clamp(640px,90svh,820px);background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;transition:background-color .8s var(--hero-ease),color .8s var(--hero-ease)}
 .hero :where(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .hero a{color:inherit;text-decoration:none}
 .hero .wrap{width:100%;max-width:1440px;margin-inline:auto;padding-inline:var(--hero-gutter)}
@@ -28,8 +30,6 @@
 .hero .bg.is-active{opacity:1}
 .hero .bg::before{content:"";position:absolute;inset:0;background:radial-gradient(55% 70% at 72% 48%,var(--bg2),transparent 72%)}
 .hero .bg::after{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:24px 24px;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 65%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 65%,transparent)}
-.hero .announce{display:flex;justify-content:center;flex-wrap:wrap;gap:6px clamp(14px,3vw,36px);padding:8px var(--hero-gutter);background:var(--bar);font:500 11px/1.3 var(--font-mono);letter-spacing:.07em;text-transform:uppercase;text-align:center}
-.hero .nav-hint{font-family:var(--font-mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px var(--hero-gutter);text-align:center}
 .hero .slides{position:relative;display:grid}
 .hero .slide{grid-area:1/1;display:grid;align-items:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s var(--hero-ease),visibility 0s .5s}
 .hero .slide.is-active{opacity:1;visibility:visible;pointer-events:auto;z-index:1;transition-delay:0s,0s}
@@ -106,9 +106,6 @@
 .hero .slide.is-active .chip{animation:heroRise .8s var(--hero-ease) calc(var(--d,5)*70ms + 300ms) both,heroDrift 6s ease-in-out 1.4s infinite alternate}
 .hero .c2{--d:6}.hero .c3{--d:7}
 
-@media (max-width:960px){
-  .hero .links{display:none}
-}
 @media (max-width:900px){
   .hero .grid{grid-template-columns:minmax(0,1fr);gap:4px}
   .hero .visual{order:-1;padding-block:8px 28px}
@@ -117,7 +114,6 @@
 }
 @media (max-width:700px){
   .hero .nm{display:none}
-  .hero .announce span:nth-child(n+3){display:none}
   .hero .round{width:40px;height:40px}
   .hero .ctrls{gap:6px}
 }

@@ -120,8 +120,9 @@ final class SecurityTest extends TestCase
     public function testEnvExampleIsNotCommittedWithRealValues(): void
     {
         // The real .env is gitignored; the example only has placeholders.
+        // \r? keeps the assertion working on CRLF Windows checkouts.
         $gitignore = file_get_contents(BASE_PATH . '/.gitignore');
-        $this->assertMatchesRegularExpression('/^\.env$/m', $gitignore);
+        $this->assertMatchesRegularExpression('/^\.env\r?$/m', $gitignore);
     }
 
     public function testNoDangerousFilesUnderPublic(): void

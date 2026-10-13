@@ -2,6 +2,11 @@
 /**
  * Single hero slide markup (public).
  *
+ * The slide's palette comes from its generated theme class .hs-t{i}
+ * (defined by _slider.php from HeroSlideService::cssVars()). Keeping the
+ * class ON the slide means the outgoing slide holds its own colors through
+ * the 500ms fade even after the hero root has switched to the next theme.
+ *
  * @var array  $slide     The slide row, hydrated by HeroSlideService::find().
  * @var int    $i         0-indexed position in the slider.
  * @var bool   $isActive  True when this slide is the initial active slide.
@@ -9,8 +14,6 @@
  */
 use App\Services\HeroSlideService;
 
-$svc = new HeroSlideService();
-$tokens = $svc->themeTokens($slide);
 $nav = $slide['nav_label'] ?? ($slide['internal_name'] ?? 'Slide');
 $headline = $slide['headline'] ?? '';
 $description = $slide['description'] ?? '';
@@ -20,42 +23,19 @@ $specs = is_array($slide['specs'] ?? null) ? $slide['specs'] : [];
 $chips = is_array($slide['chips'] ?? null) ? $slide['chips'] : [];
 $ghost = $slide['ghost_word'] ?: ($nav !== '' ? explode(' ', trim($nav))[0] : '');
 
-// CSS variable string for this slide — applied to the <article> so the
-// hero root re-tints whenever it becomes active.
-$vars = sprintf(
-    '--bg:%s;--bg2:%s;--ink:%s;--muted:%s;--accent:%s;--accent-ink:%s;',
-    e($tokens['bg']), e($tokens['bg2']), e($tokens['ink']),
-    e($tokens['muted']), e($tokens['accent']), e($tokens['accent_ink'])
+// Keep hyphenated compounds ("all-day", "MIL-STD-810H") on one line, like
+// the reference's <span style="white-space:nowrap">all-day</span>.
+$headlineHtml = preg_replace(
+    '/([\pL\pN][\pL\pN-]*-[\pL\pN-]*)/u',
+    '<span style="white-space:nowrap">$1</span>',
+    e($headline)
 );
-// Derived tokens (line, chip, dot, ghost, chassis, bezel, glow, bar)
-// computed via color-mix from the slide's own colors.
-$vars .= sprintf(
-    '--line:color-mix(in srgb,%s 22%%,transparent);',
-    e($tokens['ink'])
-);
-$vars .= sprintf(
-    '--chip:color-mix(in srgb,%s 8%%,rgba(255,255,255,.62));',
-    e($tokens['ink'])
-);
-$vars .= sprintf('--dot:color-mix(in srgb,%s 16%%,transparent);', e($tokens['ink']));
-$vars .= sprintf('--ghost:color-mix(in srgb,%s 22%%,transparent);', e($tokens['accent']));
-$vars .= sprintf(
-    '--chassis:color-mix(in srgb,%s 78%%,gray);',
-    e($tokens['bg'])
-);
-$vars .= sprintf(
-    '--chassis-hi:color-mix(in srgb,%s 92%%,white);',
-    e($tokens['bg2'])
-);
-$vars .= sprintf('--bezel:#0a0d10;');
-$vars .= sprintf('--glow:color-mix(in srgb,%s 35%%,transparent);', e($tokens['accent']));
-$vars .= sprintf('--bar:color-mix(in srgb,%s 7%%,transparent);', e($tokens['ink']));
 
-$ariaLabel = ($total ?? ($i + 1)) . ' of ' . ($total ?? ($i + 1)) . ': ' . $nav;
+$ariaLabel = ($i + 1) . ' of ' . ($total ?? ($i + 1)) . ': ' . $nav;
 $activeClass = $isActive ? ' is-active' : '';
 $ariaHidden = $isActive ? '' : ' aria-hidden="true" inert';
 ?>
-<article class="slide hs-slide<?= $activeClass ?>" style="<?= $vars ?>" role="group" aria-roledescription="slide" aria-label="<?= e($ariaLabel) ?>"<?= $ariaHidden ?> data-theme="<?= e($slide['theme_preset'] ?? 'mist_teal') ?>">
+<article class="slide hs-t<?= (int) $i ?><?= $activeClass ?>" role="group" aria-roledescription="slide" aria-label="<?= e($ariaLabel) ?>"<?= $ariaHidden ?> data-theme="<?= e($slide['theme_preset'] ?? 'mist_teal') ?>">
   <div class="wrap grid">
     <div class="copy">
       <?php if ($badge || $category): ?>
@@ -64,7 +44,7 @@ $ariaHidden = $isActive ? '' : ' aria-hidden="true" inert';
         <?php if ($category): ?><span><?= e($category) ?></span><?php endif; ?>
       </p>
       <?php endif; ?>
-      <h2 class="hs-head rise" style="--d:1"><?= e($headline) ?></h2>
+      <h2 class="hs-head rise" style="--d:1"><?= $headlineHtml ?></h2>
       <?php if ($description): ?><p class="lede rise" style="--d:2"><?= e($description) ?></p><?php endif; ?>
       <?php if ($specs): ?>
       <ul class="specs rise" style="--d:3"><?php foreach ($specs as $sp): ?><li><?= e($sp) ?></li><?php endforeach; ?></ul>
@@ -98,7 +78,7 @@ $ariaHidden = $isActive ? '' : ' aria-hidden="true" inert';
             <?php if (($slide['visual_type'] ?? 'screen_dunes') === 'image' && !empty($slide['laptop_image_url'])): ?>
               <img src="<?= e(url($slide['laptop_image_url'])) ?>" alt="<?= e($slide['laptop_image_alt'] ?? '') ?>" loading="lazy">
             <?php else: ?>
-              <?= $svc->screenSvg($slide) ?>
+              <?= (new HeroSlideService())->screenSvg($slide) ?>
             <?php endif; ?>
           </div></div>
           <div class="base"></div>

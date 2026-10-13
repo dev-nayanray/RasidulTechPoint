@@ -23,11 +23,41 @@ final class HeroSlideService
     private const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
     private const CACHE_KEY_PUBLIC = 'hero_slider.public';
 
+    /**
+     * Full per-slide token sets from the reference design (hero-slider.html
+     * classes .t0–.t3). 15 CSS custom properties per theme; the extra tokens
+     * (line, chip, dot, ghost, chassis, chassis_hi, bezel, glow, bar) are the
+     * hand-tuned values from the reference, so presets render pixel-identical.
+     */
     private const THEME_PRESETS = [
-        'mist_teal'     => ['bg' => '#dce6ec', 'bg2' => '#f3f8fa', 'ink' => '#0d1b26', 'muted' => '#3b4d5b', 'accent' => '#086560', 'accent_ink' => '#ffffff'],
-        'graphite_coral'=> ['bg' => '#0b1016', 'bg2' => '#1d2a38', 'ink' => '#f3f5f7', 'muted' => '#a6b2bf', 'accent' => '#ff5b44', 'accent_ink' => '#1a0805'],
-        'navy_amber'    => ['bg' => '#16233d', 'bg2' => '#2b4474', 'ink' => '#f6f2ea', 'muted' => '#bcc7da', 'accent' => '#ffb340', 'accent_ink' => '#1b1200'],
-        'stone_cobalt'  => ['bg' => '#e6e5e0', 'bg2' => '#f6f5f1', 'ink' => '#14161a', 'muted' => '#4a4d55', 'accent' => '#2340d8', 'accent_ink' => '#ffffff'],
+        'mist_teal' => [
+            'bg' => '#dce6ec', 'bg2' => '#f3f8fa', 'ink' => '#0d1b26', 'muted' => '#3b4d5b',
+            'accent' => '#086560', 'accent_ink' => '#ffffff',
+            'line' => 'rgba(13,27,38,.2)', 'chip' => 'rgba(255,255,255,.62)', 'dot' => 'rgba(13,27,38,.16)',
+            'ghost' => 'rgba(13,27,38,.16)', 'chassis' => '#b9c4cc', 'chassis_hi' => '#e4eaee',
+            'bezel' => '#0a0d10', 'glow' => 'rgba(8,101,96,.28)', 'bar' => 'rgba(13,27,38,.07)',
+        ],
+        'graphite_coral' => [
+            'bg' => '#0b1016', 'bg2' => '#1d2a38', 'ink' => '#f3f5f7', 'muted' => '#a6b2bf',
+            'accent' => '#ff5b44', 'accent_ink' => '#1a0805',
+            'line' => 'rgba(243,245,247,.2)', 'chip' => 'rgba(16,24,33,.66)', 'dot' => 'rgba(243,245,247,.14)',
+            'ghost' => 'rgba(255,91,68,.34)', 'chassis' => '#2b333d', 'chassis_hi' => '#46515f',
+            'bezel' => '#05080b', 'glow' => 'rgba(255,91,68,.4)', 'bar' => 'rgba(255,255,255,.06)',
+        ],
+        'navy_amber' => [
+            'bg' => '#16233d', 'bg2' => '#2b4474', 'ink' => '#f6f2ea', 'muted' => '#bcc7da',
+            'accent' => '#ffb340', 'accent_ink' => '#1b1200',
+            'line' => 'rgba(246,242,234,.22)', 'chip' => 'rgba(14,24,44,.6)', 'dot' => 'rgba(246,242,234,.14)',
+            'ghost' => 'rgba(255,179,64,.3)', 'chassis' => '#4a5468', 'chassis_hi' => '#7b869b',
+            'bezel' => '#070b14', 'glow' => 'rgba(255,179,64,.3)', 'bar' => 'rgba(255,255,255,.07)',
+        ],
+        'stone_cobalt' => [
+            'bg' => '#e6e5e0', 'bg2' => '#f6f5f1', 'ink' => '#14161a', 'muted' => '#4a4d55',
+            'accent' => '#2340d8', 'accent_ink' => '#ffffff',
+            'line' => 'rgba(20,22,26,.2)', 'chip' => 'rgba(255,255,255,.7)', 'dot' => 'rgba(20,22,26,.15)',
+            'ghost' => 'rgba(35,64,216,.22)', 'chassis' => '#a9acb2', 'chassis_hi' => '#d6d8dc',
+            'bezel' => '#0b0c0e', 'glow' => 'rgba(35,64,216,.22)', 'bar' => 'rgba(20,22,26,.07)',
+        ],
     ];
 
     // ============================================================ ADMIN
@@ -297,21 +327,49 @@ final class HeroSlideService
     /**
      * Compute the theme tokens for a slide: use preset by default,
      * fall back to slide's own custom_* colors when preset is 'custom'.
+     * Custom themes derive the secondary tokens via color-mix() so they
+     * stay consistent with the reference token structure.
      */
     public function themeTokens(array $slide): array
     {
         $preset = $slide['theme_preset'] ?? 'mist_teal';
-        if ($preset === 'custom') {
-            return [
-                'bg' => $slide['custom_bg'] ?? '#dce6ec',
-                'bg2' => $slide['custom_bg2'] ?? '#f3f8fa',
-                'ink' => $slide['custom_ink'] ?? '#0d1b26',
-                'muted' => $slide['custom_muted'] ?? '#3b4d5b',
-                'accent' => $slide['custom_accent'] ?? '#086560',
-                'accent_ink' => $slide['custom_accent_ink'] ?? '#ffffff',
-            ];
+        if ($preset !== 'custom') {
+            return self::THEME_PRESETS[$preset] ?? self::THEME_PRESETS['mist_teal'];
         }
-        return self::THEME_PRESETS[$preset] ?? self::THEME_PRESETS['mist_teal'];
+        $bg = $slide['custom_bg'] ?? '#dce6ec';
+        $bg2 = $slide['custom_bg2'] ?? '#f3f8fa';
+        $ink = $slide['custom_ink'] ?? '#0d1b26';
+        $muted = $slide['custom_muted'] ?? '#3b4d5b';
+        $accent = $slide['custom_accent'] ?? '#086560';
+        $accentInk = $slide['custom_accent_ink'] ?? '#ffffff';
+        return [
+            'bg' => $bg, 'bg2' => $bg2, 'ink' => $ink, 'muted' => $muted,
+            'accent' => $accent, 'accent_ink' => $accentInk,
+            'line' => "color-mix(in srgb,{$ink} 22%,transparent)",
+            'chip' => "color-mix(in srgb,{$ink} 8%,rgba(255,255,255,.62))",
+            'dot' => "color-mix(in srgb,{$ink} 16%,transparent)",
+            'ghost' => "color-mix(in srgb,{$accent} 22%,transparent)",
+            'chassis' => "color-mix(in srgb,{$bg} 78%,gray)",
+            'chassis_hi' => "color-mix(in srgb,{$bg2} 92%,white)",
+            'bezel' => '#0a0d10',
+            'glow' => "color-mix(in srgb,{$accent} 35%,transparent)",
+            'bar' => "color-mix(in srgb,{$ink} 7%,transparent)",
+        ];
+    }
+
+    /**
+     * Full CSS custom-property declaration list for a slide's theme,
+     * e.g. "--bg:#dce6ec;--bg2:#f3f8fa;…". Values are either preset
+     * constants or hex colors validated server-side, so they are safe
+     * to emit into a style block without escaping.
+     */
+    public function cssVars(array $slide): string
+    {
+        $pairs = [];
+        foreach ($this->themeTokens($slide) as $key => $value) {
+            $pairs[] = '--' . str_replace('_', '-', $key) . ':' . $value;
+        }
+        return implode(';', $pairs) . ';';
     }
 
     /** Static lookup for the admin color swatches UI. */
@@ -556,7 +614,7 @@ final class HeroSlideService
             return true;
         }
         // relative path: starts with /, ./, ../, or anchor only
-        return preg_match('#^(/|\./|\.\./|#)#', $u) === 1 || $u === '';
+        return preg_match('~^(/|\./|\.\./|#)~', $u) === 1 || $u === '';
     }
 
     private function enforceMaxSlides(): void
@@ -599,6 +657,9 @@ final class HeroSlideService
                  :created_by, :updated_by)'
         );
         $this->bindRow($stmt, $d);
+        // Only the INSERT statement has a :created_by placeholder — binding
+        // it here too would raise HY093 against the UPDATE SQL.
+        $stmt->bindValue(':created_by', $d['created_by'] ?? null, PDO::PARAM_INT);
         $stmt->execute();
     }
 
@@ -671,7 +732,6 @@ final class HeroSlideService
         $stmt->bindValue(':mobile_image', $d['mobile_image'] ?: null);
         $stmt->bindValue(':product_image', $d['product_image'] ?: null);
         $stmt->bindValue(':image_alt', $d['image_alt'] ?: null);
-        $stmt->bindValue(':created_by', $d['created_by'] ?? null, PDO::PARAM_INT);
         $stmt->bindValue(':updated_by', $d['updated_by'] ?? null, PDO::PARAM_INT);
     }
 

@@ -1,0 +1,575 @@
+<title>Kernel Hero Slider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: full-bleed hero with a 1440px content track. Left column holds copy, specs and price. Right column holds a tilted CSS laptop with floating spec chips. Every slide carries its own palette (.t0 to .t3) so the nav and controls re-tint as slides change. */
+:root{
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --page:#0b0f14;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --dur:7000ms;
+  --gutter:clamp(16px,5vw,80px);
+  /* fallback slide tokens, same as slide 1 */
+  --bg:#dce6ec;--bg2:#f3f8fa;--ink:#0d1b26;--muted:#3b4d5b;--accent:#086560;--accent-ink:#ffffff;
+  --line:rgba(13,27,38,.2);--chip:rgba(255,255,255,.62);--dot:rgba(13,27,38,.16);--ghost:rgba(13,27,38,.16);
+  --chassis:#b9c4cc;--chassis-hi:#e4eaee;--bezel:#0a0d10;--glow:rgba(8,101,96,.28);--bar:rgba(13,27,38,.07);
+}
+/* Slide 1: Aero 14, mist and teal */
+.t0{--bg:#dce6ec;--bg2:#f3f8fa;--ink:#0d1b26;--muted:#3b4d5b;--accent:#086560;--accent-ink:#ffffff;--line:rgba(13,27,38,.2);--chip:rgba(255,255,255,.62);--dot:rgba(13,27,38,.16);--ghost:rgba(13,27,38,.16);--chassis:#b9c4cc;--chassis-hi:#e4eaee;--bezel:#0a0d10;--glow:rgba(8,101,96,.28);--bar:rgba(13,27,38,.07)}
+/* Slide 2: Forge 16, graphite and coral */
+.t1{--bg:#0b1016;--bg2:#1d2a38;--ink:#f3f5f7;--muted:#a6b2bf;--accent:#ff5b44;--accent-ink:#1a0805;--line:rgba(243,245,247,.2);--chip:rgba(16,24,33,.66);--dot:rgba(243,245,247,.14);--ghost:rgba(255,91,68,.34);--chassis:#2b333d;--chassis-hi:#46515f;--bezel:#05080b;--glow:rgba(255,91,68,.4);--bar:rgba(255,255,255,.06)}
+/* Slide 3: Studio 16, navy and amber */
+.t2{--bg:#16233d;--bg2:#2b4474;--ink:#f6f2ea;--muted:#bcc7da;--accent:#ffb340;--accent-ink:#1b1200;--line:rgba(246,242,234,.22);--chip:rgba(14,24,44,.6);--dot:rgba(246,242,234,.14);--ghost:rgba(255,179,64,.3);--chassis:#4a5468;--chassis-hi:#7b869b;--bezel:#070b14;--glow:rgba(255,179,64,.3);--bar:rgba(255,255,255,.07)}
+/* Slide 4: Pro 15, stone and cobalt */
+.t3{--bg:#e6e5e0;--bg2:#f6f5f1;--ink:#14161a;--muted:#4a4d55;--accent:#2340d8;--accent-ink:#ffffff;--line:rgba(20,22,26,.2);--chip:rgba(255,255,255,.7);--dot:rgba(20,22,26,.15);--ghost:rgba(35,64,216,.22);--chassis:#a9acb2;--chassis-hi:#d6d8dc;--bezel:#0b0c0e;--glow:rgba(35,64,216,.22);--bar:rgba(20,22,26,.07)}
+
+body{background:var(--page)}
+*{box-sizing:border-box}
+
+.hero{position:relative;width:100%;overflow:hidden;isolation:isolate;display:grid;grid-template-rows:auto auto 1fr auto;min-height:clamp(640px,90svh,820px);background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;transition:background-color .8s var(--ease),color .8s var(--ease)}
+.hero :where(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.hero a{color:inherit;text-decoration:none}
+.wrap{width:100%;max-width:1440px;margin-inline:auto;padding-inline:var(--gutter)}
+
+/* background layers, one per slide */
+.bgs{position:absolute;inset:0;z-index:-1}
+.bg{position:absolute;inset:0;background:var(--bg);opacity:0;transition:opacity .9s var(--ease)}
+.bg.is-active{opacity:1}
+.bg::before{content:"";position:absolute;inset:0;background:radial-gradient(55% 70% at 72% 48%,var(--bg2),transparent 72%)}
+.bg::after{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:24px 24px;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 65%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 65%,transparent)}
+
+/* announcement + nav */
+.announce{display:flex;justify-content:center;flex-wrap:wrap;gap:6px clamp(14px,3vw,36px);padding:8px var(--gutter);background:var(--bar);font:500 11px/1.3 var(--font-mono);letter-spacing:.07em;text-transform:uppercase;text-align:center}
+.nav .wrap{display:flex;align-items:center;gap:clamp(16px,3vw,44px);padding-block:16px}
+.logo{display:inline-flex;align-items:center;gap:10px;font:800 1.15rem/1 var(--font-display);letter-spacing:.14em}
+.links{display:flex;gap:clamp(16px,2.2vw,32px);margin:0 auto 0 0;padding:0;list-style:none;font-weight:500;font-size:.95rem}
+.links a{position:relative;padding-block:6px}
+.links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease)}
+.links a:hover::after{transform:scaleX(1)}
+.tools{display:flex;gap:4px;margin-left:auto}
+.icon-btn{position:relative;display:grid;place-items:center;width:42px;height:42px;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer;transition:background-color .2s}
+.icon-btn:hover{background:var(--bar)}
+.icon-btn .count{position:absolute;top:3px;right:2px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font:500 10px/17px var(--font-mono);text-align:center}
+.menu-btn{display:none}
+
+/* slides */
+.slides{position:relative;display:grid}
+.slide{grid-area:1/1;display:grid;align-items:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s var(--ease),visibility 0s .5s}
+.slide.is-active{opacity:1;visibility:visible;pointer-events:auto;z-index:1;transition-delay:0s,0s}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);align-items:center;gap:clamp(24px,4vw,72px);padding-block:clamp(12px,2.4vw,32px)}
+
+.copy{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:clamp(14px,1.7vw,22px);min-width:0}
+.eyebrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0;font:500 12px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.badge{padding:6px 10px;border-radius:4px;background:var(--accent);color:var(--accent-ink);font:500 11px/1 var(--font-mono);letter-spacing:.1em}
+.slide h2{margin:0;font:700 clamp(2.5rem,5.3vw,5rem)/.98 var(--font-display);font-variation-settings:"opsz" 96;letter-spacing:-.035em;text-wrap:balance}
+.lede{margin:0;max-width:46ch;font-size:clamp(1rem,1.25vw,1.15rem);line-height:1.55;color:var(--muted)}
+.specs{display:flex;flex-wrap:wrap;gap:8px 22px;margin:0;padding:0;list-style:none;font:500 12px/1.3 var(--font-mono);letter-spacing:.04em}
+.specs li{display:flex;align-items:center;gap:8px}
+.specs li::before{content:"";width:6px;height:6px;background:var(--accent)}
+.buy{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px 28px;margin-top:2px}
+.price{font:700 clamp(2.2rem,3.4vw,3.2rem)/1 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.was{margin-left:10px;font:400 14px var(--font-mono);color:var(--muted);text-decoration:line-through;font-variant-numeric:tabular-nums}
+.emi{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+.emi b{color:var(--ink);font-variant-numeric:tabular-nums}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:50px;padding:0 24px;border:1.5px solid transparent;border-radius:8px;font:600 15px/1 var(--font-body);cursor:pointer;transition:transform .25s var(--ease),background-color .2s,color .2s,border-color .2s}
+.btn svg{transition:transform .25s var(--ease)}
+.btn:hover{transform:translateY(-2px)}
+.btn:hover svg{transform:translateX(4px)}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-ghost{border-color:var(--ink);color:var(--ink)}
+.btn-ghost:hover{background:var(--ink);color:var(--bg)}
+
+/* visual column */
+.visual{position:relative;z-index:1;display:grid;place-items:center;min-width:0;padding-block:clamp(16px,3vw,36px) clamp(28px,4vw,52px)}
+.ghost{position:absolute;left:50%;top:46%;translate:-50% -50%;z-index:0;font:800 clamp(7rem,21vw,19rem)/.8 var(--font-display);letter-spacing:-.05em;text-transform:uppercase;white-space:nowrap;color:transparent;-webkit-text-stroke:1.5px var(--ghost);pointer-events:none;user-select:none}
+.glow{position:absolute;left:50%;top:48%;translate:-50% -50%;z-index:0;width:80%;aspect-ratio:1;max-width:100%;background:radial-gradient(closest-side,var(--glow),transparent);filter:blur(10px)}
+.stage{position:relative;z-index:1;width:min(100%,660px);container-type:inline-size}
+.laptop{position:relative;width:84%;margin-inline:auto;transform-style:preserve-3d;transform:perspective(1800px) rotateY(calc(-13deg + var(--ry,0deg))) rotateX(calc(3deg + var(--rx,0deg)));transition:transform .3s ease-out}
+.lid{position:relative;padding:1.6cqw 1.6cqw 1.9cqw;border-radius:2.2cqw 2.2cqw .6cqw .6cqw;background:var(--bezel);box-shadow:0 0 0 .35cqw var(--chassis),0 3cqw 6cqw rgba(0,0,0,.28)}
+.lid::before{content:"";position:absolute;top:.6cqw;left:50%;width:.6cqw;height:.6cqw;margin-left:-.3cqw;border-radius:50%;background:#1d2933}
+.screen{position:relative;aspect-ratio:16/10;border-radius:.7cqw;overflow:hidden;background:#000}
+.screen svg{display:block;width:100%;height:100%}
+.screen::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.17),transparent 38%);pointer-events:none}
+.base{position:relative;width:112%;height:2.5cqw;margin:-.1cqw 0 0 -6%;border-radius:0 0 4cqw 4cqw/0 0 2.3cqw 2.3cqw;background:linear-gradient(var(--chassis-hi),var(--chassis));box-shadow:0 .4cqw 0 rgba(0,0,0,.18),0 2.6cqw 5cqw -1cqw var(--glow)}
+.base::before{content:"";position:absolute;left:50%;top:0;width:16%;height:55%;margin-left:-8%;border-radius:0 0 1cqw 1cqw;background:rgba(0,0,0,.22)}
+.floor{position:absolute;left:6%;right:6%;bottom:-3.4cqw;height:3cqw;background:radial-gradient(closest-side,rgba(0,0,0,.4),transparent);filter:blur(4px)}
+
+.chip{position:absolute;z-index:3;display:flex;flex-direction:column;gap:3px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--chip);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font:400 10.5px/1.2 var(--font-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.chip b{font:700 clamp(1.05rem,1.9vw,1.45rem)/1 var(--font-display);letter-spacing:-.02em;text-transform:none;color:var(--ink)}
+.c1{left:2%;top:-4%}
+.c2{right:0;top:28%}
+.c3{left:3%;bottom:2%}
+
+/* bottom bar */
+.bar{border-top:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:clamp(12px,3vw,40px);padding-block:12px}
+.inds{display:flex;flex:1;min-width:0;gap:clamp(8px,2vw,24px);margin:0;padding:0;list-style:none}
+.ind{flex:1;min-width:0}
+.ind button{display:block;width:100%;min-height:44px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.track{position:relative;display:block;height:2px;margin-bottom:10px;background:var(--line);overflow:hidden}
+.fill{position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left}
+.lab{display:flex;gap:10px;font:500 12px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;opacity:.55;transition:opacity .3s}
+.lab i{font-style:normal;font-variant-numeric:tabular-nums}
+.ind button:hover .lab,.ind.is-active .lab{opacity:1}
+.ind.is-active .fill{animation:fill var(--dur) linear forwards}
+.hero.is-paused .ind.is-active .fill{animation-play-state:paused}
+.ctrls{display:flex;gap:8px}
+.round{display:grid;place-items:center;width:44px;height:44px;border:1.5px solid var(--line);border-radius:50%;background:transparent;color:var(--ink);cursor:pointer;transition:background-color .2s,color .2s,border-color .2s}
+.round:hover{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.round [hidden]{display:none}
+
+/* motion */
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes enter{from{opacity:0;transform:translateX(calc(var(--dir,1)*9%)) scale(.95)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes fill{to{transform:scaleX(1)}}
+@keyframes drift{from{transform:translateY(-4px)}to{transform:translateY(5px)}}
+.slide.is-active .rise{animation:rise .8s var(--ease) both;animation-delay:calc(var(--d,0)*70ms + 120ms)}
+.slide.is-active .stage{animation:enter 1s var(--ease) .1s both}
+.slide.is-active .ghost{animation:fade 1.2s var(--ease) .2s both}
+.slide.is-active .chip{animation:rise .8s var(--ease) calc(var(--d,5)*70ms + 300ms) both,drift 6s ease-in-out 1.4s infinite alternate}
+.c2{--d:6}.c3{--d:7}
+
+@media (max-width:960px){
+  .links{display:none}
+  .menu-btn{display:grid}
+  .tools{order:3}
+  .logo{margin-right:auto}
+}
+@media (max-width:900px){
+  .grid{grid-template-columns:minmax(0,1fr);gap:4px}
+  .visual{order:-1;padding-block:8px 28px}
+  .stage{width:min(100%,520px)}
+  .lede{max-width:56ch}
+}
+@media (max-width:700px){
+  .nm{display:none}
+  .announce span:nth-child(n+3){display:none}
+  .round{width:40px;height:40px}
+  .ctrls{gap:6px}
+}
+@media (max-width:560px){
+  .c3{display:none}
+  .chip{padding:8px 10px;font-size:9.5px}
+  .btn{padding:0 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  .ind.is-active .fill{transform:scaleX(1)}
+}
+</style>
+
+<section class="hero t0" id="hero" role="region" aria-roledescription="carousel" aria-label="Featured laptops">
+  <div class="bgs" aria-hidden="true">
+    <div class="bg t0 is-active"></div>
+    <div class="bg t1"></div>
+    <div class="bg t2"></div>
+    <div class="bg t3"></div>
+  </div>
+
+  <div class="announce">
+    <span>Free delivery over $500</span>
+    <span>2 year warranty on every laptop</span>
+    <span>0% installments for 12 months</span>
+  </div>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="logo" href="#" aria-label="Kernel home">
+        <svg width="26" height="22" viewBox="0 0 26 22" fill="none" aria-hidden="true"><rect x="4" y="2" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M1 18h24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        KERNEL
+      </a>
+      <nav aria-label="Main">
+        <ul class="links">
+          <li><a href="#">Laptops</a></li>
+          <li><a href="#">Gaming</a></li>
+          <li><a href="#">Creator</a></li>
+          <li><a href="#">Business</a></li>
+          <li><a href="#">Deals</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </nav>
+      <div class="tools">
+        <button class="icon-btn" type="button" aria-label="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        </button>
+        <button class="icon-btn" type="button" aria-label="Account">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </button>
+        <button class="icon-btn" type="button" aria-label="Cart, 2 items">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 11h10.6L20.5 8H7"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+          <span class="count" aria-hidden="true">2</span>
+        </button>
+        <button class="icon-btn menu-btn" type="button" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="slides" aria-live="off">
+
+    <!-- Slide 1: Aero 14 -->
+    <article class="slide t0 is-active" role="group" aria-roledescription="slide" aria-label="1 of 4: Aero 14">
+      <div class="wrap grid">
+        <div class="copy">
+          <p class="eyebrow rise" style="--d:0"><span class="badge">New arrival</span><span>Ultrabook / 14 inch</span></p>
+          <h2 class="rise" style="--d:1">1.12 kg of <span style="white-space:nowrap">all-day</span> power.</h2>
+          <p class="lede rise" style="--d:2">The Aero 14 pairs a 2.8K OLED panel with 18 hours of battery, in a magnesium body that disappears into your bag.</p>
+          <ul class="specs rise" style="--d:3"><li>16 GB LPDDR5X</li><li>1 TB NVMe SSD</li><li>Wi-Fi 7</li></ul>
+          <div class="buy rise" style="--d:4">
+            <div><span class="price">$1,299</span><span class="was">$1,499</span></div>
+            <p class="emi">or <b>$108/mo</b> for 12 months<br>0% interest, free setup</p>
+          </div>
+          <div class="cta-row rise" style="--d:5">
+            <a class="btn btn-primary" href="#">Shop Aero 14 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="#">Compare specs</a>
+          </div>
+        </div>
+        <div class="visual">
+          <span class="ghost" aria-hidden="true">Aero</span>
+          <span class="glow" aria-hidden="true"></span>
+          <div class="stage">
+            <div class="laptop">
+              <div class="lid"><div class="screen">
+                <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                  <defs><linearGradient id="a0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9ddd8"/><stop offset="1" stop-color="#f4f8f3"/></linearGradient></defs>
+                  <rect width="320" height="200" fill="url(#a0)"/>
+                  <circle cx="238" cy="58" r="24" fill="#fff3d6"/>
+                  <path d="M0 128C58 96 116 122 178 104S280 94 320 110V200H0Z" fill="#86cbc4"/>
+                  <path d="M0 148C70 120 132 148 202 130S292 126 320 138V200H0Z" fill="#35a39c"/>
+                  <path d="M0 170C82 148 142 176 222 160S300 156 320 164V200H0Z" fill="#0f6e6a"/>
+                  <rect x="22" y="28" width="116" height="70" rx="6" fill="#fff" fill-opacity=".86"/>
+                  <rect x="32" y="38" width="48" height="6" rx="3" fill="#0d1b26" fill-opacity=".8"/>
+                  <rect x="32" y="52" width="94" height="4" rx="2" fill="#0d1b26" fill-opacity=".25"/>
+                  <rect x="32" y="62" width="82" height="4" rx="2" fill="#0d1b26" fill-opacity=".25"/>
+                  <rect x="32" y="72" width="88" height="4" rx="2" fill="#0d1b26" fill-opacity=".25"/>
+                  <rect x="32" y="84" width="30" height="8" rx="4" fill="#086560"/>
+                  <rect width="320" height="9" fill="#fff" fill-opacity=".55"/>
+                  <rect x="100" y="184" width="120" height="11" rx="5.5" fill="#fff" fill-opacity=".55"/>
+                </svg>
+              </div></div>
+              <div class="base"></div>
+              <span class="floor"></span>
+            </div>
+            <div class="chip c1"><b>2.8K OLED</b>120 Hz panel</div>
+            <div class="chip c2"><b>18 h</b>battery life</div>
+            <div class="chip c3"><b>1.12 kg</b>magnesium body</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 2: Forge 16 -->
+    <article class="slide t1" role="group" aria-roledescription="slide" aria-label="2 of 4: Forge 16" aria-hidden="true" inert>
+      <div class="wrap grid">
+        <div class="copy">
+          <p class="eyebrow rise" style="--d:0"><span class="badge">Best seller</span><span>Gaming / 16 inch</span></p>
+          <h2 class="rise" style="--d:1">Frames first. Heat never.</h2>
+          <p class="lede rise" style="--d:2">A vapor chamber keeps the Forge 16 at full clock through long sessions, on a 240 Hz QHD+ display built for fast shooters.</p>
+          <ul class="specs rise" style="--d:3"><li>32 GB DDR5</li><li>2 TB NVMe SSD</li><li>Per-key RGB</li></ul>
+          <div class="buy rise" style="--d:4">
+            <div><span class="price">$1,599</span><span class="was">$1,799</span></div>
+            <p class="emi">or <b>$133/mo</b> for 12 months<br>0% interest, free setup</p>
+          </div>
+          <div class="cta-row rise" style="--d:5">
+            <a class="btn btn-primary" href="#">Shop Forge 16 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="#">Compare specs</a>
+          </div>
+        </div>
+        <div class="visual">
+          <span class="ghost" aria-hidden="true">Forge</span>
+          <span class="glow" aria-hidden="true"></span>
+          <div class="stage">
+            <div class="laptop">
+              <div class="lid"><div class="screen">
+                <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                  <defs>
+                    <linearGradient id="a1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d0e1b"/><stop offset="1" stop-color="#0a0f16"/></linearGradient>
+                    <linearGradient id="b1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb86b"/><stop offset="1" stop-color="#ff4d3d"/></linearGradient>
+                    <clipPath id="c1"><path d="M112 112A48 48 0 0 1 208 112Z"/></clipPath>
+                  </defs>
+                  <rect width="320" height="200" fill="url(#a1)"/>
+                  <g clip-path="url(#c1)"><rect x="100" y="60" width="120" height="52" fill="url(#b1)"/><rect x="100" y="92" width="120" height="3" fill="#0a0f16"/><rect x="100" y="100" width="120" height="4" fill="#0a0f16"/><rect x="100" y="107" width="120" height="5" fill="#0a0f16"/></g>
+                  <rect y="112" width="320" height="88" fill="#0a0f16"/>
+                  <g stroke="#ff5b44" stroke-opacity=".6" stroke-width=".8" fill="none">
+                    <path d="M160 112V200M190 112L250 200M220 112L340 200M250 112L430 200M130 112L70 200M100 112L-20 200M70 112L-110 200"/>
+                    <path d="M0 118H320M0 126H320M0 136H320M0 150H320M0 170H320"/>
+                  </g>
+                  <text x="12" y="25" font-family="IBM Plex Mono,monospace" font-size="11" fill="#ff5b44">238 FPS</text>
+                  <text x="12" y="38" font-family="IBM Plex Mono,monospace" font-size="7" fill="#a6b2bf">GPU 61&deg;C   CPU 54&deg;C</text>
+                  <rect x="258" y="14" width="50" height="6" rx="3" fill="#fff" fill-opacity=".2"/>
+                  <rect x="258" y="14" width="34" height="6" rx="3" fill="#ff5b44"/>
+                </svg>
+              </div></div>
+              <div class="base"></div>
+              <span class="floor"></span>
+            </div>
+            <div class="chip c1"><b>240 Hz</b>QHD+ display</div>
+            <div class="chip c2"><b>8 GB</b>GDDR6 graphics</div>
+            <div class="chip c3"><b>Vapor chamber</b>sustained clocks</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 3: Studio 16 -->
+    <article class="slide t2" role="group" aria-roledescription="slide" aria-label="3 of 4: Studio 16" aria-hidden="true" inert>
+      <div class="wrap grid">
+        <div class="copy">
+          <p class="eyebrow rise" style="--d:0"><span class="badge">Creator pick</span><span>Creator / 16 inch</span></p>
+          <h2 class="rise" style="--d:1">Color you can sign off on.</h2>
+          <p class="lede rise" style="--d:2">A 16 inch 4K mini-LED panel covers 100% of DCI-P3 and ships factory calibrated, with 64 GB of memory for heavy timelines.</p>
+          <ul class="specs rise" style="--d:3"><li>64 GB DDR5</li><li>2 TB NVMe SSD</li><li>SD card reader</li></ul>
+          <div class="buy rise" style="--d:4">
+            <div><span class="price">$2,199</span><span class="was">$2,449</span></div>
+            <p class="emi">or <b>$183/mo</b> for 12 months<br>0% interest, free setup</p>
+          </div>
+          <div class="cta-row rise" style="--d:5">
+            <a class="btn btn-primary" href="#">Shop Studio 16 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="#">Compare specs</a>
+          </div>
+        </div>
+        <div class="visual">
+          <span class="ghost" aria-hidden="true">Studio</span>
+          <span class="glow" aria-hidden="true"></span>
+          <div class="stage">
+            <div class="laptop">
+              <div class="lid"><div class="screen">
+                <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                  <defs><linearGradient id="a2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb340"/><stop offset=".5" stop-color="#e2557a"/><stop offset="1" stop-color="#2b4474"/></linearGradient></defs>
+                  <rect width="320" height="200" fill="#0e1727"/>
+                  <rect x="12" y="14" width="196" height="110" rx="4" fill="url(#a2)"/>
+                  <circle cx="150" cy="70" r="26" fill="#fff" fill-opacity=".18"/>
+                  <rect x="218" y="14" width="90" height="110" rx="4" fill="#16233d"/>
+                  <path d="M228 22V72H298" fill="none" stroke="#f6f2ea" stroke-opacity=".3"/>
+                  <path d="M228 72C250 70 262 40 298 22" fill="none" stroke="#ffb340" stroke-width="2"/>
+                  <g stroke="#f6f2ea" stroke-opacity=".25"><path d="M228 86H298M228 98H298M228 110H298"/></g>
+                  <circle cx="252" cy="86" r="3.5" fill="#ffb340"/><circle cx="276" cy="98" r="3.5" fill="#ffb340"/><circle cx="240" cy="110" r="3.5" fill="#ffb340"/>
+                  <rect x="12" y="136" width="296" height="52" rx="4" fill="#16233d"/>
+                  <rect x="18" y="142" width="90" height="12" rx="2" fill="#ffb340"/>
+                  <rect x="112" y="142" width="64" height="12" rx="2" fill="#7aa2ff"/>
+                  <rect x="180" y="142" width="120" height="12" rx="2" fill="#ffb340" fill-opacity=".7"/>
+                  <rect x="18" y="158" width="150" height="10" rx="2" fill="#35a39c"/>
+                  <rect x="172" y="158" width="80" height="10" rx="2" fill="#7aa2ff" fill-opacity=".7"/>
+                  <rect x="18" y="172" width="230" height="8" rx="2" fill="#fff" fill-opacity=".2"/>
+                  <path d="M140 134V188" stroke="#ffb340" stroke-width="1.5"/>
+                </svg>
+              </div></div>
+              <div class="base"></div>
+              <span class="floor"></span>
+            </div>
+            <div class="chip c1"><b>100% DCI-P3</b>4K mini-LED</div>
+            <div class="chip c2"><b>64 GB</b>DDR5 memory</div>
+            <div class="chip c3"><b>dE &lt; 2</b>factory calibrated</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 4: Pro 15 -->
+    <article class="slide t3" role="group" aria-roledescription="slide" aria-label="4 of 4: Pro 15" aria-hidden="true" inert>
+      <div class="wrap grid">
+        <div class="copy">
+          <p class="eyebrow rise" style="--d:0"><span class="badge">For teams</span><span>Business / 15.6 inch</span></p>
+          <h2 class="rise" style="--d:1">Built for a 9 to 5 that runs late.</h2>
+          <p class="lede rise" style="--d:2">A spill-resistant keyboard, a MIL-STD-810H tested chassis, fingerprint login and 14 hours away from the charger.</p>
+          <ul class="specs rise" style="--d:3"><li>16 GB DDR5</li><li>512 GB NVMe SSD</li><li>Windows 11 Pro</li></ul>
+          <div class="buy rise" style="--d:4">
+            <div><span class="price">$899</span><span class="was">$1,049</span></div>
+            <p class="emi">or <b>$75/mo</b> for 12 months<br>Volume pricing from 5 units</p>
+          </div>
+          <div class="cta-row rise" style="--d:5">
+            <a class="btn btn-primary" href="#">Shop Pro 15 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="#">Compare specs</a>
+          </div>
+        </div>
+        <div class="visual">
+          <span class="ghost" aria-hidden="true">Pro</span>
+          <span class="glow" aria-hidden="true"></span>
+          <div class="stage">
+            <div class="laptop">
+              <div class="lid"><div class="screen">
+                <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+                  <rect width="320" height="200" fill="#f5f6f8"/>
+                  <rect width="320" height="16" fill="#2340d8"/>
+                  <rect x="8" y="5" width="40" height="6" rx="3" fill="#fff" fill-opacity=".85"/>
+                  <rect y="16" width="52" height="184" fill="#e9ebef"/>
+                  <rect x="8" y="28" width="36" height="7" rx="3" fill="#2340d8"/>
+                  <g fill="#14161a" fill-opacity=".25"><rect x="8" y="44" width="30" height="6" rx="3"/><rect x="8" y="58" width="34" height="6" rx="3"/><rect x="8" y="72" width="26" height="6" rx="3"/></g>
+                  <g fill="#fff" stroke="#d5d8de"><rect x="62" y="26" width="76" height="40" rx="4"/><rect x="146" y="26" width="76" height="40" rx="4"/><rect x="230" y="26" width="76" height="40" rx="4"/></g>
+                  <g fill="#14161a"><rect x="70" y="36" width="30" height="9" rx="2"/><rect x="154" y="36" width="38" height="9" rx="2"/><rect x="238" y="36" width="26" height="9" rx="2"/></g>
+                  <g fill="#14161a" fill-opacity=".25"><rect x="70" y="52" width="48" height="4" rx="2"/><rect x="154" y="52" width="40" height="4" rx="2"/><rect x="238" y="52" width="52" height="4" rx="2"/></g>
+                  <rect x="62" y="76" width="140" height="112" rx="4" fill="#fff" stroke="#d5d8de"/>
+                  <g fill="#2340d8"><rect x="74" y="140" width="14" height="38" rx="2"/><rect x="96" y="124" width="14" height="54" rx="2"/><rect x="118" y="132" width="14" height="46" rx="2"/><rect x="140" y="108" width="14" height="70" rx="2"/><rect x="162" y="118" width="14" height="60" rx="2"/><rect x="184" y="96" width="10" height="82" rx="2" fill-opacity=".45"/></g>
+                  <path d="M70 178H196" stroke="#14161a" stroke-opacity=".3"/>
+                  <rect x="210" y="76" width="96" height="112" rx="4" fill="#fff" stroke="#d5d8de"/>
+                  <g fill="#14161a" fill-opacity=".18"><rect x="218" y="88" width="80" height="6" rx="2"/><rect x="218" y="104" width="80" height="6" rx="2"/><rect x="218" y="120" width="80" height="6" rx="2"/><rect x="218" y="136" width="80" height="6" rx="2"/><rect x="218" y="152" width="80" height="6" rx="2"/><rect x="218" y="168" width="80" height="6" rx="2"/></g>
+                  <rect x="218" y="88" width="30" height="6" rx="2" fill="#2340d8"/>
+                </svg>
+              </div></div>
+              <div class="base"></div>
+              <span class="floor"></span>
+            </div>
+            <div class="chip c1"><b>14 h</b>battery life</div>
+            <div class="chip c2"><b>MIL-STD-810H</b>drop tested</div>
+            <div class="chip c3"><b>Fingerprint</b>one-touch login</div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="bar">
+    <div class="wrap">
+      <ol class="inds" aria-label="Choose a slide">
+        <li class="ind is-active"><button type="button" data-go="0" aria-label="Show Aero 14, slide 1 of 4" aria-current="true"><span class="track"><span class="fill"></span></span><span class="lab"><i>01</i><span class="nm">Aero 14</span></span></button></li>
+        <li class="ind"><button type="button" data-go="1" aria-label="Show Forge 16, slide 2 of 4"><span class="track"><span class="fill"></span></span><span class="lab"><i>02</i><span class="nm">Forge 16</span></span></button></li>
+        <li class="ind"><button type="button" data-go="2" aria-label="Show Studio 16, slide 3 of 4"><span class="track"><span class="fill"></span></span><span class="lab"><i>03</i><span class="nm">Studio 16</span></span></button></li>
+        <li class="ind"><button type="button" data-go="3" aria-label="Show Pro 15, slide 4 of 4"><span class="track"><span class="fill"></span></span><span class="lab"><i>04</i><span class="nm">Pro 15</span></span></button></li>
+      </ol>
+      <div class="ctrls">
+        <button class="round" type="button" data-prev aria-label="Previous slide">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="round" type="button" data-toggle aria-label="Pause slideshow">
+          <svg class="i-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          <svg class="i-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><path d="M7 4l13 8-13 8z"/></svg>
+        </button>
+        <button class="round" type="button" data-next aria-label="Next slide">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var hero = document.getElementById('hero');
+  var slides = [].slice.call(hero.querySelectorAll('.slide'));
+  var bgs = [].slice.call(hero.querySelectorAll('.bg'));
+  var inds = [].slice.call(hero.querySelectorAll('.ind'));
+  var viewport = hero.querySelector('.slides');
+  var toggle = hero.querySelector('[data-toggle]');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var cur = 0;
+  var userPlaying = !reduce.matches;
+  var hover = false;
+  var focus = false;
+
+  // Autoplay length lives in the --dur CSS variable (default 7000ms).
+  function sync() {
+    var paused = !userPlaying || hover || focus || document.hidden;
+    hero.classList.toggle('is-paused', paused);
+    viewport.setAttribute('aria-live', userPlaying && !paused ? 'off' : 'polite');
+  }
+
+  function go(n, dir) {
+    n = (n + slides.length) % slides.length;
+    if (n === cur) return;
+    hero.style.setProperty('--dir', String(dir || (n > cur ? 1 : -1)));
+    hero.classList.remove('t' + cur);
+    hero.classList.add('t' + n);
+
+    slides[cur].classList.remove('is-active');
+    slides[cur].inert = true;
+    slides[cur].setAttribute('aria-hidden', 'true');
+    bgs[cur].classList.remove('is-active');
+    inds[cur].classList.remove('is-active');
+    inds[cur].querySelector('button').removeAttribute('aria-current');
+
+    cur = n;
+
+    slides[cur].classList.add('is-active');
+    slides[cur].inert = false;
+    slides[cur].removeAttribute('aria-hidden');
+    bgs[cur].classList.add('is-active');
+    inds[cur].classList.add('is-active');
+    inds[cur].querySelector('button').setAttribute('aria-current', 'true');
+  }
+
+  // The progress bar drives autoplay: when it finishes, move on.
+  inds.forEach(function (li) {
+    li.querySelector('.fill').addEventListener('animationend', function () {
+      if (!hero.classList.contains('is-paused')) go(cur + 1, 1);
+    });
+    li.querySelector('button').addEventListener('click', function () {
+      go(parseInt(this.getAttribute('data-go'), 10));
+    });
+  });
+
+  hero.querySelector('[data-prev]').addEventListener('click', function () { go(cur - 1, -1); });
+  hero.querySelector('[data-next]').addEventListener('click', function () { go(cur + 1, 1); });
+
+  toggle.addEventListener('click', function () {
+    userPlaying = !userPlaying;
+    toggle.setAttribute('aria-label', userPlaying ? 'Pause slideshow' : 'Play slideshow');
+    toggle.querySelector('.i-pause').hidden = !userPlaying;
+    toggle.querySelector('.i-play').hidden = userPlaying;
+    sync();
+  });
+
+  hero.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { hover = true; sync(); } });
+  hero.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = false; sync(); } });
+  hero.addEventListener('focusin', function (e) {
+    try { focus = e.target.matches(':focus-visible'); } catch (err) { focus = false; }
+    sync();
+  });
+  hero.addEventListener('focusout', function () { focus = false; sync(); });
+  document.addEventListener('visibilitychange', sync);
+
+  hero.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { go(cur - 1, -1); }
+    else if (e.key === 'ArrowRight') { go(cur + 1, 1); }
+    else if (e.key === 'Home') { go(0); }
+    else if (e.key === 'End') { go(slides.length - 1); }
+  });
+
+  // Keep placeholder links from jumping to the top of the page.
+  hero.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href="#"]');
+    if (a) e.preventDefault();
+  });
+
+  // Swipe on touch and pen. Vertical scrolling stays native.
+  var startX = null;
+  viewport.style.touchAction = 'pan-y';
+  viewport.addEventListener('pointerdown', function (e) {
+    if (e.pointerType !== 'mouse') startX = e.clientX;
+  });
+  viewport.addEventListener('pointerup', function (e) {
+    if (startX === null) return;
+    var dx = e.clientX - startX;
+    startX = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? cur + 1 : cur - 1, dx < 0 ? 1 : -1);
+  });
+  viewport.addEventListener('pointercancel', function () { startX = null; });
+
+  // Gentle laptop tilt that follows the mouse.
+  if (!reduce.matches && window.matchMedia('(hover: hover)').matches) {
+    var raf = 0;
+    hero.addEventListener('pointermove', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      var r = hero.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5;
+      var y = (e.clientY - r.top) / r.height - 0.5;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () {
+        hero.style.setProperty('--ry', (x * 8).toFixed(2) + 'deg');
+        hero.style.setProperty('--rx', (-y * 5).toFixed(2) + 'deg');
+      });
+    });
+    hero.addEventListener('pointerleave', function () {
+      hero.style.setProperty('--ry', '0deg');
+      hero.style.setProperty('--rx', '0deg');
+    });
+  }
+
+  sync();
+})();
+</script>

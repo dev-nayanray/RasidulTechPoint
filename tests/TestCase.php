@@ -264,6 +264,26 @@ abstract class TestCase
         }
     }
 
+    public function assertArrayHasKey(mixed $key, array $array, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!array_key_exists($key, $array)) {
+            throw new \RuntimeException(
+                $message ?: 'Failed asserting array has key ' . var_export($key, true)
+            );
+        }
+    }
+
+    public function assertIsArray(mixed $value, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!is_array($value)) {
+            throw new \RuntimeException(
+                $message ?: 'Failed asserting that value is an array, got ' . gettype($value)
+            );
+        }
+    }
+
     public function assertNotContains(mixed $needle, array $haystack, string $message = ''): void
     {
         $this->assertions++;
@@ -328,6 +348,27 @@ abstract class TestCase
         if (!($actual > $expected)) {
             throw new \RuntimeException(
                 $message ?: "Failed asserting {$actual} > {$expected}"
+            );
+        }
+    }
+
+    public function assertLessThan(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        $this->assertions++;
+        if (!($actual < $expected)) {
+            throw new \RuntimeException(
+                $message ?: "Failed asserting {$actual} < {$expected}"
+            );
+        }
+    }
+
+    public function assertEqualsWithDelta(mixed $expected, mixed $actual, float $delta, string $message = ''): void
+    {
+        $this->assertions++;
+        if (abs((float) $expected - (float) $actual) > $delta) {
+            throw new \RuntimeException(
+                $message ?: 'Failed asserting that ' . var_export($actual, true)
+                    . ' matches ' . var_export($expected, true) . ' within delta ' . $delta
             );
         }
     }

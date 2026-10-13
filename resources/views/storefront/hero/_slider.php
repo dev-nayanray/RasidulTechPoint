@@ -2,11 +2,22 @@
 /**
  * Full hero slider section — included into storefront/home.php.
  *
- * @var array  $heroSlides   Hydrated slide rows from HeroSlideService::published().
- * @var array  $heroSettings Settings array from HeroSlideService::settings().
- * @var bool   $heroEnabled  True when the slider should render at all.
+ * Architecture mirrors the reference (hero-slider.html): every slide gets a
+ * generated theme class .hs-t{i} holding its full 15-token palette, the hero
+ * ROOT carries the active slide's class so the chrome (indicators, controls,
+ * backgrounds) re-tints on every change, and the JS swaps that class in go().
+ * Each .bg layer and .slide also keep their own class so the outgoing slide
+ * holds its palette through the 500ms fade while the root has already swapped.
+ *
+ * The thin announcement bar from the reference is NOT rendered here: the
+ * homepage's own site-wide bar sits directly above the header and is fed from
+ * the same hero settings (see home.php), which keeps one bar, not two.
+ *
+ * @var array $heroSlides   Hydrated slide rows from HeroSlideService::published().
+ * @var array $heroSettings Settings array from HeroSlideService::settings().
  */
 use App\Services\HeroSlideService;
+use App\Support\View;
 
 if (empty($heroSlides)) {
     // No slides available — fallback handled by home.php (renders the static hero).
@@ -15,24 +26,20 @@ if (empty($heroSlides)) {
 $svc = new HeroSlideService();
 $total = count($heroSlides);
 $showControls = $total > 1;
-$dur = (int) ($heroSettings['autoplay_interval_ms'] ?? 7000);
+$dur = max(3000, min(20000, (int) ($heroSettings['autoplay_interval_ms'] ?? 7000)));
 $autoplay = !empty($heroSettings['autoplay_enabled']) && $showControls;
-$announcementItems = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['announcement_items'] ?? []) : [];
 ?>
-<section class="hero <?= $autoplay ? '' : 'is-paused' ?>" id="hero" role="region" aria-roledescription="carousel" aria-label="Featured laptops" style="--hero-dur:<?= e((string) $dur) ?>ms">
+<style id="hero-theme-tokens">
+<?php foreach ($heroSlides as $i => $slide): ?>
+.hs-t<?= (int) $i ?>{<?= $svc->cssVars($slide) ?>}
+<?php endforeach; ?>
+</style>
+<section class="hero hs-t0<?= $autoplay ? '' : ' is-paused' ?>" id="hero" role="region" aria-roledescription="carousel" aria-label="Featured laptops" style="--hero-dur:<?= (int) $dur ?>ms">
   <div class="bgs" aria-hidden="true">
-    <?php foreach ($heroSlides as $i => $slide):
-        $tokens = $svc->themeTokens($slide);
-        $bgStyle = sprintf('--bg:%s;--bg2:%s;--dot:color-mix(in srgb,%s 16%%,transparent);', e($tokens['bg']), e($tokens['bg2']), e($tokens['ink'])); ?>
-      <div class="bg hs-bg-<?= (int) $i ?><?= $i === 0 ? ' is-active' : '' ?>" style="<?= $bgStyle ?>"></div>
+    <?php foreach ($heroSlides as $i => $slide): ?>
+      <div class="bg hs-t<?= (int) $i ?><?= $i === 0 ? ' is-active' : '' ?>"></div>
     <?php endforeach; ?>
   </div>
-
-  <?php if (!empty($announcementItems)): ?>
-  <div class="announce">
-    <?php foreach ($announcementItems as $item): ?><span><?= e($item) ?></span><?php endforeach; ?>
-  </div>
-  <?php endif; ?>
 
   <div class="slides" aria-live="<?= $autoplay ? 'off' : 'polite' ?>" data-hero-slides>
     <?php foreach ($heroSlides as $i => $slide):

@@ -92,8 +92,53 @@ if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>
     </div>
 <?php return; endif; ?>
 
-<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    <?= \App\Support\View::component('stat-card', ['label' => 'Sales (range)', 'value' => money($metrics['sales_total']), 'icon' => 'bar-chart', 'tone' => 'blue', 'hint' => $metrics['sales_count'] . ' completed order(s) in the selected range']) ?>
+<?php
+// Quick action shortcuts — permission-gated, no fake entries.
+$quickActions = [];
+if (\App\Services\AuthService::can('orders.manage')) {
+    $quickActions[] = ['New order', 'orders/index.php → New order', 'shopping-cart', '/admin/orders/create'];
+}
+if (\App\Services\AuthService::can('inventory.receive')) {
+    $quickActions[] = ['Receive stock', 'Add a unit to inventory', 'package-check', '/admin/inventory/create'];
+}
+if (\App\Services\AuthService::can('products.create')) {
+    $quickActions[] = ['Add model', 'Create a product model', 'box', '/admin/products/create'];
+}
+if (\App\Services\AuthService::can('inspections.manage')) {
+    $quickActions[] = ['QA inspection', 'Inspect a unit', 'check-circle', '/admin/inspections'];
+}
+if (\App\Services\AuthService::can('contact_inquiries.view') && !empty($inquiryStats['new'])) {
+    $quickActions[] = ['Reply to inquiries', $inquiryStats['new'] . ' new awaiting reply', 'mail', '/admin/contact-inquiries?status=new'];
+}
+if (\App\Services\AuthService::can('marketing.manage')) {
+    $quickActions[] = ['Edit content', 'Homepage CMS blocks', 'megaphone', '/admin/content'];
+}
+if (\App\Services\AuthService::can('reports.view')) {
+    $quickActions[] = ['Reports', 'Sales / inventory / profit', 'bar-chart', '/admin/reports'];
+}
+if (\App\Services\AuthService::can('settings.manage')) {
+    $quickActions[] = ['Settings', 'Business + system', 'settings', '/admin/settings'];
+}
+?>
+<?php if ($quickActions !== []): ?>
+<div class="admin-section" style="margin-top:0">
+    <p class="admin-section-title">Quick actions</p>
+    <div class="admin-quick-grid">
+        <?php foreach ($quickActions as [$title, $sub, $icon, $href]): ?>
+            <a href="<?= e(url($href)) ?>" class="admin-quick-card">
+                <span class="admin-quick-card-ic"><?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-5 w-5']) ?></span>
+                <p class="admin-quick-card-title"><?= e($title) ?></p>
+                <p class="admin-quick-card-sub"><?= e($sub) ?></p>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
+
+<div class="admin-section" style="margin-top:24px">
+    <p class="admin-section-title">Snapshot</p>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <?= \App\Support\View::component('stat-card', ['label' => 'Sales (range)', 'value' => money($metrics['sales_total']), 'icon' => 'bar-chart', 'tone' => 'blue', 'hint' => $metrics['sales_count'] . ' completed order(s) in the selected range']) ?>
     <?= \App\Support\View::component('stat-card', ['label' => "Today's sales", 'value' => money($metrics['sales_today']), 'icon' => 'shopping-cart', 'tone' => 'green', 'hint' => 'Completed since UTC midnight (calendar today)']) ?>
     <?= \App\Support\View::component('stat-card', ['label' => 'Month-to-date sales', 'value' => money($metrics['sales_mtd']), 'icon' => 'trending-up', 'tone' => 'green', 'hint' => 'Completed since 1st of month']) ?>
 
@@ -110,6 +155,7 @@ if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>
     <?= \App\Support\View::component('stat-card', ['label' => 'In transit', 'value' => number_format($metrics['in_transit_units']), 'icon' => 'truck', 'tone' => 'slate', 'hint' => 'Units on the way to the warehouse']) ?>
     <?= \App\Support\View::component('stat-card', ['label' => 'Pending orders', 'value' => number_format($metrics['pending_orders']), 'icon' => 'clipboard', 'tone' => 'blue', 'hint' => 'Pending / confirmed / processing']) ?>
     <?= \App\Support\View::component('stat-card', ['label' => 'Low stock alerts', 'value' => count($lowStock), 'icon' => 'alert', 'tone' => 'red', 'hint' => 'Published models at/below threshold']) ?>
+    </div>
 </div>
 
 <?php if ($salesTrend !== []): ?>
@@ -132,7 +178,7 @@ if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>
             <a href="<?= e(url('/admin/orders')) ?>">View all →</a>
         </header>
         <?php if ($recentOrders === []): ?>
-            <p class="px-4 py-8 text-center text-sm text-slate-400">No orders yet. Orders will appear here as soon as the first one is recorded.</p>
+            <p class="admin-empty-text">No orders yet. Orders will appear here as soon as the first one is recorded.</p>
         <?php else: ?>
             <div class="admin-table-wrap">
             <table class="admin-table">
@@ -157,7 +203,7 @@ if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>
             <a href="<?= e(url('/admin/inventory')) ?>">Inventory →</a>
         </header>
         <?php if ($recentMovements === []): ?>
-            <p class="px-4 py-8 text-center text-sm text-slate-400">No movements yet. Stock receipts and transitions will appear here.</p>
+            <p class="admin-empty-text">No movements yet. Stock receipts and transitions will appear here.</p>
         <?php else: ?>
             <table class="min-w-full divide-y divide-slate-100 text-sm">
                 <tbody>
@@ -182,7 +228,7 @@ if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>
             <?php endif; ?>
         </header>
         <?php if ($recentAudit === []): ?>
-            <p class="px-4 py-8 text-center text-sm text-slate-400">No audit events yet. Privileged actions (login, role changes, inventory transitions) will be recorded here.</p>
+            <p class="admin-empty-text">No audit events yet. Privileged actions (login, role changes, inventory transitions) will be recorded here.</p>
         <?php else: ?>
             <table class="min-w-full divide-y divide-slate-100 text-sm">
                 <tbody>
@@ -203,7 +249,7 @@ if (!$metrics['has_sales_data'] && !$metrics['has_inventory_data']): ?>
             <h3>Low stock alerts</h3>
         </header>
         <?php if ($lowStock === []): ?>
-            <p class="px-4 py-8 text-center text-sm text-slate-400">
+            <p class="admin-empty-text">
                 <?php if ($metrics['has_inventory_data']): ?>
                     No published models below the alert threshold.
                 <?php else: ?>

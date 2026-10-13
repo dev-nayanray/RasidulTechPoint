@@ -41,29 +41,72 @@ body{font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased;text
 ::-webkit-scrollbar-thumb:hover{background:rgba(15,23,42,.28);background-clip:padding-box}
 
 /* ============================================================
-   SIDEBAR POLISH
+   SIDEBAR — sticky, scrollable, premium dark chrome
    ============================================================ */
 aside[data-sidebar]{
-  background:linear-gradient(180deg,#14243A 0%,#0F1A2D 100%) !important;
-  box-shadow:inset -1px 0 0 rgba(255,255,255,.04);
-}
-aside[data-sidebar] a[aria-current="page"],
-aside[data-sidebar] a.bg-white\/10{
-  background:linear-gradient(90deg,rgba(37,99,235,.18) 0%,rgba(37,99,235,.08) 100%) !important;
-  color:#fff !important;
+  background:linear-gradient(180deg,#14243A 0%,#0B1525 100%) !important;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.04),4px 0 24px rgba(0,0,0,.18);
   position:relative;
-  box-shadow:inset 3px 0 0 var(--blue);
 }
-aside[data-sidebar] a[aria-current="page"] svg,
-aside[data-sidebar] a.bg-white\/10 svg{opacity:1 !important;color:#7FA4F5}
-aside[data-sidebar] a:hover svg{opacity:1 !important}
-aside[data-sidebar] p[data-sidebar-section]{letter-spacing:.08em}
+aside[data-sidebar]::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 30% 0%,rgba(37,99,235,.10),transparent 50%);
+}
+
+/* Brand header — sticky at top of sidebar with subtle blur */
+aside[data-sidebar] > div:first-child{
+  position:relative;z-index:2;
+  background:rgba(15,21,37,.55) !important;
+  backdrop-filter:saturate(180%) blur(8px);
+  -webkit-backdrop-filter:saturate(180%) blur(8px);
+}
+
+/* Custom scrollbar inside the sidebar nav */
+.rtp-admin-nav{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}
+.rtp-admin-nav::-webkit-scrollbar{width:6px}
+.rtp-admin-nav::-webkit-scrollbar-track{background:transparent}
+.rtp-admin-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+.rtp-admin-nav::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.22)}
+
+/* Section labels — small caps style */
+.rtp-nav-section-label{
+  position:relative;padding-left:14px;
+}
+.rtp-nav-section-label::before{
+  content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:6px;height:1.5px;background:rgba(255,255,255,.20);border-radius:1px;
+}
+
+/* Nav links — smooth hover with subtle slide-right on hover */
+.rtp-nav-link{
+  position:relative;overflow:hidden;
+}
+.rtp-nav-link::before{
+  content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:0;background:var(--blue);border-radius:0 3px 3px 0;
+  transition:height .2s ease;
+}
+.rtp-nav-link:hover::before,
+.rtp-nav-link.rtp-nav-active::before{height:60%}
+.rtp-nav-link.rtp-nav-active{
+  background:linear-gradient(90deg,rgba(37,99,235,.22) 0%,rgba(37,99,235,.06) 100%) !important;
+  color:#fff !important;
+}
+.rtp-nav-link.rtp-nav-active .rtp-nav-icon{opacity:1 !important;color:#7FA4F5 !important}
+.rtp-nav-link:hover .rtp-nav-icon{opacity:1 !important;color:#fff !important;transform:translateX(2px)}
+.rtp-nav-icon{transition:transform .15s ease,color .15s ease}
+
 /* Collapsed state — tooltips via title attribute, hide labels */
 html.sidebar-collapsed aside[data-sidebar]{width:4.5rem !important}
 html.sidebar-collapsed aside[data-sidebar] [data-sidebar-label],
 html.sidebar-collapsed aside[data-sidebar] [data-sidebar-section]{display:none}
-html.sidebar-collapsed aside[data-sidebar] a{justify-content:center;padding-inline:0}
-html.sidebar-collapsed aside[data-sidebar] a svg{margin-inline:auto}
+html.sidebar-collapsed aside[data-sidebar] .rtp-nav-link{justify-content:center;padding-inline:0}
+html.sidebar-collapsed aside[data-sidebar] .rtp-nav-icon{margin-inline:auto}
+html.sidebar-collapsed aside[data-sidebar] .rtp-nav-section-label{padding-left:0;text-align:center;font-size:0}
+html.sidebar-collapsed aside[data-sidebar] .rtp-nav-section-label::before{display:none}
+
+/* Sidebar footer — online indicator */
+.rtp-admin-foot{position:relative;z-index:2}
 
 /* ============================================================
    TOP BAR POLISH
@@ -138,36 +181,148 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
 .admin-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
 /* ============================================================
-   STAT CARD — semantic tones
+   STAT CARD — premium, interactive, semantic tones
    Use: tone="blue|green|amber|red|navy|slate"
+   Features: hover lift + shadow, gradient top accent per tone,
+   icon tile with tone background, optional trend badge,
+   optional animated count-up via .js-count-up + data-count-to.
    ============================================================ */
 .admin-stat-card{
-  background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;
-  box-shadow:var(--shadow-sm);transition:border-color .15s,box-shadow .15s,transform .15s;
   position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#fff 0%,#FAFCFF 100%);
+  border:1px solid var(--line);border-radius:16px;padding:18px;
+  box-shadow:var(--shadow-sm);
+  transition:border-color .2s,box-shadow .2s,transform .2s cubic-bezier(.2,.7,.2,1);
+  display:flex;flex-direction:column;gap:6px;min-height:120px;
 }
-.admin-stat-card:hover{border-color:rgba(37,99,235,.30);box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.admin-stat-card-label{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.01em;margin:0}
-.admin-stat-card-value{font-size:28px;font-weight:800;letter-spacing:-.03em;color:var(--ink);
-  font-variant-numeric:tabular-nums;margin:6px 0 0;line-height:1.1}
-.admin-stat-card-hint{font-size:12px;color:#94A3B8;margin:4px 0 0}
+.admin-stat-card.is-link{cursor:pointer;text-decoration:none;color:inherit}
+.admin-stat-card.is-link:hover{color:inherit}
+.admin-stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 20px rgba(15,23,42,.08),0 4px 8px rgba(15,23,42,.06);
+}
+.admin-stat-card:active{transform:translateY(-1px)}
+
+/* Top row: icon tile (left) + optional trend badge (right) */
+.admin-stat-card-top{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;
+}
 .admin-stat-card-ic{
-  width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;
-  position:absolute;top:18px;right:18px;
+  width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:none;
+  transition:transform .2s cubic-bezier(.2,.7,.2,1);
 }
+.admin-stat-card:hover .admin-stat-card-ic{transform:scale(1.08) rotate(-3deg)}
+
+/* Value — big, tabular, slight letter-spacing tighten */
+.admin-stat-card-value{
+  font-size:30px;font-weight:800;letter-spacing:-.035em;color:var(--ink);
+  font-variant-numeric:tabular-nums;margin:2px 0 0;line-height:1.05;
+  transition:color .2s;
+}
+.admin-stat-card.is-link:hover .admin-stat-card-value{color:var(--blue)}
+
+/* Label + hint */
+.admin-stat-card-label{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.01em;margin:0}
+.admin-stat-card-hint{font-size:11.5px;color:#94A3B8;margin:2px 0 0;line-height:1.4}
+
+/* Tone tiles — icon background */
 .admin-stat-ic-blue{background:rgba(37,99,235,.10);color:var(--blue)}
 .admin-stat-ic-green{background:rgba(22,163,74,.10);color:var(--green)}
 .admin-stat-ic-amber{background:rgba(217,119,6,.12);color:var(--amber)}
 .admin-stat-ic-red{background:rgba(220,38,38,.10);color:var(--red)}
 .admin-stat-ic-navy{background:rgba(20,36,58,.10);color:var(--navy)}
 .admin-stat-ic-slate{background:#F1F5F9;color:var(--muted)}
-/* Top accent stripe — subtle color cue */
+
+/* Tone-colored top accent stripe — animates from 0 → 1 width on hover */
 .admin-stat-card::before{
-  content:"";position:absolute;left:0;right:0;top:0;height:2px;
-  background:linear-gradient(90deg,var(--blue),var(--green));
-  opacity:0;transition:opacity .2s;
+  content:"";position:absolute;left:0;top:0;height:3px;width:100%;
+  border-radius:16px 16px 0 0;
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .35s cubic-bezier(.2,.7,.2,1);
 }
-.admin-stat-card:hover::before{opacity:1}
+.admin-stat-card:hover::before{transform:scaleX(1)}
+.admin-stat-card.admin-stat-blue::before{background:linear-gradient(90deg,var(--blue),#7FA4F5)}
+.admin-stat-card.admin-stat-green::before{background:linear-gradient(90deg,var(--green),#4ADE80)}
+.admin-stat-card.admin-stat-amber::before{background:linear-gradient(90deg,var(--amber),#FBBF24)}
+.admin-stat-card.admin-stat-red::before{background:linear-gradient(90deg,var(--red),#F87171)}
+.admin-stat-card.admin-stat-navy::before{background:linear-gradient(90deg,var(--navy),#2B4869)}
+.admin-stat-card.admin-stat-slate::before{background:linear-gradient(90deg,#64748B,#94A3B8)}
+
+/* Tone-colored hover border */
+.admin-stat-card.admin-stat-blue:hover{border-color:rgba(37,99,235,.30)}
+.admin-stat-card.admin-stat-green:hover{border-color:rgba(22,163,74,.30)}
+.admin-stat-card.admin-stat-amber:hover{border-color:rgba(217,119,6,.35)}
+.admin-stat-card.admin-stat-red:hover{border-color:rgba(220,38,38,.30)}
+.admin-stat-card.admin-stat-navy:hover{border-color:rgba(20,36,58,.30)}
+.admin-stat-card.admin-stat-slate:hover{border-color:rgba(100,116,139,.30)}
+
+/* Trend badge — small pill in the top-right corner */
+.admin-stat-trend{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.01em;
+}
+.admin-stat-trend-up{background:rgba(22,163,74,.12);color:var(--green)}
+.admin-stat-trend-down{background:rgba(220,38,38,.12);color:var(--red)}
+
+/* Count-up animation: when the .js-count-up is in view, the value animates.
+   JS sets the .is-counting class; we just provide a smooth transition on the value. */
+.admin-stat-card.js-count-up .admin-stat-card-value{transition:opacity .4s ease}
+.admin-stat-card.js-count-up.is-counting .admin-stat-card-value{opacity:.92}
+
+/* ============================================================
+   QUICK ACTIONS — shortcut grid on the dashboard
+   ============================================================ */
+.admin-quick-grid{
+  display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));
+}
+.admin-quick-card{
+  display:flex;flex-direction:column;gap:8px;padding:14px 16px;
+  background:linear-gradient(135deg,#fff 0%,#F8FAFF 100%);
+  border:1px solid var(--line);border-radius:12px;
+  text-decoration:none;color:var(--ink);
+  transition:border-color .15s,box-shadow .15s,transform .15s;
+  position:relative;overflow:hidden;
+}
+.admin-quick-card::after{
+  content:"→";position:absolute;right:14px;top:14px;color:var(--muted);font-size:18px;
+  transition:transform .2s ease,color .15s;
+}
+.admin-quick-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-2px);color:var(--ink)}
+.admin-quick-card:hover::after{transform:translateX(4px);color:var(--blue)}
+.admin-quick-card-ic{
+  width:36px;height:36px;border-radius:9px;
+  background:rgba(37,99,235,.10);color:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+}
+.admin-quick-card-title{font-size:14px;font-weight:700;color:var(--ink);margin:0}
+.admin-quick-card-sub{font-size:12px;color:var(--muted);margin:0}
+
+/* ============================================================
+   ACTIVITY TABLE — modern hover + status pills
+   ============================================================ */
+.admin-table tbody tr{transition:background .12s,transform .12s}
+.admin-table tbody tr:hover{background:#F8FAFC}
+.admin-table tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+.admin-table tbody td:first-child{transition:box-shadow .15s}
+
+/* ============================================================
+   EMPTY STATES — modern, illustrated
+   ============================================================ */
+.admin-empty{
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
+  padding:40px 20px;color:var(--muted);
+}
+.admin-empty-ic{
+  width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#F1F5F9 0%,#E3ECFD 100%);color:#64748B;
+  display:flex;align-items:center;justify-content:center;flex:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+.admin-empty h3{margin:0;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.admin-empty p{margin:0;font-size:14px;color:var(--muted);max-width:400px;line-height:1.55}
+.admin-empty .btn{margin-top:6px}
+
+/* Inline empty-state text — small, muted, centered */
+.admin-empty-text{padding:32px 16px;text-align:center;color:var(--muted);font-size:14px;line-height:1.55}
 
 /* ============================================================
    FILTER BAR
@@ -177,21 +332,6 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
   border-radius:14px;padding:14px;box-shadow:var(--shadow-sm);
 }
 .admin-filter-bar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-
-/* ============================================================
-   EMPTY STATE — unified pattern
-   ============================================================ */
-.admin-empty{
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
-  padding:40px 20px;color:var(--muted);
-}
-.admin-empty-ic{
-  width:56px;height:56px;border-radius:14px;background:#F1F5F9;color:#94A3B8;
-  display:flex;align-items:center;justify-content:center;flex:none;
-}
-.admin-empty h3{margin:0;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
-.admin-empty p{margin:0;font-size:14px;color:var(--muted);max-width:400px;line-height:1.55}
-.admin-empty .btn{margin-top:6px}
 
 /* ============================================================
    SECTION DIVIDER + SPACING
@@ -303,3 +443,95 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .admin-stat-card:hover,.btn:active{transform:none !important}
 }
 </style>
+
+<script>
+// Premium admin interactions — vanilla JS, no libraries.
+// 1. Animated count-up for stat cards when they scroll into view.
+// 2. Smooth hover micro-interactions are handled via CSS only.
+(function () {
+  'use strict';
+  if (typeof document === 'undefined') return;
+
+  // ---- Count-up animation -------------------------------------------------
+  function formatNumber(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+    return Math.round(n).toString();
+  }
+
+  function animateCountUp(el) {
+    if (el.dataset.counted === '1') return;
+    el.dataset.counted = '1';
+    var to = parseFloat(el.dataset.countTo);
+    var original = el.dataset.countOriginal || '';
+    if (!isFinite(to) || to < 0) { return; }
+    var valueEl = el.querySelector('.admin-stat-card-value');
+    if (!valueEl) return;
+    // Extract currency / prefix / suffix from the original string so the
+    // animated output preserves the same format (e.g. "৳1,299" → "৳1,299").
+    var prefix = '';
+    var suffix = '';
+    var numPart = (original.match(/[\d,.\-]+/) || [''])[0];
+    prefix = original.slice(0, original.indexOf(numPart));
+    suffix = original.slice(original.indexOf(numPart) + numPart.length);
+    var isMoney = original.indexOf('৳') !== -1 || original.indexOf('$') !== -1;
+    var decimals = (numPart.split('.')[1] || '').length;
+    el.classList.add('is-counting');
+    var start = null;
+    var duration = 1100;
+    function step(ts) {
+      if (start === null) start = ts;
+      var progress = Math.min(1, (ts - start) / duration);
+      // ease-out cubic
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var current = to * eased;
+      var displayNum;
+      if (isMoney) {
+        displayNum = current.toLocaleString('en-US', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+      } else {
+        displayNum = decimals > 0
+          ? current.toFixed(decimals)
+          : Math.round(current).toLocaleString('en-US');
+      }
+      valueEl.textContent = prefix + displayNum + suffix;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        // Restore the original formatting at the end so it always matches
+        // what the server rendered (avoids trailing-zero / rounding drift).
+        valueEl.textContent = original;
+        el.classList.remove('is-counting');
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function init() {
+    var els = document.querySelectorAll('.admin-stat-card.js-count-up');
+    if (els.length === 0) return;
+    if (!('IntersectionObserver' in window)) {
+      // Old browsers: animate immediately.
+      els.forEach(animateCountUp);
+      return;
+    }
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          animateCountUp(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    els.forEach(function (el) { observer.observe(el); });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

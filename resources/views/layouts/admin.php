@@ -42,10 +42,11 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
         <!-- Mobile drawer backdrop -->
         <div class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" data-sidebar-backdrop></div>
 
-        <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-72 -translate-x-full overflow-y-auto bg-navy-700 text-slate-200 transition-transform duration-200 lg:static lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
-            <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-                <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 hover:bg-white/15 transition-colors" title="Dashboard" aria-label="RTP home">
+        <!-- Sidebar — sticky on desktop, drawer on mobile. Internal scroll for long nav. -->
+        <aside class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-navy-700 text-slate-200 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
+            <!-- Brand header — sticky at top of sidebar -->
+            <div class="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5 bg-navy-800/40 backdrop-blur-sm">
+                <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 hover:bg-white/20 transition-colors" title="Dashboard" aria-label="RTP home">
                     <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
                 </a>
                 <span class="min-w-0 leading-tight" data-sidebar-label>
@@ -65,7 +66,8 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                 </button>
             </div>
 
-            <nav class="px-3 py-4 space-y-4 text-sm" aria-label="Sections">
+            <!-- Scrollable nav area — independent vertical scroll when nav is long -->
+            <nav class="rtp-admin-nav flex-1 overflow-y-auto px-3 py-4 space-y-5 text-sm" aria-label="Sections">
                 <?php foreach (RTP_ADMIN_NAV as $section => $items): ?>
                     <?php
                     $visible = array_filter($items, fn ($item) => \App\Services\AuthService::can($item[0]));
@@ -73,18 +75,20 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                         continue;
                     }
                     ?>
-                    <div>
-                        <p class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400" data-sidebar-section><?= e($section) ?></p>
+                    <div class="rtp-nav-section">
+                        <p class="rtp-nav-section-label px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-slate-500" data-sidebar-section><?= e($section) ?></p>
                         <ul class="space-y-0.5">
                             <?php foreach ($visible as [$permission, $label, $href, $icon, $implemented]): ?>
                                 <?php $active = str_starts_with($currentPath, $href); ?>
                                 <li>
                                     <?php if ($implemented): ?>
                                         <a href="<?= e(url($href)) ?>"
-                                           class="flex items-center gap-3 rounded-lg px-3 py-2 font-medium <?= $active ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' ?>"
+                                           class="rtp-nav-link group flex items-center gap-3 rounded-lg px-3 py-2 font-medium transition-all duration-150 <?= $active ? 'rtp-nav-active is-active' : 'text-slate-300 hover:bg-white/5 hover:text-white' ?>"
                                            title="<?= e($label) ?>"
                                            <?= $active ? 'aria-current="page"' : '' ?>>
-                                            <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-4 w-4 shrink-0 opacity-80']) ?>
+                                            <span class="rtp-nav-icon shrink-0 opacity-80 transition-colors">
+                                                <?= \App\Support\View::component('icon', ['name' => $icon, 'class' => 'h-4 w-4']) ?>
+                                            </span>
                                             <span class="truncate" data-sidebar-label><?= e($label) ?></span>
                                         </a>
                                     <?php else: ?>
@@ -101,8 +105,12 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                 <?php endforeach; ?>
             </nav>
 
-            <div class="border-t border-white/10 px-5 py-4 text-[11px] text-slate-500" data-sidebar-label>
-                v<?= e(\App\Support\Config::get('app.version')) ?>
+            <!-- Footer — pinned at bottom of sidebar -->
+            <div class="rtp-admin-foot shrink-0 border-t border-white/10 px-5 py-3 text-[11px] text-slate-500" data-sidebar-label>
+                <span class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+                    v<?= e(\App\Support\Config::get('app.version')) ?>
+                </span>
             </div>
         </aside>
 

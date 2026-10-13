@@ -8,6 +8,7 @@
  * site-wide header that sits directly above the hero on the homepage.
  */
 ?>
+<!-- hero-slider-v2-css-loaded -->
 <style id="hero-slider-v2-css">
 :root{
   --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;

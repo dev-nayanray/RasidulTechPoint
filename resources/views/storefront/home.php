@@ -612,9 +612,10 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
   // whenever the active slide changes.
   (function () {
     var hero = document.getElementById('hero');
-    if (!hero) return;
+    if (!hero) { console.warn('[hero-slider] #hero element not found — slider JS skipped'); return; }
     var slides = [].slice.call(hero.querySelectorAll('.slide'));
-    if (slides.length === 0) return;
+    if (slides.length === 0) { console.warn('[hero-slider] no .slide elements found'); return; }
+    console.info('[hero-slider] init: ' + slides.length + ' slides found, autoplay=' + (!hero.classList.contains('is-paused')));
     var bgs = [].slice.call(hero.querySelectorAll('.bg'));
     var inds = [].slice.call(hero.querySelectorAll('.ind'));
     var viewport = hero.querySelector('[data-hero-slides]');
@@ -709,14 +710,16 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
         hero.classList.add(newT);
       }
       slides[cur].classList.remove('is-active');
-      slides[cur].inert = true;
+      try { slides[cur].inert = true; } catch (e) {}
+      slides[cur].setAttribute('inert', '');
       slides[cur].setAttribute('aria-hidden', 'true');
       if (bgs[cur]) bgs[cur].classList.remove('is-active');
       if (inds[cur]) inds[cur].classList.remove('is-active');
       if (inds[cur]) { var b = inds[cur].querySelector('button'); if (b) b.removeAttribute('aria-current'); }
       cur = n;
       slides[cur].classList.add('is-active');
-      slides[cur].inert = false;
+      try { slides[cur].inert = false; } catch (e) {}
+      slides[cur].removeAttribute('inert');
       slides[cur].removeAttribute('aria-hidden');
       if (bgs[cur]) bgs[cur].classList.add('is-active');
       if (inds[cur]) inds[cur].classList.add('is-active');

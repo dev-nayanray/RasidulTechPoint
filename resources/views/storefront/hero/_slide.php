@@ -33,7 +33,10 @@ $headlineHtml = preg_replace(
 
 $ariaLabel = ($i + 1) . ' of ' . ($total ?? ($i + 1)) . ': ' . $nav;
 $activeClass = $isActive ? ' is-active' : '';
-$ariaHidden = $isActive ? '' : ' aria-hidden="true" inert';
+// Note: do NOT set inert as a bare HTML attribute here — some browsers
+// don't honor it consistently. The JS sets it via el.inert = true/false
+// at runtime, which is the spec-compliant way.
+$ariaHidden = $isActive ? '' : ' aria-hidden="true"';
 ?>
 <article class="slide hs-t<?= (int) $i ?><?= $activeClass ?>" role="group" aria-roledescription="slide" aria-label="<?= e($ariaLabel) ?>"<?= $ariaHidden ?> data-theme="<?= e($slide['theme_preset'] ?? 'mist_teal') ?>">
   <div class="wrap grid">

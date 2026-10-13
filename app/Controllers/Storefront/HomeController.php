@@ -22,6 +22,23 @@ final class HomeController
         $featured = $catalog->publishedForStore(limit: 8);
         $heroSlides = $heroSvc->published();
         $heroSettings = $heroSvc->settings();
+
+        // GUARANTEED FALLBACK — if the DB has 0 published slides (migration
+        // didn't seed, admin deleted them all, etc.), use the 4 reference
+        // slides as in-memory defaults so the homepage slider ALWAYS renders.
+        // When admin saves real slides to the DB, those take over.
+        if ($heroSlides === []) {
+            $heroSlides = HeroSlideService::referenceSlides();
+            // Force autoplay on for the fallback (the user explicitly wants
+            // autoplay + 4 slides minimum).
+            $heroSettings['autoplay_enabled'] = true;
+            $heroSettings['announcement_enabled'] = true;
+            $heroSettings['announcement_items'] = [
+                'Dubai Imported | 100% Authentic Used Laptops',
+                'Tested & Quality Checked',
+                'Warranty with every laptop',
+            ];
+        }
         $brands = array_filter(
             $catalog->brands(onlyActive: true),
             fn ($b) => $this->brandHasAvailableUnits((int) $b['id']),

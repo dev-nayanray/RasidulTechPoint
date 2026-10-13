@@ -378,6 +378,75 @@ final class HeroSlideService
         return self::THEME_PRESETS;
     }
 
+    /**
+     * The 4 reference slides (Aero 14, Forge 16, Studio 16, Pro 15) as
+     * hydrated arrays — used by:
+     *  - migration 037 seed
+     *  - HomeController fallback when the DB has 0 published slides
+     *  - admin "reset to defaults" button (if added later)
+     *
+     * Static so it can be called without instantiating the service.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function referenceSlides(): array
+    {
+        return [
+            [
+                'nav_label' => 'Aero 14', 'badge_text' => 'New arrival', 'category_label' => 'Ultrabook / 14 inch',
+                'headline' => '1.12 kg of all-day power.', 'description' => 'The Aero 14 pairs a 2.8K OLED panel with 18 hours of battery, in a magnesium body that disappears into your bag.',
+                'specs' => ['16 GB LPDDR5X', '1 TB NVMe SSD', 'Wi-Fi 7'],
+                'chips' => [['value' => '2.8K OLED', 'label' => '120 Hz panel'], ['value' => '18 h', 'label' => 'battery life'], ['value' => '1.12 kg', 'label' => 'magnesium body']],
+                'currency_symbol' => '$', 'price' => '1299.00', 'old_price' => '1499.00',
+                'installment_months' => 12, 'monthly_price' => '108.00', 'installment_note' => '0% interest, free setup',
+                'ghost_word' => 'Aero', 'product_id' => null,
+                'theme_preset' => 'mist_teal', 'visual_type' => 'screen_dunes',
+                'cta1_label' => 'Shop Aero 14', 'cta1_url' => '/shop', 'cta2_label' => 'Compare specs', 'cta2_url' => '/shop?compare=1',
+                'status' => 'published', 'is_active' => 1, 'sort_order' => 0,
+                'accessibility_desc' => 'The Aero 14 pairs a 2.8K OLED panel with 18 hours of battery, in a magnesium body that disappears into your bag.',
+            ],
+            [
+                'nav_label' => 'Forge 16', 'badge_text' => 'Best seller', 'category_label' => 'Gaming / 16 inch',
+                'headline' => 'Frames first. Heat never.', 'description' => 'A vapor chamber keeps the Forge 16 at full clock through long sessions, on a 240 Hz QHD+ display built for fast shooters.',
+                'specs' => ['32 GB DDR5', '2 TB NVMe SSD', 'Per-key RGB'],
+                'chips' => [['value' => '240 Hz', 'label' => 'QHD+ display'], ['value' => '8 GB', 'label' => 'GDDR6 graphics'], ['value' => 'Vapor chamber', 'label' => 'sustained clocks']],
+                'currency_symbol' => '$', 'price' => '1599.00', 'old_price' => '1799.00',
+                'installment_months' => 12, 'monthly_price' => '133.00', 'installment_note' => '0% interest, free setup',
+                'ghost_word' => 'Forge', 'product_id' => null,
+                'theme_preset' => 'graphite_coral', 'visual_type' => 'screen_gaming',
+                'cta1_label' => 'Shop Forge 16', 'cta1_url' => '/shop', 'cta2_label' => 'Compare specs', 'cta2_url' => '/shop?compare=1',
+                'status' => 'published', 'is_active' => 1, 'sort_order' => 1,
+                'accessibility_desc' => 'A vapor chamber keeps the Forge 16 at full clock through long sessions, on a 240 Hz QHD+ display built for fast shooters.',
+            ],
+            [
+                'nav_label' => 'Studio 16', 'badge_text' => 'Creator pick', 'category_label' => 'Creator / 16 inch',
+                'headline' => 'Color you can sign off on.', 'description' => 'A 16 inch 4K mini-LED panel covers 100% of DCI-P3 and ships factory calibrated, with 64 GB of memory for heavy timelines.',
+                'specs' => ['64 GB DDR5', '2 TB NVMe SSD', 'SD card reader'],
+                'chips' => [['value' => '100% DCI-P3', 'label' => '4K mini-LED'], ['value' => '64 GB', 'label' => 'DDR5 memory'], ['value' => 'dE < 2', 'label' => 'factory calibrated']],
+                'currency_symbol' => '$', 'price' => '2199.00', 'old_price' => '2449.00',
+                'installment_months' => 12, 'monthly_price' => '183.00', 'installment_note' => '0% interest, free setup',
+                'ghost_word' => 'Studio', 'product_id' => null,
+                'theme_preset' => 'navy_amber', 'visual_type' => 'screen_creator',
+                'cta1_label' => 'Shop Studio 16', 'cta1_url' => '/shop', 'cta2_label' => 'Compare specs', 'cta2_url' => '/shop?compare=1',
+                'status' => 'published', 'is_active' => 1, 'sort_order' => 2,
+                'accessibility_desc' => 'A 16 inch 4K mini-LED panel covers 100% of DCI-P3 and ships factory calibrated, with 64 GB of memory for heavy timelines.',
+            ],
+            [
+                'nav_label' => 'Pro 15', 'badge_text' => 'For teams', 'category_label' => 'Business / 15.6 inch',
+                'headline' => 'Built for a 9 to 5 that runs late.', 'description' => 'A spill-resistant keyboard, a MIL-STD-810H tested chassis, fingerprint login and 14 hours away from the charger.',
+                'specs' => ['16 GB DDR5', '512 GB NVMe SSD', 'Windows 11 Pro'],
+                'chips' => [['value' => '14 h', 'label' => 'battery life'], ['value' => 'MIL-STD-810H', 'label' => 'drop tested'], ['value' => 'Fingerprint', 'label' => 'one-touch login']],
+                'currency_symbol' => '$', 'price' => '899.00', 'old_price' => '1049.00',
+                'installment_months' => 12, 'monthly_price' => '75.00', 'installment_note' => 'Volume pricing from 5 units',
+                'ghost_word' => 'Pro', 'product_id' => null,
+                'theme_preset' => 'stone_cobalt', 'visual_type' => 'screen_business',
+                'cta1_label' => 'Shop Pro 15', 'cta1_url' => '/shop', 'cta2_label' => 'Compare specs', 'cta2_url' => '/shop?compare=1',
+                'status' => 'published', 'is_active' => 1, 'sort_order' => 3,
+                'accessibility_desc' => 'A spill-resistant keyboard, a MIL-STD-810H tested chassis, fingerprint login and 14 hours away from the charger.',
+            ],
+        ];
+    }
+
     /** WCAG contrast ratio between two hex colors (returns 1..21). */
     public static function contrastRatio(string $a, string $b): float
     {

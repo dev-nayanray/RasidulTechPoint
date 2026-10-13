@@ -243,14 +243,14 @@ $navItems = [
 <footer class="foot">
   <div class="wrap">
     <div class="foot-grid">
-      <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
-        <a class="logo" href="<?= e(url('/')) ?>">
-          <span class="logomark" style="background:#fff;padding:2px;overflow:hidden">
-            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+      <div class="foot-brand">
+        <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
+          <span class="logomark foot-logomark">
+            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" class="foot-logo-img">
           </span>
-          <span><span class="wm-a" style="color:#fff">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
+          <span><span class="wm-a">Rasidul</span><span class="wm-b">TECH POINT</span></span>
         </a>
-        <p style="max-width:300px">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable.</p>
+        <p class="foot-tagline">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable.</p>
       </div>
       <div>
         <h4 class="mono">Shop</h4>
@@ -271,6 +271,11 @@ $navItems = [
     </div>
     <div class="foot-bottom">
       <span>&copy; <?= date('Y') ?> Rasidul Tech Point — Dubai Imported | Authentic Used Laptops</span>
+      <div class="legal">
+        <a href="<?= e(url('/page/privacy')) ?>">Privacy</a>
+        <a href="<?= e(url('/page/terms')) ?>">Terms</a>
+        <a href="<?= e(url('/page/returns')) ?>">Returns</a>
+      </div>
     </div>
   </div>
 </footer>

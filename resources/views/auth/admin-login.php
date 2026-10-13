@@ -9,5 +9,5 @@
 </form>
 
 <div class="mt-4 flex items-center justify-end text-sm">
-    <a class="font-medium text-blue-700 hover:text-blue-800" href="<?= e(url('/forgot-password')) ?>">Forgot password?</a>
+    <a class="font-medium text-brand-blue hover:text-blue-700" href="<?= e(url('/forgot-password')) ?>">Forgot password?</a>
 </div>

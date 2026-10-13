@@ -231,18 +231,18 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
     </div>
     <div class="bento">
       <?php foreach ([
-        ['Business Laptops', 'Reliable for office work', '<rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path>', 'shop?q=business'],
-        ['Student Laptops', 'Affordable & portable', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M6 11.5V16c3 2.5 9 2.5 12 0v-4.5"></path>', 'shop?q=student'],
-        ['Core i5 Laptops', 'Balanced performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i5'],
-        ['Core i7 Laptops', 'High performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i7'],
-        ['Lightweight & Portable', 'Easy to carry', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path>', 'shop?q=portable'],
-        ['Budget Laptops', 'Under ৳15,000', '<path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"></path><path d="M16 13h3"></path>', 'shop?budget=1'],
-        ['Premium Laptops', '৳40,000+', '<path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6l9-4z"></path>', 'shop?budget=4'],
-      ] as [$name, $desc, $icon, $link]): ?>
-        <a class="tile" href="<?= e(url('/' . ltrim($link, '/'))) ?>">
+        ['Business Laptops', 'Reliable for office work', '<rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path>', 'shop?q=business', 't-navy'],
+        ['Student Laptops', 'Affordable & portable', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M6 11.5V16c3 2.5 9 2.5 12 0v-4.5"></path>', 'shop?q=student', ''],
+        ['Core i5 Laptops', 'Balanced performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i5', ''],
+        ['Core i7 Laptops', 'High performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i7', 't-tint'],
+        ['Lightweight & Portable', 'Easy to carry', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path>', 'shop?q=portable', ''],
+        ['Budget Laptops', 'Under ৳15,000', '<path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"></path><path d="M16 13h3"></path>', 'shop?budget=1', 't-mint'],
+        ['Premium Laptops', '৳40,000+', '<path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6l9-4z"></path>', 'shop?budget=4', ''],
+      ] as [$name, $desc, $icon, $link, $accent]): ?>
+        <a class="tile <?= $accent ? ' ' . $accent : '' ?>" href="<?= e(url('/' . ltrim($link, '/'))) ?>">
           <span class="tile-mark" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><?= $icon ?></svg></span>
           <span class="tile-name"><?= e($name) ?></span>
-          <span class="tile-desc"><?= e($desc) ?></span>
+          <span class="tile-desc <?= $accent ? '' : 'tile-desc--muted' ?>"><?= e($desc) ?></span>
           <span class="tile-go mono">View laptops <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
         </a>
       <?php endforeach; ?>
@@ -263,7 +263,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <?php foreach ($budgetRanges as $i => $range): ?>
         <a class="budget-card" href="<?= e(url('/shop?budget=' . ($i + 1))) ?>">
           <span class="budget-label"><?= e($range['label']) ?></span>
-          <span class="budget-range">In-stock only</span>
+          <span class="budget-range">In-stock laptops in this range</span>
         </a>
       <?php endforeach; ?>
     </div>
@@ -281,17 +281,19 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <a class="btn btn-sm btn-ghost" href="<?= e(url('/shop')) ?>">View all laptops</a>
     </div>
     <?php if (empty($featured)): ?>
-      <div style="padding:48px 24px;text-align:center;border:2px dashed #D5DEE9;border-radius:20px;background:#fff">
-        <p style="font-size:18px;font-weight:700;color:#14243A">No laptops in stock right now.</p>
-        <p style="margin-top:8px;color:#475569;font-size:14px">New Dubai shipments arrive regularly. Check back soon or <a href="<?= e(url('/contact')) ?>" style="color:#2563EB;font-weight:700">contact us</a>.</p>
+      <div class="empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/></svg>
+        <h3>No laptops in stock right now</h3>
+        <p>New Dubai shipments arrive regularly. Check back soon or contact us with your requirements.</p>
+        <a class="btn btn-primary" href="<?= e(url('/contact')) ?>">Contact us</a>
       </div>
     <?php else: ?>
       <div class="pgrid">
         <?php foreach (array_slice($featured, 0, 8) as $p): ?>
           <article class="pcard">
             <a class="pcard-img" href="<?= e(url('/shop/' . $p['slug'])) ?>">
-              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);color:#94a3b8"><svg class="ic" viewBox="0 0 24 24" style="width:48px;height:48px"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
-              <span class="qc-badge"><svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
+              <div class="pcard-img-ph"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
+              <span class="qc-badge"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
               <?php if ((int)($p['available_units'] ?? 0) <= 2 && (int)($p['available_units'] ?? 0) > 0): ?>
                 <span class="low-badge">Only <?= (int)$p['available_units'] ?> left</span>
               <?php elseif ((int)($p['available_units'] ?? 0) === 0): ?>
@@ -411,14 +413,19 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
     </div>
     <?php $deals = array_slice($featured, 0, 4); ?>
     <?php if (empty($deals)): ?>
-      <p style="padding:32px;text-align:center;color:#475569">Special deals appear here when active promotions are running.</p>
+      <div class="empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <h3>No active deals right now</h3>
+        <p>Special deals appear here when active promotions are running. Browse our full inventory in the meantime.</p>
+        <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Browse all laptops</a>
+      </div>
     <?php else: ?>
       <div class="pgrid">
         <?php foreach ($deals as $p): ?>
-          <article class="pcard">
+          <article class="pcard deal">
             <a class="pcard-img" href="<?= e(url('/shop/' . $p['slug'])) ?>">
-              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);color:#94a3b8"><svg class="ic" viewBox="0 0 24 24" style="width:48px;height:48px"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
-              <span class="qc-badge"><svg class="ic ic-sm" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
+              <div class="pcard-img-ph"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
+              <span class="qc-badge"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
             </a>
             <div class="pcard-body">
               <p class="pcard-brand"><?= e($p['brand_name'] ?? '') ?></p>
@@ -449,11 +456,14 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <div>
         <span class="eyebrow mono">Reviews</span>
         <h2>Customer Reviews</h2>
+        <p class="sub">Real feedback from confirmed buyers. Reviews appear here once published.</p>
       </div>
     </div>
-    <div style="padding:48px 24px;text-align:center;border:2px dashed #D5DEE9;border-radius:20px;background:#fff">
-      <p style="font-size:18px;font-weight:700;color:#14243A">No reviews have been added yet.</p>
-      <p style="margin-top:8px;color:#475569;font-size:14px">Only reviews from real, confirmed orders are published here.</p>
+    <div class="rv-empty">
+      <span class="rv-empty-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:28px;height:28px"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21l2.3-7.4-6-4.6h7.6z"/></svg></span>
+      <h3>No reviews yet</h3>
+      <p>Only reviews from real, confirmed orders are published here. Buy a laptop, receive it, and your honest feedback will appear in this section.</p>
+      <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Browse laptops</a>
     </div>
   </div>
 </section>
@@ -477,8 +487,11 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
         <?php endforeach; ?>
       </div>
     <?php else: ?>
-      <div style="padding:32px;text-align:center;border:2px dashed #D5DEE9;border-radius:20px;background:#fff">
-        <p style="color:#475569;font-size:14px">FAQ entries will appear here once published. Admin → Marketing &amp; Content → FAQs.</p>
+      <div class="empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <h3>FAQs coming soon</h3>
+        <p>FAQ entries will appear here once published. Have a question in the meantime? Contact us directly.</p>
+        <a class="btn btn-primary" href="<?= e(url('/contact')) ?>">Contact us</a>
       </div>
     <?php endif; ?>
   </div>
@@ -488,7 +501,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
   <div class="wrap">
     <div class="cta-panel">
       <h2>Find the Right Laptop for Your Budget.</h2>
-      <p style="color:#B7C4D6;font-size:16px;max-width:480px">Browse our full inventory or contact us with your requirements.</p>
+      <p>Browse our full inventory or contact us with your requirements. We help you choose, compare, and buy with confidence.</p>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Explore All Laptops</a>
         <a class="btn btn-onnavy" href="<?= e(url('/contact')) ?>">Contact Us</a>
@@ -500,14 +513,14 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
 <footer class="foot">
   <div class="wrap">
     <div class="foot-grid">
-      <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+      <div class="foot-brand">
         <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-          <span class="logomark" style="background:#fff;padding:2px;overflow:hidden">
-            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+          <span class="logomark foot-logomark">
+            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" class="foot-logo-img">
           </span>
-          <span><span class="wm-a" style="color:#fff">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
+          <span><span class="wm-a">Rasidul</span><span class="wm-b">TECH POINT</span></span>
         </a>
-        <p style="max-width:300px">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable. Serving Khulna, Dhaka &amp; all of Bangladesh.</p>
+        <p class="foot-tagline">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable. Serving Khulna, Dhaka &amp; all of Bangladesh.</p>
       </div>
       <div>
         <h4 class="mono">Shop</h4>
@@ -539,11 +552,12 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
     <div class="foot-bottom">
       <span>&copy; <?= date('Y') ?> Rasidul Tech Point — Dubai Imported | Authentic Used Laptops</span>
       <div class="legal">
-        <a href="<?= e(url('/page/privacy')) ?>" style="color:#B7C4D6">Privacy Policy</a>
-        <a href="<?= e(url('/page/terms')) ?>" style="color:#B7C4D6">Terms</a>
-        <a href="<?= e(url('/page/returns')) ?>" style="color:#B7C4D6">Return Policy</a>
+        <a href="<?= e(url('/page/privacy')) ?>">Privacy Policy</a>
+        <a href="<?= e(url('/page/terms')) ?>">Terms</a>
+        <a href="<?= e(url('/page/returns')) ?>">Return Policy</a>
       </div>
     </div>
+    <div class="foot-mark" aria-hidden="true">Rasidul Tech Point</div>
   </div>
 </footer>
 

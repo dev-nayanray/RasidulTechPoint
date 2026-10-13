@@ -27,4 +27,4 @@ $errors = $errors ?? [];
     <button type="submit" class="btn-primary w-full">Create account</button>
 </form>
 
-<p class="mt-4 text-sm text-slate-500">Already registered? <a class="font-medium text-blue-700 hover:text-blue-800" href="<?= e(url('/login')) ?>">Sign in</a></p>
+<p class="mt-4 text-sm text-slate-500">Already registered? <a class="font-medium text-brand-blue hover:text-blue-700" href="<?= e(url('/login')) ?>">Sign in</a></p>

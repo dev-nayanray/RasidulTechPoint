@@ -31,7 +31,7 @@
                     </div>
                     <div class="shrink-0 flex gap-2">
                         <?php if (!empty($n['link'])): ?>
-                            <a href="<?= e(url($n['link'])) ?>" class="font-medium text-brand-700 hover:text-blue-800 text-xs">Open</a>
+                            <a href="<?= e(url($n['link'])) ?>" class="font-medium text-brand-blue hover:text-blue-700 text-xs">Open</a>
                         <?php endif; ?>
                         <?php if ((int) $n['is_read'] === 0): ?>
                             <form method="post" action="<?= e(url('/account/notifications/' . $n['id'] . '/read')) ?>" class="inline">

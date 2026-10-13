@@ -7,4 +7,4 @@
     <button type="submit" class="btn-primary w-full">Send reset link</button>
 </form>
 
-<p class="mt-4 text-sm text-slate-500"><a class="font-medium text-blue-700 hover:text-blue-800" href="<?= e(url('/login')) ?>">Back to sign in</a></p>
+<p class="mt-4 text-sm text-slate-500"><a class="font-medium text-brand-blue hover:text-blue-700" href="<?= e(url('/login')) ?>">Back to sign in</a></p>

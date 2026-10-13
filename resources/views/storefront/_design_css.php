@@ -400,3 +400,245 @@ section[id]{scroll-margin-top:16px}
 .dash-stat-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748B;margin-top:2px}
 
 /* === (Old v1 hero slider CSS removed — v2 lives in hero/_slider_css.php) === */
+
+/* ============================================================
+   v2 POLISH — fixes + refinements for the marketing site
+   (additive — overrides happen via specificity or !important
+   where a v1 rule is broken/insufficient)
+   ============================================================ */
+
+/* Fix broken .cta-panel — the v1 rule has a stray ":26px" token that
+   invalidates the background declaration. Use a real gradient + glow. */
+.cta-panel{
+  background:linear-gradient(135deg,#01011D 0%,#14243A 60%,#1E3A6A 100%) !important;
+  background-image:
+    radial-gradient(circle at 88% 18%,rgba(37,99,235,.32),transparent 55%),
+    radial-gradient(circle at 12% 88%,rgba(22,163,74,.18),transparent 55%),
+    linear-gradient(135deg,#01011D 0%,#14243A 60%,#1E3A6A 100%) !important;
+  border:1px solid rgba(122,251,1,.15);
+  box-shadow:0 24px 60px rgba(1,1,29,.32);
+  position:relative;
+}
+.cta-panel::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.06),transparent 50%);
+}
+.cta-panel > *{position:relative;z-index:1}
+.cta-panel h2{color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.3)}
+.cta-panel p{color:#B7C4D6 !important}
+
+/* Missing budget-card classes — the v1 CSS only defines .bcard.
+   home.php uses .budget-card which is undefined. */
+.budget-card{
+  display:flex;flex-direction:column;justify-content:space-between;gap:14px;
+  background:#fff;border:1.5px solid #D5DEE9;border-radius:18px;padding:22px 24px;
+  cursor:pointer;text-align:left;min-height:140px;
+  transition:transform .15s,border-color .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+}
+.budget-card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(to bottom,#2563EB,#16A34A);
+  opacity:0;transition:opacity .2s;
+}
+.budget-card:hover{
+  transform:translateY(-2px);border-color:#2563EB;
+  box-shadow:0 12px 28px rgba(37,99,235,.12);
+}
+.budget-card:hover::before{opacity:1}
+.budget-label{
+  font-size:clamp(22px,2.6vw,30px);font-weight:800;letter-spacing:-.03em;
+  color:#14243A;font-variant-numeric:tabular-nums;line-height:1.1;
+}
+.budget-range{
+  font-size:13px;font-weight:600;color:#64748B;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.budget-range::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:#16A34A;
+}
+
+/* FAQ chevron should rotate when open — matches /faq and /contact behavior */
+.faq-item[open] .faq-ic{transform:rotate(180deg)}
+.faq-ic{transition:transform .25s ease}
+
+/* Reviews skeleton — make the placeholder feel intentional, not stub-ish */
+.rv-empty{
+  background:#fff;border:1.5px dashed #B3C0D0;border-radius:24px;
+  padding:48px 24px;text-align:center;display:flex;flex-direction:column;
+  align-items:center;gap:14px;
+}
+.rv-empty-ic{
+  width:56px;height:56px;border-radius:50%;background:#E3ECFD;color:#2563EB;
+  display:flex;align-items:center;justify-content:center;
+}
+.rv-empty h3{font-size:20px;font-weight:800;color:#14243A;letter-spacing:-.01em}
+.rv-empty p{color:#475569;font-size:14.5px;max-width:420px;line-height:1.55}
+.rv-empty .btn{margin-top:8px}
+
+/* Deals section — actually look like deals, not duplicate featured cards.
+   Add a "deal" accent: top-right corner badge + accent border. */
+.pcard.deal{border-color:rgba(37,99,235,.35);position:relative}
+.pcard.deal::after{
+  content:"DEAL";position:absolute;top:10px;right:10px;z-index:2;
+  background:#2563EB;color:#fff;font-size:10px;font-weight:800;
+  letter-spacing:.08em;padding:4px 8px;border-radius:6px;
+  box-shadow:0 4px 12px rgba(37,99,235,.35);
+}
+
+/* Product card image — replace the ugly inline-style gradient placeholder
+   with the proper .pimg dotted pattern, applied via .pcard-img > .pcard-img-ph */
+.pcard-img-ph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background-color:#E3EAF3;
+  background-image:
+    radial-gradient(circle at 50% 46%,rgba(255,255,255,.95),rgba(255,255,255,0) 58%),
+    radial-gradient(#C3CFDD 1px,transparent 1.5px);
+  background-size:auto,16px 16px;
+  color:#94A3B8;
+}
+.pcard-img-ph svg{width:64px;height:64px}
+
+/* Section heading polish — clearer eyebrow + tighter alignment */
+.sec-head{align-items:flex-end}
+.sec-head .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.sec h2{position:relative}
+.sec-head--center{justify-content:center;text-align:center}
+.sec-head--center .sub{margin-left:auto;margin-right:auto}
+
+/* Tile description — text color adapts to tile background (white vs tint vs dark) */
+.tile-desc{position:relative;z-index:1;font-size:13px;color:#475569;line-height:1.4;max-width:200px}
+.tile-desc--muted{color:#64748B}
+.t-navy .tile-desc,.t-ink .tile-desc{color:#C0CCDC}
+.t-tint .tile-desc,.t-mint .tile-desc{color:#475569}
+.t-navy .tile-go,.t-ink .tile-go{color:#7AFB01}
+.t-tint .tile-go,.t-mint .tile-go{color:#2563EB}
+.t-navy .tile-mark,.t-ink .tile-mark{color:rgba(255,255,255,.18)}
+.t-tint .tile-mark,.t-mint .tile-mark{color:rgba(20,36,58,.18)}
+
+/* Why-choose cards — add a subtle top accent line on hover */
+.why{position:relative;overflow:hidden}
+.why::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(to right,#2563EB,#16A34A);
+  transform:scaleX(0);transform-origin:left;transition:transform .3s ease;
+}
+.why:hover::after{transform:scaleX(1)}
+
+/* Step cards — improve the dark section's card visibility + step number ring */
+.dark .step-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.dark .step-card .step-num{box-shadow:0 0 0 6px #14243A,0 0 0 8px rgba(122,251,1,.35)}
+.dark .step-title{color:#fff}
+.dark .step-text{color:#C0CCDC}
+
+/* Brand cards — add icon support + better hover */
+.brand{position:relative;overflow:hidden;min-width:120px;min-height:64px}
+.brand::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:#2563EB;transform:scaleX(0);transform-origin:left;
+  transition:transform .25s ease;
+}
+.brand:hover::after{transform:scaleX(1)}
+
+/* Footer watermark on home.php — was missing (only on public.php).
+   Use .foot-mark class (already defined) by rendering it in home.php. */
+/* Footer brand column + logo + tagline (replace inline styles) */
+.foot-brand{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.foot-logomark{background:#fff;padding:2px;overflow:hidden}
+.foot-logo-img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block}
+.foot .wm-a{color:#fff}
+.foot .wm-b{color:#7AFB01}
+.foot-tagline{max-width:300px;color:#B7C4D6;line-height:1.55}
+.legal a{color:#B7C4D6 !important;background:none;border:0;min-height:40px;display:inline-flex;align-items:center;font-size:14px;cursor:pointer;text-decoration:none}
+.legal a:hover{color:#fff}
+
+/* Customer dashboard — extract inline styles from account/dashboard.php.
+   Tokens for the recent-orders list + quick-link cards + status badges. */
+.dash-section{display:flex;flex-direction:column;gap:18px;margin-top:24px}
+.dash-section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748B}
+.dash-orders{background:#fff;border:1px solid #D5DEE9;border-radius:16px;overflow:hidden}
+.dash-orders-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #E6ECF3}
+.dash-orders-link{font-size:13px;font-weight:700;color:#2563EB;text-decoration:none}
+.dash-orders-link:hover{text-decoration:underline;text-underline-offset:3px}
+.dash-orders-empty{padding:24px;text-align:center;color:#64748B;font-size:14px}
+.dash-order{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid #E6ECF3;transition:background .12s;text-decoration:none;color:inherit;flex-wrap:wrap}
+.dash-order:last-child{border-bottom:0}
+.dash-order:hover{background:#F8FAFC}
+.dash-order-ref{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:13px;font-weight:600;color:#14243A;min-width:120px}
+.dash-order-date{font-size:12px;color:#64748B;margin-left:auto}
+.dash-order-total{font-size:14px;font-weight:700;color:#14243A}
+.dash-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.dash-status-ok{background:rgba(22,163,74,.12);color:#16A34A}
+.dash-status-wait{background:rgba(245,158,11,.15);color:#92400E}
+.dash-status-info{background:rgba(37,99,235,.12);color:#2563EB}
+.dash-status-off{background:rgba(100,116,139,.15);color:#475569}
+.dash-num-lime{color:#7AFB01}
+.dash-num-amber{color:#fbbf24}
+.dash-num-green{color:#4ade80}
+.dash-welcome{
+  margin-top:20px;padding:36px 28px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  background:#fff;border:1.5px dashed #B3C0D0;border-radius:18px;
+}
+.dash-welcome svg{color:#2563EB}
+.dash-welcome h3{font-size:22px;font-weight:800;color:#14243A;letter-spacing:-.02em}
+.dash-welcome p{color:#475569;font-size:14.5px;max-width:420px;line-height:1.55}
+.dash-quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px;margin-top:16px}
+.dash-quick-card{
+  display:flex;align-items:center;gap:14px;padding:16px 18px;
+  background:#fff;border:1px solid #D5DEE9;border-radius:14px;
+  text-decoration:none;color:#14243A;transition:border-color .15s,box-shadow .15s,transform .15s;
+}
+.dash-quick-card:hover{border-color:#2563EB;box-shadow:0 8px 20px rgba(37,99,235,.1);transform:translateY(-2px)}
+.dash-quick-ic{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.dash-quick-text-block{display:flex;flex-direction:column;gap:2px}
+.dash-quick-text{font-size:14px;font-weight:700;color:#14243A}
+.dash-quick-sub{font-size:12px;color:#64748B}
+.dash-ic-blue{background:rgba(37,99,235,.12);color:#2563EB}
+.dash-ic-green{background:rgba(22,163,74,.12);color:#16A34A}
+.dash-ic-lime{background:rgba(122,251,1,.12);color:#7AFB01}
+.dash-ic-amber{background:rgba(251,191,36,.15);color:#fbbf24}
+
+/* Form polish — unify .input class on storefront forms */
+.input,.input:focus{outline:none}
+.input{
+  width:100%;min-height:44px;padding:10px 14px;
+  background:#fff;border:1.5px solid #D5DEE9;border-radius:10px;
+  font-size:14.5px;color:#14243A;transition:border-color .15s,box-shadow .15s;
+}
+.input::placeholder{color:#94A3B8}
+.input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12) !important}
+.field-error{color:#dc2626;font-size:12px;margin-top:4px;display:block}
+
+/* Empty-state unification — use .empty class consistently (already defined)
+   with a recommended structure: .empty > svg + h3 + p + .btn */
+.empty svg{color:#94A3B8}
+.empty h3{font-size:18px;font-weight:800;color:#14243A;letter-spacing:-.01em}
+.empty p{color:#475569;font-size:14.5px;max-width:380px;line-height:1.55}
+
+/* Focus-visible polish — consistent accent outline on all interactive elements */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.btn:focus-visible,.icon-btn:focus-visible,.tile:focus-visible,.brand:focus-visible,.budget-card:focus-visible,.tab:focus-visible{
+  outline:3px solid #2563EB;outline-offset:2px;border-radius:6px;
+}
+
+/* Responsive section padding — tighter on mobile */
+@media(max-width:720px){
+  .sec{padding-block:44px}
+  .sec-head{margin-bottom:20px}
+  .sec h2{font-size:clamp(24px,5vw,32px)}
+  .sub{font-size:14.5px;margin-top:6px}
+  .cta-panel{padding:24px 20px}
+  .cta-panel h2{font-size:clamp(26px,6vw,36px)}
+}
+
+/* Print + reduced motion hygiene */
+@media(prefers-reduced-motion:reduce){
+  .budget-card,.why,.brand,.pcard,.dash-quick-card,.step-card,.tile{transition:none !important;transform:none !important}
+  .why::after,.brand::after{transition:none !important}
+  .faq-ic{transition:none !important}
+}
+

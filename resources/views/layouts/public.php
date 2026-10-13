@@ -123,17 +123,17 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
     <footer class="foot" id="contact">
         <div class="wrap">
             <div class="foot-grid">
-                <div style="display: flex; flex-direction: column; gap: 14px; align-items: flex-start;">
+                <div class="foot-brand">
                     <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-                        <span class="logomark" style="background: rgb(255, 255, 255); color: rgb(20, 36, 58);">
-                            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>
+                        <span class="logomark foot-logomark">
+                            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" class="foot-logo-img">
                         </span>
                         <span>
-                            <span class="wm-a" style="color: rgb(255, 255, 255);">Rasidul</span>
-                            <span class="wm-b" style="color: rgb(127, 164, 245);">TECH POINT</span>
+                            <span class="wm-a">Rasidul</span>
+                            <span class="wm-b">TECH POINT</span>
                         </span>
                     </a>
-                    <p style="max-width: 300px;">Dubai-imported used laptops, inspected one unit at a time, for Bangladesh.</p>
+                    <p class="foot-tagline">Dubai-imported used laptops, inspected one unit at a time, for Bangladesh.</p>
                 </div>
                 <div>
                     <h4 class="mono">Shop</h4>
@@ -167,9 +167,9 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
             <div class="foot-bottom">
                 <span>© <?= date('Y') ?> Rasidul Tech Point. All rights reserved.</span>
                 <div class="legal">
-                    <a href="<?= e(url('/page/privacy')) ?>" style="color: inherit;">Privacy Policy</a>
-                    <a href="<?= e(url('/page/terms')) ?>" style="color: inherit;">Terms</a>
-                    <a href="<?= e(url('/page/returns')) ?>" style="color: inherit;">Return Policy</a>
+                    <a href="<?= e(url('/page/privacy')) ?>">Privacy Policy</a>
+                    <a href="<?= e(url('/page/terms')) ?>">Terms</a>
+                    <a href="<?= e(url('/page/returns')) ?>">Return Policy</a>
                 </div>
             </div>
             <div class="foot-mark" aria-hidden="true">Rasidul Tech Point</div>

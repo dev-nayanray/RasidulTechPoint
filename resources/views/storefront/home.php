@@ -21,6 +21,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($metaTitle ?? 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops') ?></title>
+<link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
 <meta name="description" content="<?= e($metaDescription ?? 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.') ?>">
 <?php /* Fonts are self-hosted (see hero/_slider_css.php): the site CSP is font-src 'self', so Google Fonts is blocked. */ ?>
 <link rel="preload" href="<?= e(url('assets/fonts/bricolage-grotesque-latin-var.woff2')) ?>" as="font" type="font/woff2" crossorigin>
@@ -56,12 +57,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <button class="icon-btn burger" aria-label="Open menu" aria-expanded="false" data-nav-toggle>
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
       </button>
-      <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-        <span class="logomark" style="background:#01011D;padding:2px;overflow:hidden">
-          <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="Rasidul Tech Point" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
-        </span>
-        <span><span class="wm-a">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
-      </a>
+      <?= \App\Support\View::partial('layouts/_logo', ['variant' => 'light']) ?>
       <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search" data-search-form data-suggest-url="<?= e(url('/search/suggest')) ?>">
         <div class="search-box">
           <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
@@ -501,12 +497,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
   <div class="wrap">
     <div class="foot-grid">
       <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
-        <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-          <span class="logomark" style="background:#fff;padding:2px;overflow:hidden">
-            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
-          </span>
-          <span><span class="wm-a" style="color:#fff">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
-        </a>
+        <?= \App\Support\View::partial('layouts/_logo', ['variant' => 'dark']) ?>
         <p style="max-width:300px">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable. Serving Khulna, Dhaka &amp; all of Bangladesh.</p>
       </div>
       <div>

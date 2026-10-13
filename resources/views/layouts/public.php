@@ -28,6 +28,7 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($metaTitle ?? ($pageTitle ?? 'Welcome') . ' — ' . \App\Support\Config::get('app.name')) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
     <?php if (!empty($metaDescription)): ?><meta name="description" content="<?= e($metaDescription) ?>"><?php endif; ?>
     <meta name="theme-color" content="#14243A">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,15 +56,7 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
                 <button class="icon-btn burger" aria-label="Open menu" aria-expanded="false" data-nav-toggle>
                     <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
                 </button>
-                <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-                    <span class="logomark" style="background:#01011D;padding:2px;overflow:hidden">
-                        <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
-                    </span>
-                    <span>
-                        <span class="wm-a">Rasidul</span>
-                        <span class="wm-b" style="color:#7AFB01">TECH POINT</span>
-                    </span>
-                </a>
+                <?= \App\Support\View::partial('layouts/_logo', ['variant' => 'light']) ?>
                 <form class="search" action="<?= e(url('/shop')) ?>" method="get" role="search">
                     <div class="search-box">
                         <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color: rgb(100, 116, 139);"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
@@ -124,15 +117,7 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
         <div class="wrap">
             <div class="foot-grid">
                 <div style="display: flex; flex-direction: column; gap: 14px; align-items: flex-start;">
-                    <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-                        <span class="logomark" style="background: rgb(255, 255, 255); color: rgb(20, 36, 58);">
-                            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>
-                        </span>
-                        <span>
-                            <span class="wm-a" style="color: rgb(255, 255, 255);">Rasidul</span>
-                            <span class="wm-b" style="color: rgb(127, 164, 245);">TECH POINT</span>
-                        </span>
-                    </a>
+                    <?= \App\Support\View::partial('layouts/_logo', ['variant' => 'dark']) ?>
                     <p style="max-width: 300px;">Dubai-imported used laptops, inspected one unit at a time, for Bangladesh.</p>
                 </div>
                 <div>

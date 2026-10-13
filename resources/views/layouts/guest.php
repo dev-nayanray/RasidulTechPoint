@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle ?? 'Welcome') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
 </head>
 <body class="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center p-4 sm:p-6">

@@ -19,6 +19,7 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle ?? 'Admin') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
     <script>
         // Apply the persisted sidebar state before first paint to avoid a flash.

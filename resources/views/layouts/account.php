@@ -34,6 +34,7 @@ $navItems = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle ?? 'My Account') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
+    <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
@@ -61,12 +62,7 @@ $navItems = [
       <button class="icon-btn burger" aria-label="Open menu" aria-expanded="false" data-nav-toggle>
         <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
       </button>
-      <a class="logo" href="<?= e(url('/')) ?>" aria-label="Rasidul Tech Point home">
-        <span class="logomark" style="background:#01011D;padding:2px;overflow:hidden">
-          <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="Rasidul Tech Point" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
-        </span>
-        <span><span class="wm-a">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
-      </a>
+      <?= \App\Support\View::partial('layouts/_logo', ['variant' => 'light']) ?>
       <form class="search" method="get" action="<?= e(url('/shop')) ?>" role="search" data-search-form>
         <div class="search-box">
           <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" style="color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
@@ -244,12 +240,7 @@ $navItems = [
   <div class="wrap">
     <div class="foot-grid">
       <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
-        <a class="logo" href="<?= e(url('/')) ?>">
-          <span class="logomark" style="background:#fff;padding:2px;overflow:hidden">
-            <img src="<?= e(url('uploads/logos/rtp-logo.jpg')) ?>" alt="RTP" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
-          </span>
-          <span><span class="wm-a" style="color:#fff">Rasidul</span><span class="wm-b" style="color:#7AFB01">TECH POINT</span></span>
-        </a>
+        <?= \App\Support\View::partial('layouts/_logo', ['variant' => 'dark']) ?>
         <p style="max-width:300px">Dubai Imported | 100% Authentic Used Laptops — Original • Tested • Reliable.</p>
       </div>
       <div>

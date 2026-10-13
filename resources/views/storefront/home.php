@@ -605,29 +605,99 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
   })();
 
   // Premium Hero Slider v2 — reference (hero-slider.html) faithful port.
+  // Drive autoplay with setTimeout + rAF progress bar (CSS animationend was
+  // fragile across browsers and didn't restart reliably on slide change).
+  // Theme vars are set inline on each <article.slide>; we mirror them onto
+  // the hero root so the background, controls and announcement bar re-tint
+  // whenever the active slide changes.
   (function () {
     var hero = document.getElementById('hero');
     if (!hero) return;
     var slides = [].slice.call(hero.querySelectorAll('.slide'));
+    if (slides.length === 0) return;
     var bgs = [].slice.call(hero.querySelectorAll('.bg'));
     var inds = [].slice.call(hero.querySelectorAll('.ind'));
     var viewport = hero.querySelector('[data-hero-slides]');
     var toggle = hero.querySelector('[data-toggle]');
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var cur = 0;
-    var userPlaying = !reduce.matches && !hero.classList.contains('is-paused');
-    var hover = false, focus = false;
-    if (slides.length === 0) return;
 
-    function sync() {
-      var paused = !userPlaying || hover || focus || document.hidden;
+    // Read duration from the inline --hero-dur CSS var (defaults to 7000ms).
+    var dur = parseInt(getComputedStyle(hero).getPropertyValue('--hero-dur')) || 7000;
+
+    // Initial "is-paused" comes from the server (set when autoplay_enabled=0).
+    var autoplayEnabled = !hero.classList.contains('is-paused');
+    var userPlaying = autoplayEnabled && !reduce.matches && slides.length > 1;
+    var cur = 0;
+    var count = slides.length;
+    var timer = null;
+    var progressRaf = null;
+    var progressStart = 0;
+    var hover = false, focus = false;
+
+    // Mirror the active slide's --bg/--ink/etc. onto the hero root so the
+    // background, announcement bar and controls re-tint on every change.
+    function applyTheme(slideEl) {
+      var style = slideEl.getAttribute('style') || '';
+      // Strip previously-applied theme vars (keep --hero-dur, --dir, --ry, --rx)
+      var keep = ['--hero-dur','--dir','--ry','--rx'];
+      var toRemove = [];
+      for (var i = 0; i < hero.style.length; i++) {
+        var prop = hero.style[i];
+        if (prop.indexOf('--') === 0 && keep.indexOf(prop) === -1) toRemove.push(prop);
+      }
+      toRemove.forEach(function (p) { hero.style.removeProperty(p); });
+      // Apply the slide's vars
+      style.split(';').forEach(function (decl) {
+        var m = decl.match(/^\s*(--[a-zA-Z0-9_-]+)\s*:\s*(.+)\s*$/);
+        if (m && keep.indexOf(m[1]) === -1) hero.style.setProperty(m[1], m[2]);
+      });
+    }
+
+    function setPaused(paused) {
       hero.classList.toggle('is-paused', paused);
-      if (viewport) viewport.setAttribute('aria-live', userPlaying && !paused ? 'off' : 'polite');
+      if (viewport) viewport.setAttribute('aria-live', !paused && userPlaying ? 'off' : 'polite');
+    }
+    function isPaused() {
+      return !userPlaying || hover || focus || document.hidden;
+    }
+    function sync() { setPaused(isPaused()); }
+
+    function clearProgress() {
+      if (progressRaf) cancelAnimationFrame(progressRaf);
+      progressRaf = null;
+      // Reset all fills
+      inds.forEach(function (li) {
+        var fill = li.querySelector('.fill');
+        if (fill) fill.style.transform = 'scaleX(0)';
+      });
+    }
+
+    function startProgress() {
+      clearProgress();
+      if (!userPlaying || count <= 1 || reduce.matches) return;
+      progressStart = performance.now();
+      (function tick(now) {
+        var activeInd = inds[cur];
+        if (activeInd) {
+          var fill = activeInd.querySelector('.fill');
+          if (fill) {
+            var elapsed = now - progressStart;
+            var pct = Math.min(1, elapsed / dur);
+            fill.style.transform = 'scaleX(' + pct + ')';
+          }
+        }
+        if (now - progressStart >= dur) {
+          // Advance
+          next();
+          return;
+        }
+        progressRaf = requestAnimationFrame(tick);
+      })(performance.now());
     }
 
     function go(n, dir) {
-      if (slides.length <= 1) return;
-      n = (n + slides.length) % slides.length;
+      if (count <= 1) return;
+      n = ((n % count) + count) % count;
       if (n === cur) return;
       hero.style.setProperty('--dir', String(dir || (n > cur ? 1 : -1)));
       // Swap the hero-root theme class so the chrome (inds, controls, bg)
@@ -651,20 +721,17 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       if (bgs[cur]) bgs[cur].classList.add('is-active');
       if (inds[cur]) inds[cur].classList.add('is-active');
       if (inds[cur]) { var b2 = inds[cur].querySelector('button'); if (b2) b2.setAttribute('aria-current', 'true'); }
-      // Reset the active progress bar so it animates again
-      if (inds[cur]) {
-        var fill = inds[cur].querySelector('.fill');
-        if (fill) {
-          fill.style.animation = 'none';
-          // force reflow
-          void fill.offsetWidth;
-          fill.style.animation = '';
-        }
-      }
+      applyTheme(slides[cur]);
+      startProgress();
     }
 
     function next() { go(cur + 1, 1); }
     function prev() { go(cur - 1, -1); }
+
+    // Apply initial theme from first slide
+    applyTheme(slides[0]);
+    // Start autoplay
+    startProgress();
 
     if (hero.querySelector('[data-prev]')) hero.querySelector('[data-prev]').addEventListener('click', prev);
     if (hero.querySelector('[data-next]')) hero.querySelector('[data-next]').addEventListener('click', next);
@@ -677,29 +744,30 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
         if (ip) ip.hidden = !userPlaying;
         if (ipy) ipy.hidden = userPlaying;
         sync();
+        if (userPlaying && !isPaused()) startProgress();
+        else clearProgress();
       });
     }
     inds.forEach(function (li) {
       var btn = li.querySelector('button');
-      var fill = li.querySelector('.fill');
-      if (fill) fill.addEventListener('animationend', function () {
-        if (!hero.classList.contains('is-paused')) go(cur + 1, 1);
-      });
       if (btn) btn.addEventListener('click', function () { go(parseInt(this.getAttribute('data-go'), 10)); });
     });
 
     if (viewport) {
       viewport.style.touchAction = 'pan-y';
-      hero.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { hover = true; sync(); } });
-      hero.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = false; sync(); } });
-      hero.addEventListener('focusin', function (e) { try { focus = e.target.matches && e.target.matches(':focus-visible'); } catch (err) { focus = true; } sync(); });
-      hero.addEventListener('focusout', function () { focus = false; sync(); });
-      document.addEventListener('visibilitychange', sync);
+      hero.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { hover = true; if (userPlaying) { clearProgress(); sync(); } } });
+      hero.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { hover = false; if (userPlaying && !isPaused()) startProgress(); sync(); } });
+      hero.addEventListener('focusin', function (e) { try { focus = e.target.matches && e.target.matches(':focus-visible'); } catch (err) { focus = true; } if (userPlaying) { clearProgress(); sync(); } });
+      hero.addEventListener('focusout', function () { focus = false; if (userPlaying && !isPaused()) startProgress(); sync(); });
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { clearProgress(); sync(); }
+        else if (userPlaying && !isPaused()) startProgress();
+      });
       hero.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowLeft') prev();
-        else if (e.key === 'ArrowRight') next();
-        else if (e.key === 'Home') go(0);
-        else if (e.key === 'End') go(slides.length - 1);
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+        else if (e.key === 'Home') { e.preventDefault(); go(0); }
+        else if (e.key === 'End') { e.preventDefault(); go(count - 1); }
       });
       hero.addEventListener('click', function (e) {
         var a = e.target.closest && e.target.closest('a[href="#"]');

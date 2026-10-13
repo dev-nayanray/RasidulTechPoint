@@ -146,6 +146,9 @@ final class HeroSlideTest extends TestCase
         $migration['up']($this->pdo());
         $count = (int) $this->pdo()->query("SELECT COUNT(*) FROM hero_slides WHERE nav_label IN ('Aero 14','Forge 16','Studio 16','Pro 15')")->fetchColumn();
         $this->assertGreaterThanOrEqual(4, $count);
+        // Safety net: at least 4 active+published slides on a fresh install
+        $activePublished = (int) $this->pdo()->query("SELECT COUNT(*) FROM hero_slides WHERE is_active = 1 AND status = 'published'")->fetchColumn();
+        $this->assertGreaterThanOrEqual(4, $activePublished);
     }
 
     public function testSettingsSingletonExistsWithDefaults(): void

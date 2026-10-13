@@ -21,7 +21,7 @@
   --line:rgba(13,27,38,.2);--chip:rgba(255,255,255,.62);--dot:rgba(13,27,38,.16);--ghost:rgba(13,27,38,.16);
   --chassis:#b9c4cc;--chassis-hi:#e4eaee;--bezel:#0a0d10;--glow:rgba(8,101,96,.28);--bar:rgba(13,27,38,.07);
 }
-.hero{position:relative;width:100%;overflow:hidden;isolation:isolate;display:grid;grid-template-rows:1fr auto;min-height:clamp(640px,90svh,820px);background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;transition:background-color .8s var(--hero-ease),color .8s var(--hero-ease)}
+.hero{position:relative;width:100%;overflow:hidden;isolation:isolate;display:grid;grid-template-rows:auto 1fr auto;min-height:clamp(640px,90svh,820px);background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;transition:background-color .8s var(--hero-ease),color .8s var(--hero-ease)}
 .hero :where(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .hero a{color:inherit;text-decoration:none}
 .hero .wrap{width:100%;max-width:1440px;margin-inline:auto;padding-inline:var(--hero-gutter)}
@@ -87,8 +87,9 @@
 .hero .lab{display:flex;gap:10px;font:500 12px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;opacity:.55;transition:opacity .3s}
 .hero .lab i{font-style:normal;font-variant-numeric:tabular-nums}
 .hero .ind button:hover .lab,.hero .ind.is-active .lab{opacity:1}
-.hero .ind.is-active .fill{animation:heroFill var(--hero-dur) linear forwards}
-.hero.is-paused .ind.is-active .fill{animation-play-state:paused}
+/* Progress bar fill is driven by JS (rAF) for reliable restart across slides */
+.hero .ind.is-active .fill{transform:scaleX(var(--fill-pct,0))}
+.hero.is-paused .ind.is-active .fill{transition:none}
 .hero .ctrls{display:flex;gap:8px}
 .hero .round{display:grid;place-items:center;width:44px;height:44px;border:1.5px solid var(--line);border-radius:50%;background:transparent;color:var(--ink);cursor:pointer;transition:background-color .2s,color .2s,border-color .2s}
 .hero .round:hover{background:var(--ink);border-color:var(--ink);color:var(--bg)}
@@ -98,7 +99,6 @@
 @keyframes heroRise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes heroEnter{from{opacity:0;transform:translateX(calc(var(--dir,1)*9%)) scale(.95)}to{opacity:1;transform:none}}
 @keyframes heroFade{from{opacity:0}to{opacity:1}}
-@keyframes heroFill{to{transform:scaleX(1)}}
 @keyframes heroDrift{from{transform:translateY(-4px)}to{transform:translateY(5px)}}
 .hero .slide.is-active .rise{animation:heroRise .8s var(--hero-ease) both;animation-delay:calc(var(--d,0)*70ms + 120ms)}
 .hero .slide.is-active .stage{animation:heroEnter 1s var(--hero-ease) .1s both}
@@ -125,5 +125,4 @@
 @media (prefers-reduced-motion:reduce){
   .hero *,.hero *::before,.hero *::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
   .hero .ind.is-active .fill{transform:scaleX(1)}
-}
-</style>
+}</style>

@@ -291,20 +291,20 @@ return [
         }
 
         // ------------------------------------------------------------------
-        // 4) Safety net — guarantee at least 3 ACTIVE + PUBLISHED slides so
-        //    the homepage slider always renders demo content. Only activates
-        //    existing reference slides (never user-created custom slides) and
-        //    only when fewer than 3 active+published rows exist. Never
-        //    deactivates anything.
+        // 4) Safety net — guarantee at least 4 ACTIVE + PUBLISHED slides so
+        //    the homepage slider always shows 4 demo slides minimum. Only
+        //    activates existing reference slides (never user-created custom
+        //    slides) and only when fewer than 4 active+published rows exist.
+        //    Never deactivates anything.
         // ------------------------------------------------------------------
         $activePublished = (int) $pdo->query(
             "SELECT COUNT(*) FROM hero_slides WHERE is_active = 1 AND status = 'published'"
         )->fetchColumn();
-        if ($activePublished < 3) {
+        if ($activePublished < 4) {
             $refNavs = array_map(fn($r) => $r['nav_label'], $referenceSlides());
             // Activate inactive reference slides first.
             foreach ($refNavs as $nav) {
-                if ($activePublished >= 3) break;
+                if ($activePublished >= 4) break;
                 $stmt = $pdo->prepare(
                     "UPDATE hero_slides SET is_active = 1, status = 'published' WHERE nav_label = ? AND (is_active = 0 OR status <> 'published')"
                 );
@@ -312,9 +312,9 @@ return [
                 $activePublished += $stmt->rowCount();
             }
             // Still short? Insert any missing reference slides (additive) until
-            // we hit the 3 active+published floor.
+            // we hit the 4 active+published floor.
             foreach ($referenceSlides() as $ref) {
-                if ($activePublished >= 3) break;
+                if ($activePublished >= 4) break;
                 $check = $pdo->prepare('SELECT 1 FROM hero_slides WHERE nav_label = ? LIMIT 1');
                 $check->execute([$ref['nav_label']]);
                 if (!$check->fetch()) {

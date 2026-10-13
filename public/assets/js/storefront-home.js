@@ -1,0 +1,87 @@
+/**
+ * Homepage header behavior: mobile menu, header dropdown panels, live search.
+ *
+ * Moved out of an inline <script> in storefront/home.php. The site CSP is
+ * "script-src 'self'", so inline scripts never run. Behavior is unchanged;
+ * the search endpoint now comes from data-suggest-url on the search form.
+ */
+
+// Mobile nav drawer toggle.
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-nav-toggle]');
+  if (!t) return;
+  const n = document.querySelector('[data-nav-mobile]');
+  if (n) {
+    const open = n.classList.toggle('open');
+    t.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+});
+
+// Dropdown panels (account, wishlist, cart).
+document.addEventListener('click', (e) => {
+  const tg = e.target.closest('[data-dd-toggle]');
+  document.querySelectorAll('.dd-panel.open').forEach((p) => {
+    if (!tg || p.id !== tg.getAttribute('data-dd-toggle')) p.classList.remove('open');
+  });
+  if (tg) {
+    e.preventDefault();
+    const p = document.getElementById(tg.getAttribute('data-dd-toggle'));
+    if (p) p.classList.toggle('open');
+  }
+});
+
+// AJAX live search.
+(() => {
+  const form = document.querySelector('[data-search-form]');
+  const input = document.querySelector('[data-search-input]');
+  const dd = document.querySelector('[data-sugg-dropdown]');
+  if (!form || !input || !dd) return;
+  const endpoint = form.getAttribute('data-suggest-url');
+  if (!endpoint) return;
+
+  let timer = null;
+  let lastQ = '';
+  const esc = (s) => {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  };
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    if (q.length < 2) {
+      dd.classList.remove('open');
+      lastQ = '';
+      return;
+    }
+    if (q === lastQ) return;
+    lastQ = q;
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fetch(endpoint + '?q=' + encodeURIComponent(q))
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data.results || data.results.length === 0) {
+            dd.innerHTML = '<div class="s-empty">No laptops found. Try Dell, HP, Lenovo.</div>';
+          } else {
+            dd.innerHTML = data.results.map((r) =>
+              '<a class="s-item" href="' + r.url + '"><span class="s-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg></span><div class="s-info"><div class="s-name">'
+                + esc(r.brand + ' ' + r.name) + '</div><div class="s-meta">' + esc(r.processor) + (r.ram ? ' · ' + esc(r.ram) : '') + (r.units > 0 ? ' · In stock' : '')
+                + '</div></div><span class="s-price">' + esc(r.price) + '</span></a>'
+            ).join('') + (data.more ? '<a class="s-more" href="' + data.search_url + '">See all results →</a>' : '');
+          }
+          dd.classList.add('open');
+        })
+        .catch(() => dd.classList.remove('open'));
+    }, 250);
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search')) dd.classList.remove('open');
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      dd.classList.remove('open');
+      input.blur();
+    }
+  });
+})();

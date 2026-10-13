@@ -42,6 +42,12 @@ section[id]{scroll-margin-top:16px}
 .logo{display:flex;align-items:center;gap:10px;flex:none}
 .logomark{width:42px;height:42px;border-radius:12px;background:#14243A;color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
 .logomark::after{content:"";position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:#2563EB;border:2px solid #fff}
+.rtp-mark{width:42px;height:42px;border-radius:12px;display:block;flex:none}
+.rtp-logo--light .wm-a{color:#14243A}
+.rtp-logo--light .wm-b{color:#2F7D00}
+.rtp-logo--dark .rtp-mark{box-shadow:0 0 0 1.5px rgba(255,255,255,.28)}
+.rtp-logo--dark .wm-a{color:#fff}
+.rtp-logo--dark .wm-b{color:#7AFB01}
 .wm-a{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
 .wm-b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.22em;color:#2563EB;line-height:1.3}
 .search{position:relative;flex:1 1 360px;min-width:0;order:2}

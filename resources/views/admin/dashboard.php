@@ -222,7 +222,7 @@ if (\App\Services\AuthService::can('settings.manage')) {
 
     <section class="admin-card">
         <header class="admin-card-header">
-            <h3>Recent audit events</h3>
+            <h3>Activity feed</h3>
             <?php if (\App\Services\AuthService::can('audit_logs.view')): ?>
                 <a href="<?= e(url('/admin/audit-logs')) ?>">Audit log →</a>
             <?php endif; ?>
@@ -257,18 +257,22 @@ if (\App\Services\AuthService::can('settings.manage')) {
                 <?php endif; ?>
             </p>
         <?php else: ?>
-            <table class="min-w-full divide-y divide-slate-100 text-sm">
-                <tbody>
-                    <?php foreach ($lowStock as $row): ?>
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-4 py-2.5 font-medium text-slate-700"><?= e($row['name']) ?></td>
-                            <td class="px-4 py-2.5 text-right">
-                                <?= \App\Support\View::component('badge', ['status' => (int) $row['available_count'] === 0 ? 'damaged' : 'awaiting_inspection', 'label' => (string) $row['available_count'] . ' left']) ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="admin-card-body" style="padding:0">
+            <?php foreach ($lowStock as $row):
+                $count = (int) $row['available_count'];
+                $max = 5; // visual max for the progress bar
+                $pct = min(100, ($count / $max) * 100);
+                $barClass = $count === 0 ? 'zero' : ($count <= 1 ? 'crit' : ($count <= 3 ? 'low' : 'ok'));
+            ?>
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border)">
+                    <span style="font-size:14px;font-weight:600;color:var(--ink);min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?= e($row['name']) ?></span>
+                    <div class="admin-stock-bar">
+                        <div class="admin-stock-bar-fill <?= $barClass ?>" style="width:<?= $pct ?>%"></div>
+                    </div>
+                    <span style="font-size:13px;font-weight:700;color:var(--muted);min-width:40px;text-align:right"><?= $count ?> left</span>
+                </div>
+            <?php endforeach; ?>
+            </div>
         <?php endif; ?>
     </section>
 </div>

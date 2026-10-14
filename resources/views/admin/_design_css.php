@@ -1,40 +1,98 @@
 <?php
 /**
- * Admin design system — premium tokens + components on top of Tailwind.
+ * Admin design system — modern SaaS (Linear/Stripe style).
  *
- * Loaded by layouts/admin.php via inline <style> tag. Additive: enhances
- * the existing Tailwind utilities (btn-primary, btn-secondary, btn-danger,
- * .input) with brand-aligned admin chrome — sidebar polish, top bar
- * refinement, page headers, table styling, stat-card tones, empty states,
- * and reduced-motion safety.
- *
- * Brand palette (declared in tailwind.config.js):
- *   --navy:    #14243A   (sidebar bg, avatar, active pagination)
- *   --blue:    #2563EB   (primary actions, links, focus ring)
- *   --green:   #16A34A   (success / completed / available)
- *   --bg:      #F1F5F9   (page background)
- *   --ink:     #0F172A   (headings)
- *   --muted:   #64748B   (secondary text)
- *   --line:    #E2E8F0   (borders)
+ * Features: dark/light mode via CSS variables, indigo primary, 14px radius
+ * cards, 8px spacing grid, subtle shadows, accessible contrast.
+ * Loaded by layouts/admin.php via inline <style> tag.
  */
 ?>
+<!-- rtp-admin-css-loaded -->
 <style id="rtp-admin-css">
+/* ============================================================
+   DESIGN TOKENS — light (default) + dark (via [data-theme="dark"])
+   ============================================================ */
 :root{
-  --navy:#14243A;--navy-2:#1E3553;--navy-3:#2B4869;
-  --blue:#2563EB;--blue-d:#1D4FD8;
-  --green:#16A34A;--green-d:#15803D;
-  --bg:#F1F5F9;
-  --ink:#0F172A;--muted:#64748B;--line:#E2E8F0;
-  --amber:#D97706;--red:#DC2626;
-  --shadow-sm:0 1px 2px rgba(15,23,42,.04),0 2px 4px rgba(15,23,42,.04);
-  --shadow-md:0 4px 12px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
-  --shadow-lg:0 12px 32px rgba(15,23,42,.10);
+  /* Surfaces */
+  --bg:#F8FAFC;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFC;
+  --surface-hover:#F1F5F9;
+  --border:#E2E8F0;
+  --border-strong:#CBD5E1;
+  /* Text */
+  --ink:#0F172A;
+  --text:#334155;
+  --muted:#64748B;
+  --faint:#94A3B8;
+  /* Primary (indigo) */
+  --primary:#4F46E5;
+  --primary-hover:#4338CA;
+  --primary-light:#EEF2FF;
+  --primary-contrast:#FFFFFF;
+  /* Semantic */
+  --green:#16A34A;--green-light:#DCFCE7;
+  --amber:#D97706;--amber-light:#FEF3C7;
+  --red:#DC2626;--red-light:#FEE2E2;
+  /* Sidebar */
+  --sidebar-bg:#0B1120;
+  --sidebar-surface:#111827;
+  --sidebar-text:#94A3B8;
+  --sidebar-active:rgba(99,102,241,.15);
+  --sidebar-active-text:#C7D2FE;
+  /* Shadows */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.04),0 10px 15px rgba(0,0,0,.05);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 20px 40px rgba(0,0,0,.06);
+  /* Misc */
+  --radius:14px;
+  --radius-sm:10px;
+  --radius-lg:20px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --font-sans:'Inter',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+
+[data-theme="dark"]{
+  --bg:#0B1120;
+  --surface:#111827;
+  --surface-2:#0F172A;
+  --surface-hover:#1E293B;
+  --border:#1E293B;
+  --border-strong:#334155;
+  --ink:#F1F5F9;
+  --text:#CBD5E1;
+  --muted:#64748B;
+  --faint:#475569;
+  --primary:#818CF8;
+  --primary-hover:#6366F1;
+  --primary-light:rgba(99,102,241,.15);
+  --primary-contrast:#FFFFFF;
+  --green:#4ADE80;--green-light:rgba(34,197,94,.15);
+  --amber:#FBBF24;--amber-light:rgba(251,191,36,.15);
+  --red:#F87171;--red-light:rgba(239,68,68,.15);
+  --sidebar-bg:#060B18;
+  --sidebar-surface:#0B1120;
+  --sidebar-text:#475569;
+  --sidebar-active:rgba(129,140,248,.12);
+  --sidebar-active-text:#A5B4FC;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.20);
+  --shadow-md:0 4px 6px rgba(0,0,0,.25);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.30);
 }
 
 /* ============================================================
    PAGE BACKGROUND + SCROLLBAR
    ============================================================ */
-body{font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-feature-settings:"cv11","ss01";
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  transition:background-color .2s var(--ease),color .2s var(--ease);
+}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(15,23,42,.16);border-radius:5px;border:2px solid transparent;background-clip:padding-box}
@@ -434,6 +492,93 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .admin-page-header-actions{width:100%}
   .admin-page-header-actions .btn{flex:1;min-width:0}
 }
+
+/* ============================================================
+   DARK MODE — override Tailwind utility classes via CSS vars.
+   These rules map the most common Tailwind classes used in the
+   admin views to the dark-mode CSS variables defined in [data-theme].
+   ============================================================ */
+[data-theme="dark"] body{background:var(--bg);color:var(--text)}
+[data-theme="dark"] .bg-white{background-color:var(--surface) !important}
+[data-theme="dark"] .bg-slate-100{background-color:var(--bg) !important}
+[data-theme="dark"] .bg-slate-50{background-color:var(--surface-2) !important}
+[data-theme="dark"] .bg-slate-900\/50{background-color:rgba(0,0,0,.60) !important}
+[data-theme="dark"] .text-slate-900{color:var(--ink) !important}
+[data-theme="dark"] .text-slate-700{color:var(--text) !important}
+[data-theme="dark"] .text-slate-600{color:var(--muted) !important}
+[data-theme="dark"] .text-slate-500{color:var(--muted) !important}
+[data-theme="dark"] .text-slate-400{color:var(--faint) !important}
+[data-theme="dark"] .text-slate-300{color:var(--faint) !important}
+[data-theme="dark"] .border-slate-200{border-color:var(--border) !important}
+[data-theme="dark"] .border-slate-100{border-color:var(--border) !important}
+[data-theme="dark"] .divide-slate-200 > *{border-color:var(--border) !important}
+[data-theme="dark"] .divide-slate-100 > *{border-color:var(--border) !important}
+[data-theme="dark"] .ring-slate-200{--tw-ring-color:var(--border) !important}
+[data-theme="dark"] .hover\:bg-slate-100:hover{background-color:var(--surface-hover) !important}
+[data-theme="dark"] .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
+[data-theme="dark"] .hover\:text-slate-900:hover{color:var(--ink) !important}
+[data-theme="dark"] .hover\:text-slate-700:hover{color:var(--text) !important}
+[data-theme="dark"] .hover\:text-blue-700:hover{color:var(--primary) !important}
+[data-theme="dark"] .hover\:text-blue-800:hover{color:var(--primary-hover) !important}
+[data-theme="dark"] .hover\:border-slate-400:hover{border-color:var(--border-strong) !important}
+[data-theme="dark"] .hover\:bg-red-50:hover{background-color:var(--red-light) !important}
+[data-theme="dark"] .hover\:bg-blue-50\/50:hover{background-color:rgba(99,102,241,.10) !important}
+[data-theme="dark"] .bg-blue-50{background-color:var(--primary-light) !important}
+[data-theme="dark"] .bg-green-50{background-color:var(--green-light) !important}
+[data-theme="dark"] .bg-amber-50{background-color:var(--amber-light) !important}
+[data-theme="dark"] .bg-red-50{background-color:var(--red-light) !important}
+[data-theme="dark"] .text-blue-700{color:var(--primary) !important}
+[data-theme="dark"] .text-blue-600{color:var(--primary) !important}
+[data-theme="dark"] .text-brand-blue{color:var(--primary) !important}
+[data-theme="dark"] .text-brand-green{color:var(--green) !important}
+[data-theme="dark"] .text-green-700{color:var(--green) !important}
+[data-theme="dark"] .text-green-600{color:var(--green) !important}
+[data-theme="dark"] .text-amber-700{color:var(--amber) !important}
+[data-theme="dark"] .text-amber-600{color:var(--amber) !important}
+[data-theme="dark"] .text-red-600{color:var(--red) !important}
+[data-theme="dark"] .text-red-700{color:var(--red) !important}
+[data-theme="dark"] .bg-navy-700{background-color:var(--sidebar-bg) !important}
+[data-theme="dark"] .text-white{color:var(--ink) !important}
+[data-theme="dark"] .border-white\/10{border-color:rgba(255,255,255,.06) !important}
+[data-theme="dark"] .hover\:bg-white\/10:hover{background-color:rgba(255,255,255,.06) !important}
+[data-theme="dark"] .hover\:bg-white\/5:hover{background-color:rgba(255,255,255,.03) !important}
+[data-theme="dark"] .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
+/* Header sticky bar in dark mode */
+[data-theme="dark"] header.sticky-top{background:rgba(17,24,39,.92) !important;border-bottom-color:var(--border) !important}
+/* Admin-specific component overrides for dark mode */
+[data-theme="dark"] .admin-card{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .admin-card-header{border-bottom-color:var(--border)}
+[data-theme="dark"] .admin-table thead th{background:var(--surface-2);color:var(--muted)}
+[data-theme="dark"] .admin-table tbody td{border-bottom-color:var(--border);color:var(--text)}
+[data-theme="dark"] .admin-table tbody tr:hover{background:var(--surface-hover)}
+[data-theme="dark"] .admin-table a{color:var(--ink)}
+[data-theme="dark"] .admin-table a:hover{color:var(--primary)}
+[data-theme="dark"] .admin-stat-card{background:linear-gradient(180deg,var(--surface) 0%,var(--surface-2) 100%);border-color:var(--border)}
+[data-theme="dark"] .admin-stat-card-value{color:var(--ink)}
+[data-theme="dark"] .admin-stat-card-label{color:var(--muted)}
+[data-theme="dark"] .admin-filter-bar{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .input{background:var(--surface-2);border-color:var(--border);color:var(--ink)}
+[data-theme="dark"] .input::placeholder{color:var(--faint)}
+[data-theme="dark"] .input:focus{background:var(--surface);border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.16)}
+[data-theme="dark"] .btn-primary{background:var(--primary);box-shadow:0 1px 2px rgba(99,102,241,.30)}
+[data-theme="dark"] .btn-primary:hover{background:var(--primary-hover)}
+[data-theme="dark"] .btn-secondary{background:var(--surface-2);border-color:var(--border);color:var(--text)}
+[data-theme="dark"] .btn-secondary:hover{background:var(--surface-hover);border-color:var(--border-strong)}
+[data-theme="dark"] .admin-empty{color:var(--muted)}
+[data-theme="dark"] .admin-empty h3{color:var(--ink)}
+[data-theme="dark"] .admin-empty-ic{background:var(--surface-hover);color:var(--faint)}
+[data-theme="dark"] .admin-badge-ok{background:var(--green-light);color:var(--green)}
+[data-theme="dark"] .admin-badge-info{background:var(--primary-light);color:var(--primary)}
+[data-theme="dark"] .admin-badge-wait{background:var(--amber-light);color:var(--amber)}
+[data-theme="dark"] .admin-badge-off{background:var(--surface-hover);color:var(--muted)}
+[data-theme="dark"] .admin-badge-bad{background:var(--red-light);color:var(--red)}
+/* Low stock progress bar */
+.admin-stock-bar{height:6px;border-radius:3px;background:var(--surface-hover);overflow:hidden;flex:1;min-width:40px}
+.admin-stock-bar-fill{height:100%;border-radius:3px;transition:width .4s var(--ease)}
+.admin-stock-bar-fill.ok{background:var(--green)}
+.admin-stock-bar-fill.low{background:var(--amber)}
+.admin-stock-bar-fill.crit{background:var(--red)}
+.admin-stock-bar-fill.zero{background:var(--faint)}
 
 /* ============================================================
    REDUCED MOTION

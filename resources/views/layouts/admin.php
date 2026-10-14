@@ -27,10 +27,14 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
     <?php include BASE_PATH . '/resources/views/admin/_design_css.php'; ?>
     <script>
-        // Apply the persisted sidebar state before first paint to avoid a flash.
+        // Apply the persisted sidebar + theme state before first paint to avoid a flash.
         try {
             if (localStorage.getItem('rtp-sidebar-collapsed') === '1') {
                 document.documentElement.classList.add('sidebar-collapsed');
+            }
+            var savedTheme = localStorage.getItem('rtp-admin-theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
             }
         } catch (e) { /* storage unavailable */ }
     </script>
@@ -133,13 +137,20 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                 <h1 class="min-w-0 truncate text-base font-semibold text-slate-900"><?= e($pageTitle ?? 'Admin') ?></h1>
 
                 <div class="ml-auto flex items-center gap-2">
+                    <?php /* Theme toggle (light/dark) */ ?>
+                    <button type="button" id="theme-toggle" class="inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Toggle theme" title="Toggle light/dark (⌘J)">
+                        <svg class="theme-icon-light h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                        <svg class="theme-icon-dark h-5 w-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </button>
+
                     <form action="<?= e(url('/admin/products')) ?>" method="get" class="hidden md:block" role="search">
                         <label class="sr-only" for="global-search">Search laptop models</label>
                         <div class="relative">
                             <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                                 <?= \App\Support\View::component('icon', ['name' => 'search', 'class' => 'h-4 w-4']) ?>
                             </span>
-                            <input id="global-search" name="q" value="" placeholder="Search models…" class="input pl-9 w-56">
+                            <input id="global-search" name="q" value="" placeholder="Search models…" class="input pl-9 pr-12 w-56" autocomplete="off">
+                            <kbd class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden items-center gap-0.5 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline-flex">⌘K</kbd>
                         </div>
                     </form>
 
@@ -244,6 +255,54 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
         </div>
     </div>
 
+    <script>
+        // Theme toggle (light/dark) + ⌘K search shortcut + ⌘J theme toggle.
+        (function () {
+            // ---- Theme toggle ----
+            var toggle = document.getElementById('theme-toggle');
+            var lightIcon = document.querySelector('.theme-icon-light');
+            var darkIcon = document.querySelector('.theme-icon-dark');
+
+            function syncIcons() {
+                var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (lightIcon) lightIcon.classList.toggle('hidden', isDark);
+                if (darkIcon) darkIcon.classList.toggle('hidden', !isDark);
+            }
+            syncIcons();
+
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    var current = document.documentElement.getAttribute('data-theme');
+                    var next = current === 'dark' ? 'light' : 'dark';
+                    if (next === 'light') {
+                        document.documentElement.removeAttribute('data-theme');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                    }
+                    try { localStorage.setItem('rtp-admin-theme', next); } catch (e) {}
+                    syncIcons();
+                });
+            }
+
+            // ---- ⌘K search shortcut + ⌘J theme toggle ----
+            document.addEventListener('keydown', function (e) {
+                // ⌘K (Mac) or Ctrl+K (Windows/Linux) → focus search
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    var search = document.getElementById('global-search');
+                    if (search) {
+                        search.focus();
+                        search.select();
+                    }
+                }
+                // ⌘J or Ctrl+J → toggle theme
+                if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+                    e.preventDefault();
+                    if (toggle) toggle.click();
+                }
+            });
+        })();
+    </script>
     <script type="module" src="<?= e(url('assets/js/app.js')) ?>"></script>
 </body>
 </html>

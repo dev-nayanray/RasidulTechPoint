@@ -635,21 +635,35 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
 </footer>
 
 <div class="tab-space"></div>
+<?php
+$tabbarCartCount = (int) ($_SESSION['cart_count'] ?? 0);
+$tabbarWishlistCount = (int) ($_SESSION['wishlist_count'] ?? 0);
+$tabbarAuth = current_user();
+$tabbarCurrentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+?>
 <nav class="tabbar" aria-label="Quick navigation">
-  <a class="tab" href="<?= e(url('/')) ?>">
-    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>Home
-  </a>
-  <a class="tab" href="<?= e(url('/shop')) ?>">
-    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>Laptops
-  </a>
-  <a class="tab" href="<?= e(url('/account/wishlist')) ?>">
-    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>Wishlist
-    <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
-  </a>
-  <a class="tab" href="<?= e(url('/cart')) ?>">
-    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>Cart
-    <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
-  </a>
+    <a class="tab is-active" href="<?= e(url('/')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>Home
+    </a>
+    <a class="tab" href="<?= e(url('/shop')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>Laptops
+    </a>
+    <a class="tab" href="<?= e(url('/account/wishlist')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>Wishlist
+        <?php if ($tabbarWishlistCount > 0): ?><span class="count wish"><?= $tabbarWishlistCount > 9 ? '9+' : $tabbarWishlistCount ?></span><?php endif; ?>
+    </a>
+    <a class="tab" href="<?= e(url('/cart')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>Cart
+        <?php if ($tabbarCartCount > 0): ?><span class="count"><?= $tabbarCartCount > 9 ? '9+' : $tabbarCartCount ?></span><?php endif; ?>
+    </a>
+    <a class="tab" href="<?= e(url($tabbarAuth ? '/account' : '/login')) ?>">
+        <?php if ($tabbarAuth): ?>
+            <span class="tab-account-ic"><?= e(strtoupper(mb_substr($tabbarAuth['name'] ?? '?', 0, 1))) ?></span>
+        <?php else: ?>
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <?php endif; ?>
+        <?= $tabbarAuth ? 'Account' : 'Sign in' ?>
+    </a>
 </nav>
 
 </div>

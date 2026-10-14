@@ -271,6 +271,47 @@ $navItems = [
   </div>
 </footer>
 
+<?php
+// Mobile bottom tabbar — 5-tab app-style nav (also on account pages).
+$_tabbarCart = (int) ($_SESSION['cart_count'] ?? 0);
+$_tabbarWish = (int) ($_SESSION['wishlist_count'] ?? 0);
+$_tabbarAuth = current_user();
+$_tabbarPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+$_isHome = $_tabbarPath === '/' || $_tabbarPath === '';
+$_isShop = str_starts_with($_tabbarPath, '/shop') || str_starts_with($_tabbarPath, '/brands') || str_starts_with($_tabbarPath, '/categories');
+$_isWish = str_starts_with($_tabbarPath, '/account/wishlist');
+$_isCart = str_starts_with($_tabbarPath, '/cart') || str_starts_with($_tabbarPath, '/checkout');
+$_isAccount = (str_starts_with($_tabbarPath, '/account') && !$_isWish)
+    || str_starts_with($_tabbarPath, '/login')
+    || str_starts_with($_tabbarPath, '/register')
+    || str_starts_with($_tabbarPath, '/forgot-password');
+?>
+<div class="tab-space"></div>
+<nav class="tabbar" aria-label="Quick navigation">
+    <a class="tab <?= $_isHome ? 'is-active' : '' ?>" href="<?= e(url('/')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>Home
+    </a>
+    <a class="tab <?= $_isShop ? 'is-active' : '' ?>" href="<?= e(url('/shop')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>Laptops
+    </a>
+    <a class="tab <?= $_isWish ? 'is-active' : '' ?>" href="<?= e(url('/account/wishlist')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>Wishlist
+        <?php if ($_tabbarWish > 0): ?><span class="count wish"><?= $_tabbarWish > 9 ? '9+' : $_tabbarWish ?></span><?php endif; ?>
+    </a>
+    <a class="tab <?= $_isCart ? 'is-active' : '' ?>" href="<?= e(url('/cart')) ?>">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>Cart
+        <?php if ($_tabbarCart > 0): ?><span class="count"><?= $_tabbarCart > 9 ? '9+' : $_tabbarCart ?></span><?php endif; ?>
+    </a>
+    <a class="tab <?= $_isAccount ? 'is-active' : '' ?>" href="<?= e(url('/account')) ?>">
+        <?php if ($_tabbarAuth): ?>
+            <span class="tab-account-ic"><?= e(strtoupper(mb_substr($_tabbarAuth['name'] ?? '?', 0, 1))) ?></span>
+        <?php else: ?>
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <?php endif; ?>
+        Account
+    </a>
+</nav>
+
 </div>
 
 <script>

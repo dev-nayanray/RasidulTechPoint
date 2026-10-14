@@ -68,8 +68,50 @@ section[id]{scroll-margin-top:16px}
 .nav-desktop a{display:flex;align-items:center;min-height:46px;padding:0 14px;font-size:14.5px;font-weight:600;color:#334155;border-bottom:2px solid transparent}
 .nav-desktop a:hover{color:#2563EB;border-bottom-color:#2563EB}
 .nav-desktop .push{margin-left:auto;color:#475569;font-weight:500}
-.nav-mobile{display:none;flex-direction:column;border-top:1px solid #E6ECF3;padding-block:6px}
-.nav-mobile a{display:flex;align-items:center;min-height:48px;font-weight:600;font-size:16px;border-bottom:1px solid #EEF2F7}
+.nav-mobile{
+  position:fixed;inset:0;top:auto;bottom:0;z-index:55;
+  display:none;flex-direction:column;
+  background:linear-gradient(180deg,#fff 0%,#F8FAFC 100%);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 0 env(safe-area-inset-bottom,0px);
+  animation:navSlideUp .25s cubic-bezier(.2,.7,.2,1);
+}
+@keyframes navSlideUp{from{transform:translateY(100%);opacity:.4}to{transform:translateY(0);opacity:1}}
+.nav-mobile.open{display:flex}
+.nav-mobile-head{
+  position:sticky;top:0;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 18px;background:#fff;border-bottom:1px solid #E6ECF3;
+  box-shadow:0 1px 0 rgba(15,23,42,.04);
+}
+.nav-mobile-head h2{font-size:17px;font-weight:800;letter-spacing:-.02em;color:#14243A;margin:0}
+.nav-mobile-close{
+  width:40px;height:40px;border-radius:10px;border:0;background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:#64748B;
+  transition:background .15s,color .15s;
+}
+.nav-mobile-close:hover{background:#F1F5F9;color:#14243A}
+.nav-mobile-search{padding:14px 18px 6px}
+.nav-mobile-search .search-box{height:48px;border-radius:12px}
+.nav-mobile-section{padding:8px 0;border-bottom:1px solid #F1F5F9}
+.nav-mobile-section:last-child{border-bottom:0}
+.nav-mobile-section-title{
+  padding:14px 18px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;
+}
+.nav-mobile a{
+  display:flex;align-items:center;gap:12px;min-height:50px;padding:0 18px;
+  font-weight:600;font-size:15px;color:#1E293B;
+  transition:background .12s;color .12s;
+}
+.nav-mobile a:hover{background:#F1F5F9;color:#2563EB}
+.nav-mobile a svg{width:20px;height:20px;color:#64748B;flex:none;transition:color .12s}
+.nav-mobile a:hover svg{color:#2563EB}
+.nav-mobile-foot{
+  margin-top:auto;padding:18px;background:#fff;border-top:1px solid #E6ECF3;
+  display:flex;flex-direction:column;gap:8px;
+}
+.nav-mobile-foot a{font-size:13px;color:#64748B;font-weight:500;display:flex;align-items:center;gap:8px}
+.nav-mobile-foot a:hover{color:#2563EB}
 @media(max-width:960px){
 .burger{display:inline-flex;order:0}
 .logo{order:1}
@@ -262,14 +304,50 @@ section[id]{scroll-margin-top:16px}
 .legal{display:flex;flex-wrap:wrap;gap:0 16px}
 .legal button{background:none;border:0;color:#B7C4D6;cursor:pointer;min-height:44px;font-size:14px;padding:0}
 .legal button:hover{color:#fff}
-.tabbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid #D5DEE9;padding-bottom:env(safe-area-inset-bottom,0px);grid-template-columns:repeat(4,minmax(0,1fr))}
-.tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:60px;font-size:11.5px;font-weight:600;background:none;border:0;color:#334155;cursor:pointer}
-.tab .count{top:6px;right:calc(50% - 22px)}
-.tab-space{display:none;height:72px;background:#0E1A2B}
+/* === Mobile bottom tabbar — app-style 5-tab nav === */
+.tabbar{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:rgba(255,255,255,.98);backdrop-filter:saturate(180%) blur(10px);-webkit-backdrop-filter:saturate(180%) blur(10px);
+  border-top:1px solid #E2E8F0;box-shadow:0 -4px 24px rgba(15,23,42,.06);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  grid-template-columns:repeat(5,minmax(0,1fr));
+}
+.tab{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  min-height:58px;font-size:10.5px;font-weight:600;background:none;border:0;color:#64748B;cursor:pointer;
+  transition:color .15s;
+}
+.tab .ic{width:22px;height:22px;transition:transform .15s,color .15s}
+.tab:hover .ic{transform:translateY(-1px)}
+.tab.is-active{color:#2563EB}
+.tab.is-active .ic{color:#2563EB;transform:translateY(-1px)}
+.tab.is-active::before{
+  content:"";position:absolute;top:0;left:25%;right:25%;height:3px;border-radius:0 0 3px 3px;
+  background:linear-gradient(90deg,#2563EB,#16A34A);
+}
+.tab .count{
+  position:absolute;top:4px;right:calc(50% - 24px);
+  min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  background:#2563EB;color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(37,99,235,.35);
+  border:2px solid #fff;
+}
+.tab .count.wish{background:#dc2626}
+.tab-space{display:none;height:calc(72px + env(safe-area-inset-bottom,0px));background:transparent}
 @media(max-width:960px){.tabbar{display:grid}.tab-space{display:block}}
+/* Account tab special — uses avatar when logged in */
+.tab-account-ic{
+  width:24px;height:24px;border-radius:50%;background:#14243A;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  border:1.5px solid transparent;transition:border-color .15s;
+}
+.tab.is-active .tab-account-ic{border-color:#2563EB}
 .tray{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:55;background:#14243A;color:#fff;border-radius:18px;padding:10px 12px 10px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 14px 36px rgba(20,36,58,.4);width:max-content;max-width:calc(100% - 24px);font-size:14px;font-weight:600}
 .tray .link-btn{color:#9DB8E8}
-@media(max-width:960px){.tray{bottom:78px}}
+@media(max-width:960px){.tray{bottom:calc(80px + env(safe-area-inset-bottom,0px))}}
+/* Compare bar should sit above the tabbar on mobile, not overlap it */
+@media(max-width:960px){.cmp-bar{bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important}}
 .scrim{position:fixed;inset:0;background:rgba(20,36,58,.55);z-index:60;border:0;padding:0;width:100%;cursor:default}
 .panel{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:#fff;z-index:61;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:16px}
 .panel.wide{width:min(880px,100%)}

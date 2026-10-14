@@ -96,13 +96,41 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
         </div>
         <div class="wrap">
             <nav class="nav-mobile" aria-label="Mobile" data-nav-mobile>
-                <a href="<?= e(url('/shop')) ?>">Shop Laptops</a>
-                <a href="<?= e(url('/shop?sort=brands')) ?>">Brands</a>
-                <a href="<?= e(url('/shop?budget=1')) ?>">Budget Deals</a>
-                <a href="<?= e(url('/faq')) ?>">Warranty &amp; Support</a>
-                <a href="<?= e(url('/about')) ?>">About Us</a>
-                <a href="<?= e(url('/page/inspection-process')) ?>">How we check laptops</a>
-                <a href="<?= e(url($auth ? '/account' : '/login')) ?>"><?= $auth ? 'My account' : 'Sign in' ?></a>
+                <div class="nav-mobile-head">
+                    <h2>Menu</h2>
+                    <button type="button" class="nav-mobile-close" data-nav-toggle aria-label="Close menu" aria-expanded="true">
+                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="nav-mobile-search">
+                    <form action="<?= e(url('/shop')) ?>" method="get" role="search">
+                        <div class="search-box">
+                            <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                            <label class="sr-only" for="nav-mobile-q">Search laptops</label>
+                            <input id="nav-mobile-q" type="search" name="q" placeholder="Search laptops by brand or model…" autocomplete="off">
+                        </div>
+                    </form>
+                </div>
+                <div class="nav-mobile-section">
+                    <p class="nav-mobile-section-title">Shop</p>
+                    <a href="<?= e(url('/shop')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 19h18"/></svg>Shop Laptops</a>
+                    <a href="<?= e(url('/shop?sort=brands')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.6 2.5 21 11l-9 9-8.5-8.5V3.5h8.1Z"/><circle cx="8" cy="8" r="1.5"/></svg>Browse Brands</a>
+                    <a href="<?= e(url('/shop?budget=1')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/><path d="M16 13h3"/></svg>Budget Deals</a>
+                </div>
+                <div class="nav-mobile-section">
+                    <p class="nav-mobile-section-title">Support</p>
+                    <a href="<?= e(url('/faq')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ &amp; Warranty</a>
+                    <a href="<?= e(url('/about')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>About Us</a>
+                    <a href="<?= e(url('/contact')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Contact</a>
+                    <a href="<?= e(url('/page/inspection-process')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>How we check laptops</a>
+                </div>
+                <div class="nav-mobile-section">
+                    <p class="nav-mobile-section-title">Account</p>
+                    <a href="<?= e(url($auth ? '/account' : '/login')) ?>"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><?= $auth ? 'My account' : 'Sign in' ?></a>
+                </div>
+                <div class="nav-mobile-foot">
+                    <a href="tel:+8801401400041"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>+880 1401-400041</a>
+                </div>
             </nav>
         </div>
     </header>
@@ -161,21 +189,44 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
         </div>
     </footer>
 
+    <?php
+    // Mobile bottom tabbar — 5-tab app-style nav
+    $_tabbarCart = (int) ($_SESSION['cart_count'] ?? 0);
+    $_tabbarWish = (int) ($_SESSION['wishlist_count'] ?? 0);
+    $_tabbarAuth = current_user();
+    $_tabbarPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', '/');
+    $_isHome = $_tabbarPath === '/' || $_tabbarPath === '';
+    $_isShop = str_starts_with($_tabbarPath, '/shop') || str_starts_with($_tabbarPath, '/brands') || str_starts_with($_tabbarPath, '/categories');
+    $_isWish = str_starts_with($_tabbarPath, '/account/wishlist');
+    $_isCart = str_starts_with($_tabbarPath, '/cart') || str_starts_with($_tabbarPath, '/checkout');
+    $_isAccount = (str_starts_with($_tabbarPath, '/account') && !$_isWish)
+        || str_starts_with($_tabbarPath, '/login')
+        || str_starts_with($_tabbarPath, '/register')
+        || str_starts_with($_tabbarPath, '/forgot-password');
+    ?>
     <div class="tab-space"></div>
     <nav class="tabbar" aria-label="Quick navigation">
-        <a class="tab" href="<?= e(url('/')) ?>">
+        <a class="tab <?= $_isHome ? 'is-active' : '' ?>" href="<?= e(url('/')) ?>">
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>Home
         </a>
-        <a class="tab" href="<?= e(url('/shop')) ?>">
+        <a class="tab <?= $_isShop ? 'is-active' : '' ?>" href="<?= e(url('/shop')) ?>">
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path></svg>Laptops
         </a>
-        <a class="tab" href="<?= e(url('/account/wishlist')) ?>">
+        <a class="tab <?= $_isWish ? 'is-active' : '' ?>" href="<?= e(url('/account/wishlist')) ?>">
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>Wishlist
-            <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
+            <?php if ($_tabbarWish > 0): ?><span class="count wish"><?= $_tabbarWish > 9 ? '9+' : $_tabbarWish ?></span><?php endif; ?>
         </a>
-        <a class="tab" href="<?= e(url('/cart')) ?>">
+        <a class="tab <?= $_isCart ? 'is-active' : '' ?>" href="<?= e(url('/cart')) ?>">
             <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>Cart
-            <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
+            <?php if ($_tabbarCart > 0): ?><span class="count"><?= $_tabbarCart > 9 ? '9+' : $_tabbarCart ?></span><?php endif; ?>
+        </a>
+        <a class="tab <?= $_isAccount ? 'is-active' : '' ?>" href="<?= e(url($_tabbarAuth ? '/account' : '/login')) ?>">
+            <?php if ($_tabbarAuth): ?>
+                <span class="tab-account-ic"><?= e(strtoupper(mb_substr($_tabbarAuth['name'] ?? '?', 0, 1))) ?></span>
+            <?php else: ?>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <?php endif; ?>
+            <?= $_tabbarAuth ? 'Account' : 'Sign in' ?>
         </a>
     </nav>
 

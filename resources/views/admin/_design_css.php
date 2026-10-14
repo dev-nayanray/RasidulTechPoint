@@ -10,7 +10,7 @@
 <!-- rtp-admin-css-loaded -->
 <style id="rtp-admin-css">
 /* ============================================================
-   DESIGN TOKENS — light (default) + dark (via [data-theme="dark"])
+   DESIGN TOKENS — light (default) + dark (via .dark)
    ============================================================ */
 :root{
   /* Surfaces */
@@ -53,7 +53,7 @@
   --font-mono:'IBM Plex Mono',ui-monospace,monospace;
 }
 
-[data-theme="dark"]{
+.dark{
   --bg:#0B1120;
   --surface:#111827;
   --surface-2:#0F172A;
@@ -496,82 +496,82 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 /* ============================================================
    DARK MODE — override Tailwind utility classes via CSS vars.
    These rules map the most common Tailwind classes used in the
-   admin views to the dark-mode CSS variables defined in [data-theme].
+   admin views to the dark-mode CSS variables defined in .dark class.
    ============================================================ */
-[data-theme="dark"] body{background:var(--bg);color:var(--text)}
-[data-theme="dark"] .bg-white{background-color:var(--surface) !important}
-[data-theme="dark"] .bg-slate-100{background-color:var(--bg) !important}
-[data-theme="dark"] .bg-slate-50{background-color:var(--surface-2) !important}
-[data-theme="dark"] .bg-slate-900\/50{background-color:rgba(0,0,0,.60) !important}
-[data-theme="dark"] .text-slate-900{color:var(--ink) !important}
-[data-theme="dark"] .text-slate-700{color:var(--text) !important}
-[data-theme="dark"] .text-slate-600{color:var(--muted) !important}
-[data-theme="dark"] .text-slate-500{color:var(--muted) !important}
-[data-theme="dark"] .text-slate-400{color:var(--faint) !important}
-[data-theme="dark"] .text-slate-300{color:var(--faint) !important}
-[data-theme="dark"] .border-slate-200{border-color:var(--border) !important}
-[data-theme="dark"] .border-slate-100{border-color:var(--border) !important}
-[data-theme="dark"] .divide-slate-200 > *{border-color:var(--border) !important}
-[data-theme="dark"] .divide-slate-100 > *{border-color:var(--border) !important}
-[data-theme="dark"] .ring-slate-200{--tw-ring-color:var(--border) !important}
-[data-theme="dark"] .hover\:bg-slate-100:hover{background-color:var(--surface-hover) !important}
-[data-theme="dark"] .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
-[data-theme="dark"] .hover\:text-slate-900:hover{color:var(--ink) !important}
-[data-theme="dark"] .hover\:text-slate-700:hover{color:var(--text) !important}
-[data-theme="dark"] .hover\:text-blue-700:hover{color:var(--primary) !important}
-[data-theme="dark"] .hover\:text-blue-800:hover{color:var(--primary-hover) !important}
-[data-theme="dark"] .hover\:border-slate-400:hover{border-color:var(--border-strong) !important}
-[data-theme="dark"] .hover\:bg-red-50:hover{background-color:var(--red-light) !important}
-[data-theme="dark"] .hover\:bg-blue-50\/50:hover{background-color:rgba(99,102,241,.10) !important}
-[data-theme="dark"] .bg-blue-50{background-color:var(--primary-light) !important}
-[data-theme="dark"] .bg-green-50{background-color:var(--green-light) !important}
-[data-theme="dark"] .bg-amber-50{background-color:var(--amber-light) !important}
-[data-theme="dark"] .bg-red-50{background-color:var(--red-light) !important}
-[data-theme="dark"] .text-blue-700{color:var(--primary) !important}
-[data-theme="dark"] .text-blue-600{color:var(--primary) !important}
-[data-theme="dark"] .text-brand-blue{color:var(--primary) !important}
-[data-theme="dark"] .text-brand-green{color:var(--green) !important}
-[data-theme="dark"] .text-green-700{color:var(--green) !important}
-[data-theme="dark"] .text-green-600{color:var(--green) !important}
-[data-theme="dark"] .text-amber-700{color:var(--amber) !important}
-[data-theme="dark"] .text-amber-600{color:var(--amber) !important}
-[data-theme="dark"] .text-red-600{color:var(--red) !important}
-[data-theme="dark"] .text-red-700{color:var(--red) !important}
-[data-theme="dark"] .bg-navy-700{background-color:var(--sidebar-bg) !important}
-[data-theme="dark"] .text-white{color:var(--ink) !important}
-[data-theme="dark"] .border-white\/10{border-color:rgba(255,255,255,.06) !important}
-[data-theme="dark"] .hover\:bg-white\/10:hover{background-color:rgba(255,255,255,.06) !important}
-[data-theme="dark"] .hover\:bg-white\/5:hover{background-color:rgba(255,255,255,.03) !important}
-[data-theme="dark"] .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
+.dark body{background:var(--bg);color:var(--text)}
+.dark .bg-white{background-color:var(--surface) !important}
+.dark .bg-slate-100{background-color:var(--bg) !important}
+.dark .bg-slate-50{background-color:var(--surface-2) !important}
+.dark .bg-slate-900\/50{background-color:rgba(0,0,0,.60) !important}
+.dark .text-slate-900{color:var(--ink) !important}
+.dark .text-slate-700{color:var(--text) !important}
+.dark .text-slate-600{color:var(--muted) !important}
+.dark .text-slate-500{color:var(--muted) !important}
+.dark .text-slate-400{color:var(--faint) !important}
+.dark .text-slate-300{color:var(--faint) !important}
+.dark .border-slate-200{border-color:var(--border) !important}
+.dark .border-slate-100{border-color:var(--border) !important}
+.dark .divide-slate-200 > *{border-color:var(--border) !important}
+.dark .divide-slate-100 > *{border-color:var(--border) !important}
+.dark .ring-slate-200{--tw-ring-color:var(--border) !important}
+.dark .hover\:bg-slate-100:hover{background-color:var(--surface-hover) !important}
+.dark .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
+.dark .hover\:text-slate-900:hover{color:var(--ink) !important}
+.dark .hover\:text-slate-700:hover{color:var(--text) !important}
+.dark .hover\:text-blue-700:hover{color:var(--primary) !important}
+.dark .hover\:text-blue-800:hover{color:var(--primary-hover) !important}
+.dark .hover\:border-slate-400:hover{border-color:var(--border-strong) !important}
+.dark .hover\:bg-red-50:hover{background-color:var(--red-light) !important}
+.dark .hover\:bg-blue-50\/50:hover{background-color:rgba(99,102,241,.10) !important}
+.dark .bg-blue-50{background-color:var(--primary-light) !important}
+.dark .bg-green-50{background-color:var(--green-light) !important}
+.dark .bg-amber-50{background-color:var(--amber-light) !important}
+.dark .bg-red-50{background-color:var(--red-light) !important}
+.dark .text-blue-700{color:var(--primary) !important}
+.dark .text-blue-600{color:var(--primary) !important}
+.dark .text-brand-blue{color:var(--primary) !important}
+.dark .text-brand-green{color:var(--green) !important}
+.dark .text-green-700{color:var(--green) !important}
+.dark .text-green-600{color:var(--green) !important}
+.dark .text-amber-700{color:var(--amber) !important}
+.dark .text-amber-600{color:var(--amber) !important}
+.dark .text-red-600{color:var(--red) !important}
+.dark .text-red-700{color:var(--red) !important}
+.dark .bg-navy-700{background-color:var(--sidebar-bg) !important}
+.dark .text-white{color:var(--ink) !important}
+.dark .border-white\/10{border-color:rgba(255,255,255,.06) !important}
+.dark .hover\:bg-white\/10:hover{background-color:rgba(255,255,255,.06) !important}
+.dark .hover\:bg-white\/5:hover{background-color:rgba(255,255,255,.03) !important}
+.dark .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
 /* Header sticky bar in dark mode */
-[data-theme="dark"] header.sticky-top{background:rgba(17,24,39,.92) !important;border-bottom-color:var(--border) !important}
+.dark header.sticky-top{background:rgba(17,24,39,.92) !important;border-bottom-color:var(--border) !important}
 /* Admin-specific component overrides for dark mode */
-[data-theme="dark"] .admin-card{background:var(--surface);border-color:var(--border)}
-[data-theme="dark"] .admin-card-header{border-bottom-color:var(--border)}
-[data-theme="dark"] .admin-table thead th{background:var(--surface-2);color:var(--muted)}
-[data-theme="dark"] .admin-table tbody td{border-bottom-color:var(--border);color:var(--text)}
-[data-theme="dark"] .admin-table tbody tr:hover{background:var(--surface-hover)}
-[data-theme="dark"] .admin-table a{color:var(--ink)}
-[data-theme="dark"] .admin-table a:hover{color:var(--primary)}
-[data-theme="dark"] .admin-stat-card{background:linear-gradient(180deg,var(--surface) 0%,var(--surface-2) 100%);border-color:var(--border)}
-[data-theme="dark"] .admin-stat-card-value{color:var(--ink)}
-[data-theme="dark"] .admin-stat-card-label{color:var(--muted)}
-[data-theme="dark"] .admin-filter-bar{background:var(--surface);border-color:var(--border)}
-[data-theme="dark"] .input{background:var(--surface-2);border-color:var(--border);color:var(--ink)}
-[data-theme="dark"] .input::placeholder{color:var(--faint)}
-[data-theme="dark"] .input:focus{background:var(--surface);border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.16)}
-[data-theme="dark"] .btn-primary{background:var(--primary);box-shadow:0 1px 2px rgba(99,102,241,.30)}
-[data-theme="dark"] .btn-primary:hover{background:var(--primary-hover)}
-[data-theme="dark"] .btn-secondary{background:var(--surface-2);border-color:var(--border);color:var(--text)}
-[data-theme="dark"] .btn-secondary:hover{background:var(--surface-hover);border-color:var(--border-strong)}
-[data-theme="dark"] .admin-empty{color:var(--muted)}
-[data-theme="dark"] .admin-empty h3{color:var(--ink)}
-[data-theme="dark"] .admin-empty-ic{background:var(--surface-hover);color:var(--faint)}
-[data-theme="dark"] .admin-badge-ok{background:var(--green-light);color:var(--green)}
-[data-theme="dark"] .admin-badge-info{background:var(--primary-light);color:var(--primary)}
-[data-theme="dark"] .admin-badge-wait{background:var(--amber-light);color:var(--amber)}
-[data-theme="dark"] .admin-badge-off{background:var(--surface-hover);color:var(--muted)}
-[data-theme="dark"] .admin-badge-bad{background:var(--red-light);color:var(--red)}
+.dark .admin-card{background:var(--surface);border-color:var(--border)}
+.dark .admin-card-header{border-bottom-color:var(--border)}
+.dark .admin-table thead th{background:var(--surface-2);color:var(--muted)}
+.dark .admin-table tbody td{border-bottom-color:var(--border);color:var(--text)}
+.dark .admin-table tbody tr:hover{background:var(--surface-hover)}
+.dark .admin-table a{color:var(--ink)}
+.dark .admin-table a:hover{color:var(--primary)}
+.dark .admin-stat-card{background:linear-gradient(180deg,var(--surface) 0%,var(--surface-2) 100%);border-color:var(--border)}
+.dark .admin-stat-card-value{color:var(--ink)}
+.dark .admin-stat-card-label{color:var(--muted)}
+.dark .admin-filter-bar{background:var(--surface);border-color:var(--border)}
+.dark .input{background:var(--surface-2);border-color:var(--border);color:var(--ink)}
+.dark .input::placeholder{color:var(--faint)}
+.dark .input:focus{background:var(--surface);border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.16)}
+.dark .btn-primary{background:var(--primary);box-shadow:0 1px 2px rgba(99,102,241,.30)}
+.dark .btn-primary:hover{background:var(--primary-hover)}
+.dark .btn-secondary{background:var(--surface-2);border-color:var(--border);color:var(--text)}
+.dark .btn-secondary:hover{background:var(--surface-hover);border-color:var(--border-strong)}
+.dark .admin-empty{color:var(--muted)}
+.dark .admin-empty h3{color:var(--ink)}
+.dark .admin-empty-ic{background:var(--surface-hover);color:var(--faint)}
+.dark .admin-badge-ok{background:var(--green-light);color:var(--green)}
+.dark .admin-badge-info{background:var(--primary-light);color:var(--primary)}
+.dark .admin-badge-wait{background:var(--amber-light);color:var(--amber)}
+.dark .admin-badge-off{background:var(--surface-hover);color:var(--muted)}
+.dark .admin-badge-bad{background:var(--red-light);color:var(--red)}
 /* Low stock progress bar */
 .admin-stock-bar{height:6px;border-radius:3px;background:var(--surface-hover);overflow:hidden;flex:1;min-width:40px}
 .admin-stock-bar-fill{height:100%;border-radius:3px;transition:width .4s var(--ease)}

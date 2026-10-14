@@ -34,20 +34,20 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
             }
             var savedTheme = localStorage.getItem('rtp-admin-theme');
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
             }
         } catch (e) { /* storage unavailable */ }
     </script>
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900">
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:m-2 focus:rounded-lg focus:bg-navy-700 focus:px-4 focus:py-2 focus:text-white">Skip to content</a>
+<body class="h-screen overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[60] focus:m-2 focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white">Skip to content</a>
 
-    <div class="flex min-h-screen">
+    <div class="flex h-screen">
         <!-- Mobile drawer backdrop -->
         <div class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" data-sidebar-backdrop></div>
 
-        <!-- Sidebar — sticky on desktop, drawer on mobile. Internal scroll for long nav. -->
-        <aside class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-navy-700 text-slate-200 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
+        <!-- Sidebar — flex child on desktop (never scrolls), off-canvas drawer on mobile. -->
+        <aside class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-navy-700 text-slate-200 transition-transform duration-200 lg:relative lg:h-screen lg:shrink-0 lg:translate-x-0" data-sidebar aria-label="Admin navigation">
             <!-- Brand header — sticky at top of sidebar -->
             <div class="flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-5 bg-navy-800/40 backdrop-blur-sm">
                 <a href="<?= e(url('/admin/dashboard')) ?>" class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10 hover:bg-white/20 transition-colors" title="Dashboard" aria-label="RTP home">
@@ -127,9 +127,9 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
             <?= \App\Support\View::component('icon', ['name' => 'chevron-down', 'class' => 'h-4 w-4 -rotate-90']) ?>
         </button>
 
-        <!-- Main column -->
-        <div class="flex min-w-0 flex-1 flex-col">
-            <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 sm:px-6">
+        <!-- Main column — full height, only <main> scrolls -->
+        <div class="flex min-w-0 flex-1 flex-col h-screen">
+            <header class="shrink-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/95 dark:bg-slate-900/95 dark:border-slate-800 px-4 sm:px-6">
                 <button type="button" class="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100" data-nav-toggle aria-label="Open navigation">
                     <?= \App\Support\View::component('icon', ['name' => 'menu', 'class' => 'h-5 w-5']) ?>
                 </button>
@@ -243,15 +243,11 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
                 </form>
             </div>
 
-            <main id="main-content" class="flex-1 p-4 sm:p-6">
+            <main id="main-content" class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
                 <?= \App\Support\View::component('breadcrumbs', ['items' => $breadcrumbs ?? null, 'pageTitle' => $pageTitle ?? null]) ?>
                 <?= \App\Support\View::component('flash') ?>
                 <?= $content ?? '' ?>
             </main>
-
-            <footer class="border-t border-slate-200 px-6 py-3 text-center text-xs text-slate-400">
-                <?= e(\App\Support\Config::get('app.name')) ?> — v<?= e(\App\Support\Config::get('app.version')) ?>
-            </footer>
         </div>
     </div>
 
@@ -264,7 +260,7 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
             var darkIcon = document.querySelector('.theme-icon-dark');
 
             function syncIcons() {
-                var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                var isDark = document.documentElement.classList.contains('dark');
                 if (lightIcon) lightIcon.classList.toggle('hidden', isDark);
                 if (darkIcon) darkIcon.classList.toggle('hidden', !isDark);
             }
@@ -272,14 +268,8 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
 
             if (toggle) {
                 toggle.addEventListener('click', function () {
-                    var current = document.documentElement.getAttribute('data-theme');
-                    var next = current === 'dark' ? 'light' : 'dark';
-                    if (next === 'light') {
-                        document.documentElement.removeAttribute('data-theme');
-                    } else {
-                        document.documentElement.setAttribute('data-theme', 'dark');
-                    }
-                    try { localStorage.setItem('rtp-admin-theme', next); } catch (e) {}
+                    var isDark = document.documentElement.classList.toggle('dark');
+                    try { localStorage.setItem('rtp-admin-theme', isDark ? 'dark' : 'light'); } catch (e) {}
                     syncIcons();
                 });
             }

@@ -16,7 +16,12 @@
 </nav>
 
 <div class="mx-auto max-w-7xl px-4 sm:px-6 pb-12">
-    <h1 class="text-2xl font-bold tracking-tight text-navy-700">Shopping cart</h1>
+    <div class="flex items-center justify-between gap-3">
+        <h1 class="text-2xl font-bold tracking-tight text-navy-700">Shopping cart</h1>
+        <?php if ($cart['count'] > 0): ?>
+        <span class="text-sm font-medium text-slate-500"><?= (int) $cart['count'] ?> item<?= $cart['count'] > 1 ? 's' : '' ?></span>
+        <?php endif; ?>
+    </div>
 
     <?php if ($cart['count'] === 0): ?>
         <?php /* ====== Empty cart state ====== */ ?>
@@ -184,7 +189,43 @@
                         <a href="<?= e(url('/page/returns')) ?>" class="hover:text-slate-600">Return policy</a> · <a href="<?= e(url('/page/warranty')) ?>" class="hover:text-slate-600">Warranty</a>
                     </p>
                 </div>
+
+                <?php /* Mobile sticky checkout bar — sits above the bottom tabbar */ ?>
+                <?php if (!$cart['has_unavailable']): ?>
+                <div class="lg:hidden fixed left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-lg" style="bottom:calc(72px + env(safe-area-inset-bottom,0px))">
+                    <div class="flex items-center justify-between gap-3 px-4 py-3">
+                        <div>
+                            <p class="text-[10px] uppercase text-slate-400">Total</p>
+                            <p class="text-lg font-bold text-navy-700"><?= money($estimatedGrandTotal) ?></p>
+                        </div>
+                        <a href="<?= e(url('/checkout')) ?>" class="inline-flex items-center gap-2 rounded-lg bg-brand-blue px-6 py-2.5 text-sm font-semibold text-white">
+                            Checkout
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <?php endif; ?>
             </aside>
+        </div>
+
+        <?php /* Trust signals */ ?>
+        <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+                Quality Checked
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Secure Checkout
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12"/><path d="M15 18h-5"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+                Fast Delivery
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"/><path d="m9 12 2 2 4-4"/></svg>
+                7-Day Return
+            </div>
         </div>
     <?php endif; ?>
 </div>

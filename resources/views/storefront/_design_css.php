@@ -32,7 +32,8 @@ section[id]{scroll-margin-top:16px}
 .count{position:absolute;top:1px;right:-1px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#2563EB;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
 .link-btn{background:none;border:0;color:#2563EB;font-weight:700;font-size:14px;min-height:44px;padding:0 8px;cursor:pointer}
 .link-btn:hover{text-decoration:underline;text-underline-offset:3px}
-.announce{background:#060614;color:#C9D5E4;font-size:13px}
+.announce{background:#060614;color:#C9D5E4;font-size:13px;overflow:hidden;max-height:60px;transition:max-height .3s cubic-bezier(.2,.7,.2,1),opacity .25s ease}
+.announce.hide{max-height:0;opacity:0}
 .announce-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 16px;padding-block:8px;text-align:center}
 .announce a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .site-hdr{background:#fff;border-bottom:1px solid #D5DEE9;position:relative;z-index:40}

@@ -315,6 +315,30 @@ $_isAccount = (str_starts_with($_tabbarPath, '/account') && !$_isWish)
 </div>
 
 <script>
+  // Scroll-aware announcement bar: hide on scroll-down, show on scroll-up.
+  (function () {
+    var announce = document.querySelector('.announce');
+    if (!announce) return;
+    var lastY = window.scrollY || 0;
+    var ticking = false;
+    function onScroll() {
+      var y = window.scrollY || 0;
+      if (y > lastY && y > 80) {
+        announce.classList.add('hide');
+      } else {
+        announce.classList.remove('hide');
+      }
+      lastY = y;
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(onScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+  })();
+
   // Mobile nav drawer toggle (both header + sidebar).
   document.addEventListener('click', function (e) {
     var t = e.target.closest('[data-nav-toggle]');

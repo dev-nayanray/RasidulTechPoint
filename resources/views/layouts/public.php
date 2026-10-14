@@ -318,6 +318,32 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
             t.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
 
+        // Scroll-aware announcement bar: hide on scroll-down, show on scroll-up.
+        (function () {
+            var announce = document.querySelector('.announce');
+            if (!announce) return;
+            var lastY = window.scrollY || 0;
+            var ticking = false;
+            function onScroll() {
+                var y = window.scrollY || 0;
+                if (y > lastY && y > 80) {
+                    // Scrolling down + past 80px → hide announcement bar
+                    announce.classList.add('hide');
+                } else {
+                    // Scrolling up OR near the top → show announcement bar
+                    announce.classList.remove('hide');
+                }
+                lastY = y;
+                ticking = false;
+            }
+            window.addEventListener('scroll', function () {
+                if (!ticking) {
+                    window.requestAnimationFrame(onScroll);
+                    ticking = true;
+                }
+            }, { passive: true });
+        })();
+
         // Dropdown panels: open/close for account, wishlist, cart icons.
         // Each .dd-wrap is the positioning context; .dd-panel opens below its icon.
         (function () {

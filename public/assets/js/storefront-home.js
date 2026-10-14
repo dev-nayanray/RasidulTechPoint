@@ -123,3 +123,28 @@ document.addEventListener('keydown', (e) => {
 
 // Initialize compare system on the homepage.
 initCompare();
+
+// Scroll-aware announcement bar: hide on scroll-down, show on scroll-up.
+(() => {
+  const announce = document.querySelector('.announce');
+  if (!announce) return;
+  let lastY = window.scrollY || 0;
+  let ticking = false;
+  function onScroll() {
+    const y = window.scrollY || 0;
+    if (y > lastY && y > 80) {
+      announce.classList.add('hide');
+    } else {
+      
+      announce.classList.remove('hide');
+    }
+    lastY = y;
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(onScroll);
+      ticking = true;
+    }
+  }, { passive: true });
+})();

@@ -42,23 +42,23 @@ $s['chips'] = array_slice($s['chips'], 0, 3);
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 <div class="space-y-1.5">
                     <label class="block text-sm font-medium text-slate-700">Nav label *</label>
-                    <input name="nav_label" value="<?= e($s['nav_label'] ?? '') ?>" class="input" maxlength="20" placeholder="Aero 14" required>
+                    <input name="nav_label" value="<?= e($s['nav_label'] ?? '') ?>" class="input" maxlength="20" placeholder="Budget Deals" required>
                 </div>
                 <div class="space-y-1.5">
                     <label class="block text-sm font-medium text-slate-700">Badge text</label>
-                    <input name="badge_text" value="<?= e($s['badge_text'] ?? '') ?>" class="input" maxlength="24" placeholder="New arrival">
+                    <input name="badge_text" value="<?= e($s['badge_text'] ?? '') ?>" class="input" maxlength="24" placeholder="Dubai Imported">
                 </div>
                 <div class="space-y-1.5 sm:col-span-2">
                     <label class="block text-sm font-medium text-slate-700">Category label</label>
-                    <input name="category_label" value="<?= e($s['category_label'] ?? '') ?>" class="input" maxlength="40" placeholder="Ultrabook / 14 inch">
+                    <input name="category_label" value="<?= e($s['category_label'] ?? '') ?>" class="input" maxlength="40" placeholder="Business Laptops">
                 </div>
                 <div class="space-y-1.5 sm:col-span-2">
                     <label class="block text-sm font-medium text-slate-700">Headline *</label>
-                    <input name="headline" value="<?= e($s['headline'] ?? '') ?>" class="input" maxlength="80" placeholder="1.12 kg of all-day power." required>
+                    <input name="headline" value="<?= e($s['headline'] ?? '') ?>" class="input" maxlength="80" placeholder="Authentic laptops. Honest prices." required>
                 </div>
                 <div class="space-y-1.5 sm:col-span-2">
                     <label class="block text-sm font-medium text-slate-700">Description</label>
-                    <textarea name="description" rows="2" class="input" maxlength="220" placeholder="The Aero 14 pairs a 2.8K OLED panel with 18 hours of battery..."><?= e($s['description'] ?? '') ?></textarea>
+                    <textarea name="description" rows="2" class="input" maxlength="220" placeholder="Imported directly from Dubai and inspected unit by unit before listing..."><?= e($s['description'] ?? '') ?></textarea>
                 </div>
             </div>
         </section>
@@ -70,7 +70,7 @@ $s['chips'] = array_slice($s['chips'], 0, 3);
                 <?php foreach ($s['specs'] as $i => $spec): ?>
                 <div class="space-y-1.5">
                     <label class="block text-xs font-medium text-slate-500">Spec <?= $i + 1 ?></label>
-                    <input name="specs[<?= $i ?>]" value="<?= e(is_array($spec) ? ($spec['text'] ?? '') : $spec) ?>" class="input" maxlength="40" placeholder="16 GB LPDDR5X">
+                    <input name="specs[<?= $i ?>]" value="<?= e(is_array($spec) ? ($spec['text'] ?? '') : $spec) ?>" class="input" maxlength="40" placeholder="Tested & quality checked">
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -121,7 +121,7 @@ $s['chips'] = array_slice($s['chips'], 0, 3);
                 </div>
                 <div class="space-y-1.5">
                     <label class="block text-sm font-medium text-slate-700">Ghost word</label>
-                    <input name="ghost_word" value="<?= e($s['ghost_word'] ?? '') ?>" class="input" maxlength="40" placeholder="Aero (defaults to first word of nav_label)">
+                    <input name="ghost_word" value="<?= e($s['ghost_word'] ?? '') ?>" class="input" maxlength="40" placeholder="Budget (defaults to first word of nav_label)">
                 </div>
                 <div class="space-y-1.5">
                     <label class="block text-sm font-medium text-slate-700">Link to product (optional)</label>
@@ -223,7 +223,7 @@ $s['chips'] = array_slice($s['chips'], 0, 3);
                 </div>
                 <div class="space-y-1.5">
                     <label class="block text-sm font-medium text-slate-700">Image alt text</label>
-                    <input name="laptop_image_alt" value="<?= e($s['laptop_image_alt'] ?? '') ?>" class="input" maxlength="190" placeholder="Aero 14 magnesium ultrabook">
+                    <input name="laptop_image_alt" value="<?= e($s['laptop_image_alt'] ?? '') ?>" class="input" maxlength="190" placeholder="Dell Latitude 7490 open lid, front view">
                 </div>
             </div>
         </section>

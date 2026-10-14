@@ -1,11 +1,18 @@
 <?php /** @var array $model
  *  @var list<array{id:int,sku:string,condition_grade:string,selling_price:string} $units
+ *  @var list<array{id:int,file_path:string,alt:?string,is_primary:int}> $images
  */
 $hasUnits = ($units ?? []) !== [];
 $lowestPrice = $hasUnits ? min(array_map(fn ($u) => (float) $u['selling_price'], $units)) : null;
 $highestPrice = $hasUnits ? max(array_map(fn ($u) => (float) $u['selling_price'], $units)) : null;
 $isPriceRange = $hasUnits && $lowestPrice !== $highestPrice;
 $fromPrice = $lowestPrice !== null ? money($lowestPrice) : '—';
+
+// Gallery: only images whose file actually exists (missing files fall back to placeholder).
+$gallery = array_values(array_filter($images ?? [], fn ($g) => is_file(BASE_PATH . '/public/' . $g['file_path'])));
+$galleryAlt = fn ($g) => trim((string) ($g['alt'] ?? '')) !== ''
+    ? (string) $g['alt']
+    : 'Illustrative image of ' . $model['name'] . ' — not an actual unit photo';
 ?>
 <nav class="text-xs text-slate-500 px-4 sm:px-6" aria-label="Breadcrumb">
     <ol class="mx-auto max-w-7xl flex items-center gap-1.5 py-4">
@@ -24,22 +31,32 @@ $fromPrice = $lowestPrice !== null ? money($lowestPrice) : '—';
 
         <?php /* ====== Left: Image gallery ====== */ ?>
         <section>
+            <?php if ($gallery !== []): ?>
+            <div class="rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 aspect-[4/3] ring-1 ring-slate-200 overflow-hidden flex items-center justify-center">
+                <img src="<?= e(url($gallery[0]['file_path'])) ?>" alt="<?= e($galleryAlt($gallery[0])) ?>"
+                     class="h-full w-full object-cover" id="product-main-image">
+            </div>
+            <?php if (count($gallery) > 1): ?>
+            <div class="mt-3 grid grid-cols-5 gap-2">
+                <?php foreach ($gallery as $gi => $g): ?>
+                    <button type="button"
+                            class="product-gallery-thumb aspect-square rounded-lg ring-1 <?= $gi === 0 ? 'ring-brand-blue' : 'ring-slate-200' ?> overflow-hidden bg-slate-100"
+                            data-full-src="<?= e(url($g['file_path'])) ?>" data-full-alt="<?= e($galleryAlt($g)) ?>"
+                            aria-label="Show image <?= $gi + 1 ?> of <?= count($gallery) ?>">
+                        <img src="<?= e(url($g['file_path'])) ?>" alt="<?= e($galleryAlt($g)) ?>" class="h-full w-full object-cover">
+                    </button>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+            <p class="mt-2 text-xs text-slate-400">Catalog images are illustrative. Photos of the exact unit you select are shown after you pick a unit below.</p>
+            <?php else: ?>
             <div class="rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 aspect-[4/3] ring-1 ring-slate-200 overflow-hidden flex items-center justify-center">
                 <span class="text-slate-400">
                     <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-20 w-20']) ?>
                 </span>
             </div>
-            <?php /* Thumbnails (no real photos yet — placeholder strip) */ ?>
-            <div class="mt-3 grid grid-cols-5 gap-2">
-                <div class="aspect-square rounded-lg bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-slate-300">
-                    <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-6 w-6']) ?>
-                </div>
-                <div class="aspect-square rounded-lg bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-slate-300 text-xs">No photo</div>
-                <div class="aspect-square rounded-lg bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-slate-300 text-xs">No photo</div>
-                <div class="aspect-square rounded-lg bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-slate-300 text-xs">No photo</div>
-                <div class="aspect-square rounded-lg bg-slate-100 ring-1 ring-slate-200 flex items-center justify-center text-slate-300 text-xs">No photo</div>
-            </div>
-            <p class="mt-2 text-xs text-slate-400">Photos of the exact unit you select are shown after you pick a unit below.</p>
+            <p class="mt-2 text-xs text-slate-400">No catalog photos yet. Photos of the exact unit you select are shown after you pick a unit below.</p>
+            <?php endif; ?>
         </section>
 
         <?php /* ====== Right: Buy box ====== */ ?>

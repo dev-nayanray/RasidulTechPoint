@@ -65,10 +65,18 @@
                 <?php foreach ($cart['items'] as $item): ?>
                     <article class="rounded-xl bg-white ring-1 ring-slate-200 p-4 sm:p-5 <?= empty($item['available']) ? 'opacity-75' : '' ?>">
                         <div class="flex gap-4">
-                            <?php /* Image placeholder */ ?>
+                            <?php
+                            $img = trim((string) ($item['image_path'] ?? ''));
+                            $imgOk = $img !== '' && is_file(BASE_PATH . '/public/' . $img);
+                            ?>
+                            <?php if ($imgOk): ?>
+                            <img src="<?= e(url($img)) ?>" alt="Illustrative photo of <?= e($item['brand_name'] . ' ' . $item['name']) ?> — not the exact unit"
+                                 class="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg ring-1 ring-slate-200 shrink-0">
+                            <?php else: ?>
                             <div class="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400">
                                 <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-10 w-10']) ?>
                             </div>
+                            <?php endif; ?>
 
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-semibold uppercase tracking-wider text-brand-blue"><?= e($item['brand_name']) ?></p>

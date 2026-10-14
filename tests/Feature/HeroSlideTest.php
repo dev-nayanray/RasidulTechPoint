@@ -144,7 +144,7 @@ final class HeroSlideTest extends TestCase
         $this->pdo()->exec('DELETE FROM hero_slides');
         $migration = require BASE_PATH . '/database/migrations/037_hero_slider_v2.php';
         $migration['up']($this->pdo());
-        $count = (int) $this->pdo()->query("SELECT COUNT(*) FROM hero_slides WHERE nav_label IN ('Aero 14','Forge 16','Studio 16','Pro 15')")->fetchColumn();
+        $count = (int) $this->pdo()->query("SELECT COUNT(*) FROM hero_slides WHERE nav_label IN ('Authentic Used','Budget Deals','Business','Visit Us')")->fetchColumn();
         $this->assertGreaterThanOrEqual(4, $count);
         // Safety net: at least 4 active+published slides on a fresh install
         $activePublished = (int) $this->pdo()->query("SELECT COUNT(*) FROM hero_slides WHERE is_active = 1 AND status = 'published'")->fetchColumn();
@@ -615,7 +615,7 @@ final class HeroSlideTest extends TestCase
         $html = $resp->body();
         $this->assertStringContainsString('id="hero"', $html);
         $this->assertSame(4, preg_match_all('/<article class="hs-slide /', $html));
-        $this->assertStringContainsString('Aero 14', $html);
+        $this->assertStringContainsString('Authentic laptops. Honest prices.', $html);
         $this->assertStringContainsString('data-autoplay="1"', $html);
     }
 

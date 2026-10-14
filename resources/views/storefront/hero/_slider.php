@@ -49,7 +49,7 @@ $pauseHover = !array_key_exists('pause_on_hover', $heroSettings) || !empty($hero
 
   <div class="hs-slides" aria-live="<?= $autoplay ? 'off' : 'polite' ?>" data-hero-slides>
     <?php foreach ($heroSlides as $i => $slide):
-        echo View::partial('storefront/hero/_slide', [
+        echo \App\Support\View::partial('storefront/hero/_slide', [
             'slide' => $slide,
             'i' => $i,
             'isActive' => $i === 0,

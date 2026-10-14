@@ -377,6 +377,9 @@ final class AccountController
         $stmt = Connection::pdo()->prepare(
             'SELECT wi.*, pm.name, pm.slug, pm.processor, pm.ram_gb, pm.storage_type, pm.storage_capacity_gb,
                     pm.display_size_inches, b.name AS brand_name,
+                    (SELECT pi.file_path FROM product_images pi
+                      WHERE pi.product_model_id = wi.product_model_id
+                      ORDER BY pi.is_primary DESC, pi.sort_order ASC LIMIT 1) AS image_path,
                     (SELECT COUNT(*) FROM inventory_units iu WHERE iu.product_model_id = wi.product_model_id AND iu.status = "available") AS available_units,
                     (SELECT MIN(iu.selling_price) FROM inventory_units iu WHERE iu.product_model_id = wi.product_model_id AND iu.status = "available") AS from_price
              FROM wishlist_items wi

@@ -80,7 +80,8 @@ Demo staff accounts (only with `--demo`, local env): `manager@rtp.local`,
 | `php bin/migrate.php status` | Lists applied/pending migrations. |
 | `php bin/migrate.php rollback` | Rolls back the last batch (only migrations defining a reversible `down`). |
 | `php bin/seed.php` | Idempotent core seeds: roles, permissions, role matrix, business profile, locations, settings. |
-| `php bin/seed.php --demo` | Local-only demo data; refuses outside `APP_ENV=local`. |
+| `php bin/seed.php --demo` | Local-only demo data (incl. the 140-model demo catalog below); refuses outside `APP_ENV=local`. |
+| `php bin/demo-catalog.php` | Local-only demo laptop catalog: 140 demo models across 10 brands/9 categories with generated illustrative images and demo inventory units. `seed` (default) is idempotent; `verify` audits counts, uniqueness, and image files; `purge` removes ONLY `is_demo=1` rows/files and never touches real products. Refuses outside `APP_ENV=local`. |
 | `php bin/create-admin.php` | Interactive secure first-admin setup (`--name= --email= --password=` supported). Requires a ≥10-char password with letters and numbers; refuses when an active owner exists unless `--force`. |
 | `php bin/test.php` | Runs the test suite against `rasidul_tech_point_test` (created automatically). |
 | `php bin/check.php` | Structural self-check (no DB needed): every route maps to an existing controller method, every view/component target exists, JS imports resolve, built assets and critical files are present. Exits non-zero on any gap — suitable for CI. |

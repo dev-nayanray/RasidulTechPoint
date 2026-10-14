@@ -17,14 +17,20 @@ $display = !empty($product['display_size_inches'])
 $price = $product['from_price'] !== null ? money($product['from_price']) : '—';
 $available = (int) ($product['available_units'] ?? 0);
 $url = url('/shop/' . $product['slug']);
+$image = trim((string) ($product['image_path'] ?? ''));
+$imageOk = $image !== '' && is_file(BASE_PATH . '/public/' . $image);
+$alt = 'Illustrative image of ' . $brand . ' ' . $name . ' — not an actual unit photo';
 ?>
 <article class="group flex flex-col rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden transition hover:ring-brand-blue hover:shadow-md">
-    <?php /* Image placeholder — clean SVG pattern until real product
-            photos are uploaded via the admin. */ ?>
     <a href="<?= e($url) ?>" class="relative aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden" aria-label="<?= e($brand . ' ' . $name) ?>">
-        <span class="text-slate-400 group-hover:text-brand-blue transition">
-            <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-12 w-12']) ?>
-        </span>
+        <?php if ($imageOk): ?>
+            <img src="<?= e(url($image)) ?>" alt="<?= e($alt) ?>" loading="lazy"
+                 class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]">
+        <?php else: ?>
+            <span class="text-slate-400 group-hover:text-brand-blue transition">
+                <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-12 w-12']) ?>
+            </span>
+        <?php endif; ?>
         <?php /* Quality-checked badge — only shown when units are actually
                   available (i.e. inspected + listed). */ ?>
         <?php if ($available > 0): ?>
@@ -61,5 +67,25 @@ $url = url('/shop/' . $product['slug']);
             <a href="<?= e($url) ?>" class="inline-flex items-center justify-center rounded-lg bg-navy-700 px-3 py-2 text-xs font-semibold text-white hover:bg-navy-800 transition">View details</a>
             <a href="<?= e($url) ?>#add-to-cart" class="inline-flex items-center justify-center rounded-lg bg-brand-blue px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition">Buy now</a>
         </div>
+
+        <?php /* Compare toggle + machine-readable spec payload for compare.js */ ?>
+        <button type="button" class="compare-toggle mt-2 w-full" data-compare-toggle="<?= e($product['slug']) ?>" aria-pressed="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+            <span data-compare-label>Compare</span>
+        </button>
+        <script type="application/json" data-compare-data="<?= e($product['slug']) ?>"><?= json_encode([
+            'slug' => (string) $product['slug'],
+            'name' => (string) ($product['name'] ?? ''),
+            'brand' => (string) ($product['brand_name'] ?? ''),
+            'price' => $product['from_price'] !== null ? money($product['from_price']) : '—',
+            'processor' => (string) ($product['processor'] ?? '—'),
+            'ram' => !empty($product['ram_gb']) ? $product['ram_gb'] . ' GB' : '—',
+            'storage' => !empty($product['storage_capacity_gb']) ? $product['storage_capacity_gb'] . ' GB ' . ($product['storage_type'] ?? '') : '—',
+            'display' => !empty($product['display_size_inches']) ? number_format((float) $product['display_size_inches'], 1) . '"' . (!empty($product['resolution']) ? ' ' . $product['resolution'] : '') : '—',
+            'graphics' => (string) ($product['graphics'] ?? '—'),
+            'units' => (int) ($product['available_units'] ?? 0),
+            'image' => $imageOk ? url($image) : null,
+            'url' => $url,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     </div>
 </article>

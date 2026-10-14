@@ -358,7 +358,9 @@ section[id]{scroll-margin-top:16px}
 .s-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid #F1F5F9}
 .s-item:last-child{border-bottom:0}
 .s-item:hover{background:#E3ECFD}
-.s-thumb{width:36px;height:36px;border-radius:8px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex:none;color:#94A3B8}
+.s-thumb{width:36px;height:36px;border-radius:8px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex:none;color:#94A3B8;overflow:hidden}
+.s-thumb-img{padding:0;background:#E9EFF8}
+.s-thumb-img img{width:100%;height:100%;object-fit:cover;display:block}
 .s-info{flex:1;min-width:0}
 .s-name{font-size:13.5px;font-weight:600;color:#14243A;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s-meta{font-size:11px;color:#64748B;margin-top:1px}
@@ -646,5 +648,172 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .budget-card,.why,.brand,.pcard,.dash-quick-card,.step-card,.tile{transition:none !important;transform:none !important}
   .why::after,.brand::after{transition:none !important}
   .faq-ic{transition:none !important}
+}
+
+/* ============================================================
+   v3 — HOME STOREFRONT REFRESH
+   Premium product cards (Featured + Deals), category tiles with
+   icon badges, and brand cards with live stock counts.
+   (additive layer — appended last so it wins the cascade)
+   ============================================================ */
+
+/* ---- Featured product cards ---- */
+.pgrid{gap:20px}
+.pcard{position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid #D5DEE9;border-radius:18px;overflow:hidden;min-width:0;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.pcard:hover{transform:translateY(-4px);border-color:#B9CDEB;box-shadow:0 18px 40px rgba(20,36,58,.13)}
+.pcard-media{position:relative;display:block;aspect-ratio:4/3;overflow:hidden}
+.pcard-img-el{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
+.pcard:hover .pcard-img-el,.dcard:hover .pcard-img-el{transform:scale(1.04)}
+.pcard-media-ph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background-color:#E9EFF8;
+  background-image:
+    radial-gradient(circle at 50% 40%,rgba(255,255,255,.95),rgba(255,255,255,0) 52%),
+    radial-gradient(circle at 85% 90%,rgba(37,99,235,.10),transparent 52%),
+    radial-gradient(circle at 10% 92%,rgba(22,163,74,.09),transparent 46%),
+    radial-gradient(#C6D2E0 1px,transparent 1.5px);
+  background-size:auto,auto,auto,16px 16px;
+  color:#93A7C0;
+}
+.pcard-media-ph svg{width:88px;height:88px;stroke-width:1.4;filter:drop-shadow(0 14px 16px rgba(20,36,58,.16));transition:transform .25s ease}
+.pcard:hover .pcard-media-ph svg,.dcard:hover .pcard-media-ph svg{transform:translateY(-4px) scale(1.05)}
+.pcard-badges{position:absolute;top:10px;left:10px;right:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;pointer-events:none}
+.badge-qc,.badge-low,.badge-oos{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;box-shadow:0 2px 8px rgba(20,36,58,.10)}
+.badge-qc{color:#15803D}
+.badge-qc .ic{width:13px;height:13px}
+.badge-low{color:#B45309}
+.badge-oos{color:#475569}
+.pcard-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.pcard-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pcard-brand{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#1D4FD8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard-brand::before{content:"";flex:none;width:6px;height:6px;border-radius:2px;background:#2563EB}
+.pcard-stock{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#15803D;white-space:nowrap}
+.pcard-stock i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(22,163,74,.14)}
+.pcard-stock--low{color:#B45309}
+.pcard-stock--low i{box-shadow:0 0 0 3px rgba(245,158,11,.16)}
+.pcard-name{font-size:16px;font-weight:800;letter-spacing:-.01em;line-height:1.25;color:#14243A;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:color .15s}
+.pcard-name:hover{color:#1D4FD8}
+.spec-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.spec-chip{display:flex;flex-direction:column;gap:2px;min-width:0;background:#F4F7FB;border:1px solid #E8EEF5;border-radius:10px;padding:7px 9px 6px}
+.spec-chip i{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#7C8DA5}
+.spec-chip b{font-size:12.5px;font-weight:700;color:#26364D;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid #EAF0F6}
+.pcard-price{margin:0;display:flex;flex-direction:column;gap:1px}
+.pcard-price small{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#8494A9}
+.pcard-price strong{font-size:21px;font-weight:800;letter-spacing:-.02em;color:#14243A;font-variant-numeric:tabular-nums;line-height:1.1}
+.pcard-cta{white-space:nowrap}
+.pcard-cta .ic{width:16px;height:16px;transition:transform .18s ease}
+.pcard-cta:hover .ic{transform:translateX(3px)}
+
+/* ---- Special Deals: horizontal deal cards ---- */
+.deal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,500px),1fr));gap:20px}
+.dcard{position:relative;display:grid;grid-template-columns:212px minmax(0,1fr);background:#fff;border:1px solid #D5DEE9;border-radius:18px;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.dcard::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;background:linear-gradient(90deg,#2563EB 0%,#16A34A 100%)}
+.dcard:hover{transform:translateY(-4px);border-color:#B9CDEB;box-shadow:0 18px 40px rgba(20,36,58,.13)}
+.dcard-media{position:relative;display:block;overflow:hidden}
+.dcard-media .pcard-media-ph{position:absolute;inset:0}
+.dcard-pill{position:absolute;left:12px;bottom:12px;display:inline-flex;align-items:center;gap:5px;background:rgba(37,99,235,.92);color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;padding:5px 11px;border-radius:999px;backdrop-filter:blur(4px);box-shadow:0 6px 16px rgba(37,99,235,.35)}
+.dcard-pill .ic{width:13px;height:13px}
+.dcard-body{padding:14px 18px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+@media(max-width:560px){
+  .dcard{grid-template-columns:1fr}
+  .dcard-media{aspect-ratio:4/3}
+}
+
+/* ---- Category tiles: icon badge + bottom-anchored copy ---- */
+.tile{display:flex;flex-direction:column;justify-content:flex-start;gap:0;min-height:158px;padding:20px;border-radius:18px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.tile:hover{transform:translateY(-4px);border-color:#9FB6DE;box-shadow:0 16px 34px rgba(20,36,58,.11)}
+.t-navy:hover,.t-ink:hover{border-color:#34527F;box-shadow:0 16px 34px rgba(1,1,29,.45)}
+.tile-ic{position:relative;z-index:1;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none;margin-bottom:16px;transition:transform .2s ease}
+.tile-ic .ic{width:22px;height:22px}
+.tile:hover .tile-ic{transform:scale(1.08) rotate(-3deg)}
+.t-ic-blue{background:#E3ECFD;color:#1D4FD8}
+.t-ic-lime{background:rgba(122,251,1,.16);color:#7AFB01}
+.t-ic-green{background:#DCF3E2;color:#15803D}
+.t-ic-amber{background:#FDF0D7;color:#B45309}
+.t-ic-violet{background:#ECE7FD;color:#6D28D9}
+.t-ic-cyan{background:#DBF3F7;color:#0E7490}
+.t-ic-rose{background:#FBE4EA;color:#BE185D}
+.t-mint .tile-ic.t-ic-green,.t-tint .tile-ic.t-ic-violet{background:#fff}
+.tile-copy{position:relative;z-index:1;margin-top:auto;display:flex;flex-direction:column;gap:4px}
+.tile-name{font-size:17.5px}
+.tile-go{font-size:10.5px}
+.tile-go .ic{transition:transform .2s ease}
+.tile:hover .tile-go .ic{transform:translateX(3px)}
+
+/* ---- Brand cards: monogram + live stock count ---- */
+.brand-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,225px),1fr));gap:14px}
+.brand-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#fff;border:1px solid #D5DEE9;border-radius:16px;position:relative;overflow:hidden;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.brand-card:hover{transform:translateY(-3px);border-color:#2563EB;box-shadow:0 12px 28px rgba(37,99,235,.12)}
+.brand-mono{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex:none;letter-spacing:-.02em}
+.brand-logo{width:52px;height:40px;border-radius:10px;background:#fff;border:1px solid #E1E8F0;display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden;padding:4px}
+.brand-logo img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.brand-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.brand-name{font-size:15px;font-weight:800;color:#14243A;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-sub{font-size:12px;color:#64748B;font-weight:500}
+.brand-arrow{width:18px;height:18px;margin-left:auto;color:#B3C0D0;flex:none;transition:color .16s ease,transform .16s ease}
+.brand-card:hover .brand-arrow{color:#2563EB;transform:translateX(3px)}
+.brand-cards .brand-card:nth-child(6n+1) .brand-mono{background:#E3ECFD;color:#1D4FD8}
+.brand-cards .brand-card:nth-child(6n+2) .brand-mono{background:#DCF3E2;color:#15803D}
+.brand-cards .brand-card:nth-child(6n+3) .brand-mono{background:#FDF0D7;color:#B45309}
+.brand-cards .brand-card:nth-child(6n+4) .brand-mono{background:#ECE7FD;color:#6D28D9}
+.brand-cards .brand-card:nth-child(6n+5) .brand-mono{background:#DBF3F7;color:#0E7490}
+.brand-cards .brand-card:nth-child(6n+6) .brand-mono{background:#FBE4EA;color:#BE185D}
+
+/* ---- Customer review cards (v4) ---- */
+.rv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.rv-card{margin:0;background:#fff;border:1px solid #D5DEE9;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:10px;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.rv-card:hover{transform:translateY(-3px);border-color:#B9CDEB;box-shadow:0 12px 28px rgba(20,36,58,.10)}
+.rv-stars{display:flex;gap:2px}
+.rv-star{width:17px;height:17px;fill:#D7DFEA;stroke:none}
+.rv-star--on{fill:#F5A623}
+.rv-title{font-size:15.5px;font-weight:800;letter-spacing:-.01em;color:#14243A;line-height:1.3}
+.rv-body{margin:0;font-size:14px;color:#475569;line-height:1.6}
+.rv-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid #EAF0F6}
+.rv-who{font-size:13px;font-weight:700;color:#14243A}
+.rv-demo-badge{display:inline-flex;align-items:center;min-height:22px;padding:0 9px;border-radius:999px;background:#FDF0D7;color:#92400E;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border:1px solid #F3D9A4}
+.rv-product{font-size:11px;color:#2563EB;margin-top:2px}
+.rv-product:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---- Header dropdown positioning (v4 fix) ----
+   .dd-wrap must be the positioning context so every panel opens directly
+   below ITS OWN icon; previously panels anchored to the sticky header and
+   stacked up on its right edge. Panels right-align with their icon, so on
+   mobile they extend leftwards into the viewport (never overflow). */
+.dd-wrap{position:relative}
+.dd-panel{right:0;min-width:min(280px,calc(100vw - 24px))}
+
+/* ---- Product compare (v4: shop listings) ---- */
+.compare-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:0 10px;border-radius:8px;border:1px solid #C9D5E2;background:#fff;color:#475569;font-size:12px;font-weight:700;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+.compare-toggle:hover{border-color:#2563EB;color:#2563EB}
+.compare-toggle[aria-pressed="true"]{background:#14243A;border-color:#14243A;color:#fff}
+.cmp-modal{position:fixed;inset:0;z-index:75;background:rgba(20,36,58,.6);display:none;align-items:center;justify-content:center;padding:16px}
+.cmp-modal.open{display:flex}
+.cmp-modal-card{background:#fff;border-radius:20px;width:min(960px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:22px 22px 26px;box-shadow:0 30px 70px rgba(1,1,29,.4)}
+.cmp-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cmp-modal-head h2{font-size:22px;font-weight:800;letter-spacing:-.02em;color:#14243A}
+.cmp-modal .cmp-close{font-size:26px;line-height:1;background:none;border:0;color:#475569;cursor:pointer;min-width:40px;min-height:40px}
+.cmp-modal .cmp-close:hover{color:#14243A}
+.cmp-modal-note{margin:6px 0 16px;font-size:12.5px;color:#64748B}
+.cmp-modal .cmp-scroll{overflow-x:auto}
+.cmp-modal .cmp-inner{min-width:560px;border-collapse:collapse;width:100%}
+.cmp-modal .cmp-inner th,.cmp-modal .cmp-inner td{padding:10px 12px;border-bottom:1px solid #E6ECF3;text-align:left;font-size:13.5px;vertical-align:top}
+.cmp-modal .cmp-inner .ck{width:110px;color:#64748B;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.cmp-modal .cmp-inner .cv{font-weight:600;color:#26364D;min-width:130px}
+.cmp-modal .chead{vertical-align:bottom;min-width:150px}
+.cmp-modal .chead img{width:100%;max-width:150px;aspect-ratio:4/3;object-fit:cover;border-radius:10px;display:block;margin-bottom:8px;border:1px solid #E6ECF3}
+.cmp-modal .chead .cmp-noimg{display:flex;align-items:center;justify-content:center;width:150px;aspect-ratio:4/3;border-radius:10px;background:#F1F5F9;color:#94A3B8;font-size:11px;font-weight:700;margin-bottom:8px}
+.cmp-modal .chead b{display:block;font-size:13.5px;color:#14243A;line-height:1.3;margin-bottom:4px}
+.cmp-modal .chead a{font-size:12px;color:#2563EB;font-weight:700}
+.cmp-modal .chead a:hover{text-decoration:underline;text-underline-offset:3px}
+.cmp-modal .cmp-price{color:#14243A;font-size:15px}
+.cmp-modal .cmp-ok{color:#15803D;font-weight:700}
+.cmp-modal .cmp-no{color:#B45309;font-weight:700}
+.cmp-toast{position:fixed;left:50%;transform:translateX(-50%) translateY(8px);bottom:88px;z-index:80;background:#14243A;color:#fff;border-radius:12px;padding:10px 18px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.cmp-toast.open{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Bar sits above the mobile tab bar; toast above the bar */
+@media(max-width:960px){.cmp-bar{bottom:72px}.cmp-toast{bottom:132px}}
+@media(prefers-reduced-motion:reduce){
+  .pcard,.dcard,.brand-card,.tile,.tile-ic,.pcard-cta .ic,.tile-go .ic,.brand-arrow,.pcard-media-ph svg,.rv-card{transition:none !important;transform:none !important}
 }
 

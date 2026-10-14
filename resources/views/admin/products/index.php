@@ -38,6 +38,7 @@
         <table class="admin-table">
             <thead>
             <tr>
+                <th class="w-16">Image</th>
                 <th>Model</th>
                 <th>Brand</th>
                 <th>Category</th>
@@ -48,9 +49,25 @@
             </thead>
         <tbody class="divide-y divide-slate-100">
             <?php foreach ($models as $model): ?>
+                <?php
+                $thumb = trim((string) ($model['image_path'] ?? ''));
+                $thumbOk = $thumb !== '' && is_file(BASE_PATH . '/public/' . $thumb);
+                ?>
                 <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3">
+                        <a href="<?= e(url('/admin/products/' . $model['id'])) ?>" class="block h-10 w-14 rounded-md bg-slate-100 ring-1 ring-slate-200 overflow-hidden flex items-center justify-center">
+                            <?php if ($thumbOk): ?>
+                                <img src="<?= e(url($thumb)) ?>" alt="" class="h-full w-full object-cover">
+                            <?php else: ?>
+                                <span class="text-slate-300 text-[10px] font-semibold uppercase tracking-wide">No img</span>
+                            <?php endif; ?>
+                        </a>
+                    </td>
                     <td class="px-4 py-3 font-medium text-slate-900">
                         <a href="<?= e(url('/admin/products/' . $model['id'])) ?>" class="hover:text-blue-700"><?= e($model['name']) ?></a>
+                        <?php if ((int) ($model['is_demo'] ?? 0) === 1): ?>
+                            <span class="ml-2 inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800 ring-1 ring-amber-300" title="Demo catalog record (local testing only) — removable via bin/demo-catalog.php purge">Demo</span>
+                        <?php endif; ?>
                     </td>
                     <td class="px-4 py-3 text-slate-500"><?= e($model['brand_name']) ?></td>
                     <td class="px-4 py-3 text-slate-500"><?= e($model['category_name']) ?></td>

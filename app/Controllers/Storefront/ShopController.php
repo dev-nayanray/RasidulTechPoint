@@ -28,6 +28,7 @@ final class ShopController
         $products = $catalog->publishedForStore($q, 0, 0, 8, 0);
         $results = [];
         foreach ($products as $p) {
+            $img = trim((string) ($p['image_path'] ?? ''));
             $results[] = [
                 'name' => $p['name'],
                 'brand' => $p['brand_name'] ?? '',
@@ -37,6 +38,7 @@ final class ShopController
                 'url' => url('/shop/' . $p['slug']),
                 'processor' => $p['processor'] ?? '',
                 'ram' => isset($p['ram_gb']) ? $p['ram_gb'] . ' GB' : '',
+                'image' => $img !== '' && is_file(BASE_PATH . '/public/' . $img) ? url($img) : null,
             ];
         }
         return Response::json([
@@ -84,11 +86,13 @@ final class ShopController
         }
 
         $units = (new InventoryRepository())->availableUnitsForModel((int) $model['id']);
+        $images = $catalog->imagesForModel((int) $model['id']);
 
         return Response::html(View::render('storefront/product', [
             'pageTitle' => $model['name'],
             'model' => $model,
             'units' => $units,
+            'images' => $images,
             'metaTitle' => $model['seo_title'] ?: $model['name'] . ' — Rasidul Tech Point',
             'metaDescription' => $model['seo_description'] ?: 'Buy authentic used ' . $model['name'] . ' imported from Dubai.',
         ]));

@@ -1,3 +1,5 @@
+document.documentElement.setAttribute("data-app-ran","1");
+try{__appErr=null;}catch(e){}
 /**
  * Rasidul Tech Point — frontend entry point (ES modules, no framework).
  * Each concern lives in its own module; wiring happens through data-* attributes.
@@ -15,4 +17,6 @@ import './forms';
 import './order-form';
 import './mobile-search';
 import './page-progress';
+import './product-gallery';
+import './compare';
 import './chart';

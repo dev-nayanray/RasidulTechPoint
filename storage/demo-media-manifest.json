@@ -1,0 +1,385 @@
+{
+    "downloaded_at": "2026-10-14T07:54:10+00:00",
+    "source": "Wikimedia Commons",
+    "files": {
+        "uploads/brands/dell-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Dell_logo_2016.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Dell_logo_2016.svg"
+        },
+        "uploads/brands/hp-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:HP_logo_2012.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/HP_logo_2012.svg"
+        },
+        "uploads/brands/lenovo-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Lenovo_logo_2015.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Lenovo_logo_2015.svg"
+        },
+        "uploads/brands/asus-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Asus_blue_logo.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Asus_blue_logo.svg"
+        },
+        "uploads/brands/acer-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Acer-Logo_2001.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Acer-Logo_2001.svg"
+        },
+        "uploads/brands/apple-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Apple_logo_black.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Apple_logo_black.svg"
+        },
+        "uploads/brands/microsoft-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Microsoft_logo_(2012).svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Microsoft_logo_%282012%29.svg"
+        },
+        "uploads/brands/msi-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Micro-Star_International_logo.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Micro-Star_International_logo.svg"
+        },
+        "uploads/brands/toshiba-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Toshiba_logo.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Toshiba_logo.svg"
+        },
+        "uploads/brands/samsung-logo.png": {
+            "kind": "logo",
+            "commons_title": "File:Samsung_Logo.svg",
+            "source_url": "https://commons.wikimedia.org/wiki/Samsung_Logo.svg"
+        },
+        "uploads/products/demo-real-dell-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Dell Inspiron 1525 250618.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADell_Inspiron_1525_250618.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Shielder95",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-dell-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Dell Inspiron 1525.jpeg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADell_Inspiron_1525.jpeg",
+            "note": "replaced after manual visual curation",
+            "author": "User:Evano1van",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+        "uploads/products/demo-real-dell-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Dell Latitude E6540.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADell_Latitude_E6540.jpg",
+            "author": "PolarisLakewell",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-dell-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Dell U3415W monitor and Latitude laptop (1).jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ADell_U3415W_monitor_and_Latitude_laptop_%281%29.jpg",
+            "author": "William Murphy",
+            "license": "CC BY-SA 2.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/2.0"
+        },
+        "uploads/products/demo-real-hp-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:HP EliteBook 840 G4.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AHP_EliteBook_840_G4.png",
+            "note": "replaced after manual visual curation",
+            "author": "Dienthoaiquangcao12",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-hp-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:HP Laptop Notebook.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AHP_Laptop_Notebook.png",
+            "author": "Walkercaki12",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-hp-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:HP EliteBook Folio 8490m (1).jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AHP_EliteBook_Folio_8490m_%281%29.jpg",
+            "author": "WKA Zisan",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-hp-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:HP EliteBook 850 G5.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AHP_EliteBook_850_G5.png",
+            "author": "Infinatious",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-lenovo-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:IBM Thinkpad R51.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AIBM_Thinkpad_R51.jpg",
+            "author": "André Karwath aka Aka",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-lenovo-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Top cover of a closed Lenovo ThinkPad X220 laptop.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ATop_cover_of_a_closed_Lenovo_ThinkPad_X220_laptop.jpg",
+            "author": "Siarhei V",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-lenovo-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:ThinkPad T480 and T470s.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AThinkPad_T480_and_T470s.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Elizabeth K. Joseph",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0"
+        },
+        "uploads/products/demo-real-lenovo-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:ThinkPad T480.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AThinkPad_T480.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Elizabeth K. Joseph",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0"
+        },
+        "uploads/products/demo-real-asus-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Asus ROG Laptop Keyboard.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAsus_ROG_Laptop_Keyboard.jpg",
+            "author": "Aditya Oberai",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-asus-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:ASUS-laptop-A6B00R.JPG",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AASUS-laptop-A6B00R.JPG",
+            "author": "Arto Hautala, fi:User:Downloaded",
+            "license": "CC BY-SA 3.0",
+            "license_url": "http://creativecommons.org/licenses/by-sa/3.0/"
+        },
+        "uploads/products/demo-real-asus-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Laptop Asus.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALaptop_Asus.jpg",
+            "author": "Losstreak",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0"
+        },
+        "uploads/products/demo-real-asus-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Asus TP2015.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAsus_TP2015.png",
+            "author": "JoshuaReen",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-acer-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Acer Aspire V3-772G-54208G50Makk.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAcer_Aspire_V3-772G-54208G50Makk.jpg",
+            "author": "Someone Not Awful",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-acer-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Acer aspire 4930G.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAcer_aspire_4930G.jpg",
+            "author": "Jeff777BC",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+        "uploads/products/demo-real-acer-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Acer Aspire A515-51.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAcer_Aspire_A515-51.jpg",
+            "author": "Woofstarcat",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-acer-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Acer Aspire 5250.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AAcer_Aspire_5250.png",
+            "author": "AnVuong1222004",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-apple-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Macbook Air.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMacbook_Air.png",
+            "author": "嘉傑",
+            "license": "Public domain"
+        },
+        "uploads/products/demo-real-apple-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Macbook Air.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMacbook_Air.jpg",
+            "author": "https://es.ifixit.com/User/524640/Sam+Lionheart",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+        },
+        "uploads/products/demo-real-apple-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:MacBook Pro 2019 13 inch.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMacBook_Pro_2019_13_inch.jpg",
+            "author": "Laptopsarena",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-apple-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Laptop Programmcode.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ALaptop_Programmcode.jpg",
+            "author": "Negative Space",
+            "license": "CC0",
+            "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+        },
+        "uploads/products/demo-real-microsoft-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:SurfaceLaptop.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASurfaceLaptop.png",
+            "author": "WikIan",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-microsoft-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:A platinum Microsoft Surface Laptop Go.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AA_platinum_Microsoft_Surface_Laptop_Go.jpg",
+            "author": "Ckazemi",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-microsoft-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Microsoft Surface Laptop 7.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMicrosoft_Surface_Laptop_7.jpg",
+            "author": "StrangeApparition2011",
+            "license": "CC0",
+            "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+        },
+        "uploads/products/demo-real-microsoft-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Surface Laptop Studio - 4.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASurface_Laptop_Studio_-_4.jpg",
+            "author": "KKPCW",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+        },
+        "uploads/products/demo-real-msi-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:MSI Thin GF63 12UC-667 HOF2192-HDR RAW-Export 1 cens.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMSI_Thin_GF63_12UC-667_HOF2192-HDR_RAW-Export_1_cens.png",
+            "author": "PantheraLeo1359531",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0"
+        },
+        "uploads/products/demo-real-msi-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:MSI Gaming Laptop on wood floor.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMSI_Gaming_Laptop_on_wood_floor.jpg",
+            "author": "Kurt Kaiser",
+            "license": "CC0",
+            "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+        },
+        "uploads/products/demo-real-msi-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:MSI Thin GF63 12UC-667 HOF2231-HDR RAW-Export.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMSI_Thin_GF63_12UC-667_HOF2231-HDR_RAW-Export.png",
+            "note": "replaced after manual visual curation",
+            "author": "PantheraLeo1359531",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0"
+        },
+        "uploads/products/demo-real-msi-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:MSI Thin GF63 12UC-667 HOF2183-HDR RAW-Export.png",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AMSI_Thin_GF63_12UC-667_HOF2183-HDR_RAW-Export.png",
+            "author": "PantheraLeo1359531",
+            "license": "CC BY 4.0",
+            "license_url": "https://creativecommons.org/licenses/by/4.0"
+        },
+        "uploads/products/demo-real-toshiba-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Toshiba Satellite laptop (1).jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AToshiba_Satellite_laptop_%281%29.jpg",
+            "author": "Roland Tanglao",
+            "license": "CC0",
+            "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+        },
+        "uploads/products/demo-real-toshiba-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Toshiba Satellite Pro (white background).jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AToshiba_Satellite_Pro_%28white_background%29.jpg",
+            "author": "Smial (talk)",
+            "license": "FAL",
+            "license_url": "http://artlibre.org/licence/lal/en"
+        },
+        "uploads/products/demo-real-toshiba-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Toshiba Satellite M305D-S4829 laptop.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AToshiba_Satellite_M305D-S4829_laptop.jpg",
+            "author": "Jannet",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0"
+        },
+        "uploads/products/demo-real-toshiba-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Toshiba Satellite laptop (3).jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AToshiba_Satellite_laptop_%283%29.jpg",
+            "author": "Barry Mulling",
+            "license": "CC BY-SA 2.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/2.0"
+        },
+        "uploads/products/demo-real-samsung-1.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:ATIV Book 9 Plus 1.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3AATIV_Book_9_Plus_1.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Samsung Belgium",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0"
+        },
+        "uploads/products/demo-real-samsung-2.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Samsung ATIV Book 9 Lite (White).jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASamsung_ATIV_Book_9_Lite_%28White%29.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Samsung Belgium",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0"
+        },
+        "uploads/products/demo-real-samsung-3.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Samsung Notebook 9 With Pen.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASamsung_Notebook_9_With_Pen.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Rob Pegoraro",
+            "license": "CC BY-SA 2.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/2.0"
+        },
+        "uploads/products/demo-real-samsung-4.jpg": {
+            "kind": "laptop photo",
+            "commons_title": "File:Samsung ATIV Book 9 Plus.jpg",
+            "source_url": "https://commons.wikimedia.org/wiki/File%3ASamsung_ATIV_Book_9_Plus.jpg",
+            "note": "replaced after manual visual curation",
+            "author": "Intel in Deutschland",
+            "license": "CC BY-SA 2.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/2.0"
+        }
+    }
+}

@@ -64,8 +64,12 @@ document.addEventListener('click', (e) => {
           if (!data.results || data.results.length === 0) {
             dd.innerHTML = '<div class="s-empty">No laptops found. Try Dell, HP, Lenovo.</div>';
           } else {
+            const LAPTOP_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg>';
+            const thumb = (r) => r.image
+              ? '<span class="s-thumb s-thumb-img"><img src="' + esc(r.image) + '" alt="" loading="lazy"></span>'
+              : '<span class="s-thumb">' + LAPTOP_ICON + '</span>';
             dd.innerHTML = data.results.map((r) =>
-              '<a class="s-item" href="' + r.url + '"><span class="s-thumb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M2 9v6l10 5 10-5V9"/></svg></span><div class="s-info"><div class="s-name">'
+              '<a class="s-item" href="' + r.url + '">' + thumb(r) + '<div class="s-info"><div class="s-name">'
                 + esc(r.brand + ' ' + r.name) + '</div><div class="s-meta">' + esc(r.processor) + (r.ram ? ' · ' + esc(r.ram) : '') + (r.units > 0 ? ' · In stock' : '')
                 + '</div></div><span class="s-price">' + esc(r.price) + '</span></a>'
             ).join('') + (data.more ? '<a class="s-more" href="' + data.search_url + '">See all results →</a>' : '');

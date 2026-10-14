@@ -39,12 +39,20 @@ final class HomeController
                 'Warranty with every laptop',
             ];
         }
-        $brands = array_filter(
+        // One grouped query for per-brand available-unit counts (used both to
+        // filter the list and to render real stock counts on the brand cards).
+        $brandUnits = $catalog->availableUnitCountsByBrand();
+        $brands = array_values(array_filter(
             $catalog->brands(onlyActive: true),
-            fn ($b) => $this->brandHasAvailableUnits((int) $b['id']),
-        );
+            fn (array $b): bool => ($brandUnits[(int) $b['id']] ?? 0) > 0,
+        ));
+        foreach ($brands as &$b) {
+            $b['available_units'] = $brandUnits[(int) $b['id']] ?? 0;
+        }
+        unset($b);
         $budgetRanges = $this->budgetRanges();
         $faqs = $content->publishedFaqs();
+        $reviews = (new \App\Services\ReviewService())->published(6);
 
         // home.php is self-contained (has its own DOCTYPE, header, footer,
         // and inline CSS). Use View::partial() (NOT View::render) to avoid
@@ -58,6 +66,7 @@ final class HomeController
             'brands' => $brands,
             'budgetRanges' => $budgetRanges,
             'faqs' => $faqs,
+            'reviews' => $reviews,
             'metaTitle' => 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops',
             'metaDescription' => 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.',
         ]));
@@ -85,17 +94,5 @@ final class HomeController
             ['label' => '৳25,000 – ৳40,000', 'min' => 25000, 'max' => 40000],
             ['label' => '৳40,000+', 'min' => 40000, 'max' => null],
         ];
-    }
-
-    private function brandHasAvailableUnits(int $brandId): bool
-    {
-        $stmt = \App\Support\Database\Connection::pdo()->prepare(
-            "SELECT 1 FROM inventory_units iu
-             JOIN product_models pm ON pm.id = iu.product_model_id
-             WHERE pm.brand_id = ? AND iu.status = 'available'
-             LIMIT 1"
-        );
-        $stmt->execute([$brandId]);
-        return $stmt->fetchColumn() !== false;
     }
 }

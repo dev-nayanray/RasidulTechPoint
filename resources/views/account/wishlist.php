@@ -15,9 +15,19 @@
 <?php else: ?>
     <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <?php foreach ($items as $item): ?>
+            <?php
+            $img = trim((string) ($item['image_path'] ?? ''));
+            $imgOk = $img !== '' && is_file(BASE_PATH . '/public/' . $img);
+            ?>
             <div class="rounded-xl bg-white ring-1 ring-slate-200 overflow-hidden">
-                <a href="<?= e(url('/shop/' . $item['slug'])) ?>" class="block aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                    <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-12 w-12 text-slate-400']) ?>
+                <a href="<?= e(url('/shop/' . $item['slug'])) ?>" class="block aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+                    <?php if ($imgOk): ?>
+                        <img src="<?= e(url($img)) ?>" alt="Illustrative photo of <?= e($item['brand_name'] . ' ' . $item['name']) ?> — not the exact unit" loading="lazy" class="h-full w-full object-cover hover:scale-[1.03] transition duration-300">
+                    <?php else: ?>
+                        <span class="flex h-full w-full items-center justify-center">
+                            <?= \App\Support\View::component('icon', ['name' => 'box', 'class' => 'h-12 w-12 text-slate-400']) ?>
+                        </span>
+                    <?php endif; ?>
                 </a>
                 <div class="p-4">
                     <p class="text-xs font-semibold uppercase text-brand-blue"><?= e($item['brand_name']) ?></p>

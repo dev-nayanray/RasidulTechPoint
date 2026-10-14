@@ -179,6 +179,23 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
         </a>
     </nav>
 
+    <?php /* ====== Compare bar + modal (listing pages only — never on the homepage) ====== */ ?>
+    <div class="cmp-bar" data-cmp-bar>
+      <div class="cmp-items" data-cmp-items></div>
+      <div data-cmp-action></div>
+      <button class="cmp-close" type="button" data-cmp-close aria-label="Close compare bar">×</button>
+    </div>
+    <div class="cmp-modal" data-cmp-modal role="dialog" aria-modal="true" aria-label="Compare laptops">
+      <div class="cmp-modal-card">
+        <div class="cmp-modal-head">
+          <h2>Compare laptops</h2>
+          <button type="button" class="cmp-close" data-cmp-modal-close aria-label="Close comparison">×</button>
+        </div>
+        <p class="cmp-modal-note">Prices are live "from" prices for each model. Condition and exact unit details are shown on each product page.</p>
+        <div class="cmp-scroll" data-cmp-table></div>
+      </div>
+    </div>
+
     <script>
         // Mobile nav drawer toggle.
         document.addEventListener('click', function (e) {

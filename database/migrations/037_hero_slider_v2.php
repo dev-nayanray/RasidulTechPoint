@@ -11,8 +11,9 @@ declare(strict_types=1);
  * colors, visual_type, laptop image fields, status (draft/published).
  *
  * Also creates a single-row hero_settings table (autoplay, announcement,
- * max_slides) and seeds the 4 reference slides (Aero 14, Forge 16, Studio 16,
- * Pro 15) on first run.
+ * max_slides) and seeds the 4 business reference slides (Rasidul Tech Point:
+ * Dubai-import authenticity, budget deals, business lines, store visit)
+ * on first run.
  *
  * Reversible: the 'down' callback drops only the v2 columns + the new table,
  * leaving the original v1 columns intact.
@@ -24,56 +25,56 @@ return [
         // any global redeclaration risk on migration re-runs.
         $referenceSlides = function (): array {
             return [
-                // 1. Aero 14 — mist teal
+                // 1. Brand promise — navy amber
                 [
-                    'nav_label' => 'Aero 14', 'badge_text' => 'New arrival', 'category_label' => 'Ultrabook / 14 inch',
-                    'headline' => '1.12 kg of all-day power.', 'description' => 'The Aero 14 pairs a 2.8K OLED panel with 18 hours of battery, in a magnesium body that disappears into your bag.',
-                    'specs' => ['16 GB LPDDR5X', '1 TB NVMe SSD', 'Wi-Fi 7'],
-                    'chips' => [['value' => '2.8K OLED', 'label' => '120 Hz panel'], ['value' => '18 h', 'label' => 'battery life'], ['value' => '1.12 kg', 'label' => 'magnesium body']],
-                    'currency_symbol' => '$', 'price' => 1299.00, 'old_price' => 1499.00,
-                    'installment_months' => 12, 'monthly_price' => 108.00, 'installment_note' => '0% interest, free setup',
-                    'ghost_word' => 'Aero', 'product_id' => null,
-                    'theme_preset' => 'mist_teal', 'visual_type' => 'screen_dunes',
-                    'primary_cta_label' => 'Shop Aero 14', 'primary_cta_url' => '/shop', 'secondary_cta_label' => 'Compare specs', 'secondary_cta_url' => '/shop?compare=1',
+                    'nav_label' => 'Authentic Used', 'badge_text' => 'Dubai Imported', 'category_label' => '100% authentic used laptops',
+                    'headline' => 'Authentic laptops. Honest prices.', 'description' => 'Imported directly from Dubai and inspected unit by unit before listing — real specs, honest condition notes, no inflated discounts.',
+                    'specs' => ['Tested & quality checked', 'Transparent specs & condition', 'Warranty options on stock'],
+                    'chips' => [['value' => 'Dubai', 'label' => 'direct import'], ['value' => '4 steps', 'label' => 'inspection process'], ['value' => '100%', 'label' => 'authentic used stock']],
+                    'currency_symbol' => '৳', 'price' => null, 'old_price' => null,
+                    'installment_months' => null, 'monthly_price' => null, 'installment_note' => '',
+                    'ghost_word' => 'Rasidul', 'product_id' => null,
+                    'theme_preset' => 'navy_amber', 'visual_type' => 'screen_business',
+                    'primary_cta_label' => 'Shop Laptops', 'primary_cta_url' => '/shop', 'secondary_cta_label' => 'How we check', 'secondary_cta_url' => '/about',
                     'status' => 'published', 'is_active' => 1, 'sort_order' => 0,
                 ],
-                // 2. Forge 16 — graphite coral
+                // 2. Budget deals — mist teal
                 [
-                    'nav_label' => 'Forge 16', 'badge_text' => 'Best seller', 'category_label' => 'Gaming / 16 inch',
-                    'headline' => 'Frames first. Heat never.', 'description' => 'A vapor chamber keeps the Forge 16 at full clock through long sessions, on a 240 Hz QHD+ display built for fast shooters.',
-                    'specs' => ['32 GB DDR5', '2 TB NVMe SSD', 'Per-key RGB'],
-                    'chips' => [['value' => '240 Hz', 'label' => 'QHD+ display'], ['value' => '8 GB', 'label' => 'GDDR6 graphics'], ['value' => 'Vapor chamber', 'label' => 'sustained clocks']],
-                    'currency_symbol' => '$', 'price' => 1599.00, 'old_price' => 1799.00,
-                    'installment_months' => 12, 'monthly_price' => 133.00, 'installment_note' => '0% interest, free setup',
-                    'ghost_word' => 'Forge', 'product_id' => null,
-                    'theme_preset' => 'graphite_coral', 'visual_type' => 'screen_gaming',
-                    'primary_cta_label' => 'Shop Forge 16', 'primary_cta_url' => '/shop', 'secondary_cta_label' => 'Compare specs', 'secondary_cta_url' => '/shop?compare=1',
+                    'nav_label' => 'Budget Deals', 'badge_text' => 'Student favorites', 'category_label' => 'Budget laptops under ৳15,000',
+                    'headline' => 'Real laptops for a student budget.', 'description' => 'Study-ready laptops with tested hardware and clear condition notes — pick a price range and see exactly what is in stock today.',
+                    'specs' => ['Starting under ৳15,000', 'Core i3 & above', 'SSD & HDD + SSD options'],
+                    'chips' => [['value' => 'Under ৳15,000', 'label' => 'budget picks'], ['value' => 'i3', 'label' => 'and up processors'], ['value' => 'In stock', 'label' => 'tested units']],
+                    'currency_symbol' => '৳', 'price' => null, 'old_price' => null,
+                    'installment_months' => null, 'monthly_price' => null, 'installment_note' => '',
+                    'ghost_word' => 'Budget', 'product_id' => null,
+                    'theme_preset' => 'mist_teal', 'visual_type' => 'screen_dunes',
+                    'primary_cta_label' => 'Shop Budget Deals', 'primary_cta_url' => '/shop?budget=1', 'secondary_cta_label' => 'All laptops', 'secondary_cta_url' => '/shop',
                     'status' => 'published', 'is_active' => 1, 'sort_order' => 1,
                 ],
-                // 3. Studio 16 — navy amber
+                // 3. Business lines — stone cobalt
                 [
-                    'nav_label' => 'Studio 16', 'badge_text' => 'Creator pick', 'category_label' => 'Creator / 16 inch',
-                    'headline' => 'Color you can sign off on.', 'description' => 'A 16 inch 4K mini-LED panel covers 100% of DCI-P3 and ships factory calibrated, with 64 GB of memory for heavy timelines.',
-                    'specs' => ['64 GB DDR5', '2 TB NVMe SSD', 'SD card reader'],
-                    'chips' => [['value' => '100% DCI-P3', 'label' => '4K mini-LED'], ['value' => '64 GB', 'label' => 'DDR5 memory'], ['value' => 'dE < 2', 'label' => 'factory calibrated']],
-                    'currency_symbol' => '$', 'price' => 2199.00, 'old_price' => 2449.00,
-                    'installment_months' => 12, 'monthly_price' => 183.00, 'installment_note' => '0% interest, free setup',
-                    'ghost_word' => 'Studio', 'product_id' => null,
-                    'theme_preset' => 'navy_amber', 'visual_type' => 'screen_creator',
-                    'primary_cta_label' => 'Shop Studio 16', 'primary_cta_url' => '/shop', 'secondary_cta_label' => 'Compare specs', 'secondary_cta_url' => '/shop?compare=1',
+                    'nav_label' => 'Business', 'badge_text' => 'Work ready', 'category_label' => 'Latitude · EliteBook · ThinkPad',
+                    'headline' => 'Business-grade laptops for real work.', 'description' => 'Dell Latitude, HP EliteBook and Lenovo ThinkPad units — processor, RAM and storage listed up front, condition on every product page.',
+                    'specs' => ['Core i5 / Core i7 options', '8–16 GB RAM', '256–512 GB SSD storage'],
+                    'chips' => [['value' => 'Dell', 'label' => 'Latitude'], ['value' => 'HP', 'label' => 'EliteBook'], ['value' => 'Lenovo', 'label' => 'ThinkPad']],
+                    'currency_symbol' => '৳', 'price' => null, 'old_price' => null,
+                    'installment_months' => null, 'monthly_price' => null, 'installment_note' => '',
+                    'ghost_word' => 'Business', 'product_id' => null,
+                    'theme_preset' => 'stone_cobalt', 'visual_type' => 'screen_business',
+                    'primary_cta_label' => 'Shop Business Laptops', 'primary_cta_url' => '/shop?q=business', 'secondary_cta_label' => 'Warranty & Support', 'secondary_cta_url' => '/contact',
                     'status' => 'published', 'is_active' => 1, 'sort_order' => 2,
                 ],
-                // 4. Pro 15 — stone cobalt
+                // 4. Store visit — graphite coral
                 [
-                    'nav_label' => 'Pro 15', 'badge_text' => 'For teams', 'category_label' => 'Business / 15.6 inch',
-                    'headline' => 'Built for a 9 to 5 that runs late.', 'description' => 'A spill-resistant keyboard, a MIL-STD-810H tested chassis, fingerprint login and 14 hours away from the charger.',
-                    'specs' => ['16 GB DDR5', '512 GB NVMe SSD', 'Windows 11 Pro'],
-                    'chips' => [['value' => '14 h', 'label' => 'battery life'], ['value' => 'MIL-STD-810H', 'label' => 'drop tested'], ['value' => 'Fingerprint', 'label' => 'one-touch login']],
-                    'currency_symbol' => '$', 'price' => 899.00, 'old_price' => 1049.00,
-                    'installment_months' => 12, 'monthly_price' => 75.00, 'installment_note' => 'Volume pricing from 5 units',
-                    'ghost_word' => 'Pro', 'product_id' => null,
-                    'theme_preset' => 'stone_cobalt', 'visual_type' => 'screen_business',
-                    'primary_cta_label' => 'Shop Pro 15', 'primary_cta_url' => '/shop', 'secondary_cta_label' => 'Compare specs', 'secondary_cta_url' => '/shop?compare=1',
+                    'nav_label' => 'Visit Us', 'badge_text' => 'Khulna store', 'category_label' => 'Online + physical store',
+                    'headline' => 'Inspect it in person, or order online.', 'description' => 'Visit Shop 110, Ground Floor, Jalil Tower, Khulna to see any laptop yourself — or order online with delivery across Bangladesh.',
+                    'specs' => ['Shop 110, Jalil Tower, Khulna', 'Hotline 01401-400041', 'Delivery across Bangladesh'],
+                    'chips' => [['value' => 'Call', 'label' => '01401-400041'], ['value' => 'Khulna', 'label' => 'Jalil Tower store'], ['value' => 'Service', 'label' => 'Khulna, Dhaka & more']],
+                    'currency_symbol' => '৳', 'price' => null, 'old_price' => null,
+                    'installment_months' => null, 'monthly_price' => null, 'installment_note' => '',
+                    'ghost_word' => 'Khulna', 'product_id' => null,
+                    'theme_preset' => 'graphite_coral', 'visual_type' => 'screen_dunes',
+                    'primary_cta_label' => 'Contact Us', 'primary_cta_url' => '/contact', 'secondary_cta_label' => 'About Us', 'secondary_cta_url' => '/about',
                     'status' => 'published', 'is_active' => 1, 'sort_order' => 3,
                 ],
             ];

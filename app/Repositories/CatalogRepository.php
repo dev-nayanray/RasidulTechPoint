@@ -30,6 +30,35 @@ final class CatalogRepository
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /** Available-unit count per brand (one grouped query) — brand_id => count. */
+    public function availableUnitCountsByBrand(): array
+    {
+        $rows = $this->pdo->query(
+            "SELECT pm.brand_id, COUNT(*) AS units
+             FROM inventory_units iu
+             JOIN product_models pm ON pm.id = iu.product_model_id
+             WHERE iu.status = 'available' AND pm.deleted_at IS NULL
+             GROUP BY pm.brand_id"
+        )->fetchAll(PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(int) $r['brand_id']] = (int) $r['units'];
+        }
+        return $out;
+    }
+
+    /** Catalog images for one model, primary first (for the storefront gallery). */
+    public function imagesForModel(int $modelId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT id, file_path, alt, is_primary, sort_order
+             FROM product_images WHERE product_model_id = ?
+             ORDER BY is_primary DESC, sort_order ASC, id ASC'
+        );
+        $stmt->execute([$modelId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     /** Paginated search by name or slug. */
     public function searchBrands(string $q, int $page, int $perPage): array
     {
@@ -397,7 +426,10 @@ final class CatalogRepository
         $offset = ($page - 1) * $perPage;
         $stmt = $this->pdo->prepare(
             "SELECT pm.*, b.name AS brand_name, c.name AS category_name,
-                    (SELECT COUNT(*) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS available_units
+                    (SELECT COUNT(*) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS available_units,
+                    (SELECT pi.file_path FROM product_images pi
+                      WHERE pi.product_model_id = pm.id
+                      ORDER BY pi.is_primary DESC, pi.sort_order ASC LIMIT 1) AS image_path
              FROM product_models pm
              JOIN brands b ON b.id = pm.brand_id
              JOIN categories c ON c.id = pm.category_id
@@ -598,7 +630,10 @@ final class CatalogRepository
                        pm.display_size_inches, pm.resolution, pm.graphics,
                        b.name AS brand_name, b.slug AS brand_slug,
                        (SELECT COUNT(*) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS available_units,
-                       (SELECT MIN(iu.selling_price) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS from_price
+                       (SELECT MIN(iu.selling_price) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS from_price,
+                       (SELECT pi.file_path FROM product_images pi
+                         WHERE pi.product_model_id = pm.id
+                         ORDER BY pi.is_primary DESC, pi.sort_order ASC LIMIT 1) AS image_path
                 FROM product_models pm
                 JOIN brands b ON b.id = pm.brand_id
                 {$where}

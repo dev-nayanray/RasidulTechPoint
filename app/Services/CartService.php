@@ -144,22 +144,27 @@ final class CartService
                 $row['current_price'] = null;
                 $row['price_changed'] = false;
                 $hasUnavailable = true;
-            } elseif ($unit['status'] !== 'available') {
-                $row['available'] = false;
-                $row['unavailable_reason'] = "This laptop is no longer available (status: {$unit['status']}).";
-                $row['current_price'] = (float) $unit['selling_price'];
-                $row['price_changed'] = (float) $unit['selling_price'] !== $item['unit_price'];
-                $hasUnavailable = true;
-                if ($row['price_changed']) $hasPriceChange = true;
             } else {
-                $row['available'] = true;
-                $row['unavailable_reason'] = null;
-                $row['current_price'] = (float) $unit['selling_price'];
-                $row['price_changed'] = (float) $unit['selling_price'] !== $item['unit_price'];
-                if ($row['price_changed']) {
-                    $hasPriceChange = true;
+                // Live catalog image for this row (covers carts stored in the
+                // session before images existed).
+                $row['image_path'] = $unit['image_path'];
+                if ($unit['status'] !== 'available') {
+                    $row['available'] = false;
+                    $row['unavailable_reason'] = "This laptop is no longer available (status: {$unit['status']}).";
+                    $row['current_price'] = (float) $unit['selling_price'];
+                    $row['price_changed'] = (float) $unit['selling_price'] !== $item['unit_price'];
+                    $hasUnavailable = true;
+                    if ($row['price_changed']) $hasPriceChange = true;
                 } else {
-                    $total += $item['unit_price'];
+                    $row['available'] = true;
+                    $row['unavailable_reason'] = null;
+                    $row['current_price'] = (float) $unit['selling_price'];
+                    $row['price_changed'] = (float) $unit['selling_price'] !== $item['unit_price'];
+                    if ($row['price_changed']) {
+                        $hasPriceChange = true;
+                    } else {
+                        $total += $item['unit_price'];
+                    }
                 }
             }
             $out[] = $row;
@@ -260,7 +265,10 @@ final class CartService
             'SELECT iu.id, iu.sku, iu.serial_number, iu.product_model_id, iu.condition_grade,
                     iu.selling_price, iu.status, pm.name, pm.processor, pm.ram_gb,
                     pm.storage_type, pm.storage_capacity_gb,
-                    b.name AS brand_name
+                    b.name AS brand_name,
+                    (SELECT pi.file_path FROM product_images pi
+                      WHERE pi.product_model_id = pm.id
+                      ORDER BY pi.is_primary DESC, pi.sort_order ASC LIMIT 1) AS image_path
              FROM inventory_units iu
              JOIN product_models pm ON pm.id = iu.product_model_id
              JOIN brands b ON b.id = pm.brand_id

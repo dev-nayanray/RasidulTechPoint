@@ -227,19 +227,22 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
     </div>
     <div class="bento">
       <?php foreach ([
-        ['Business Laptops', 'Reliable for office work', '<rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path>', 'shop?q=business', 't-navy'],
-        ['Student Laptops', 'Affordable & portable', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M6 11.5V16c3 2.5 9 2.5 12 0v-4.5"></path>', 'shop?q=student', ''],
-        ['Core i5 Laptops', 'Balanced performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i5', ''],
-        ['Core i7 Laptops', 'High performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i7', 't-tint'],
-        ['Lightweight & Portable', 'Easy to carry', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path>', 'shop?q=portable', ''],
-        ['Budget Laptops', 'Under ৳15,000', '<path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"></path><path d="M16 13h3"></path>', 'shop?budget=1', 't-mint'],
-        ['Premium Laptops', '৳40,000+', '<path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6l9-4z"></path>', 'shop?budget=4', ''],
-      ] as [$name, $desc, $icon, $link, $accent]): ?>
-        <a class="tile <?= $accent ? ' ' . $accent : '' ?>" href="<?= e(url('/' . ltrim($link, '/'))) ?>">
+        ['Business Laptops', 'Reliable for office work', '<rect x="5" y="5" width="14" height="10" rx="1.5"></rect><path d="M3 19h18"></path>', 'shop?q=business', 't-navy', 't-ic-lime'],
+        ['Student Laptops', 'Affordable & portable', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M6 11.5V16c3 2.5 9 2.5 12 0v-4.5"></path>', 'shop?q=student', '', 't-ic-blue'],
+        ['Core i5 Laptops', 'Balanced performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i5', '', 't-ic-cyan'],
+        ['Core i7 Laptops', 'High performance', '<rect x="6" y="6" width="12" height="12" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"></path>', 'shop?q=core+i7', 't-tint', 't-ic-violet'],
+        ['Lightweight & Portable', 'Easy to carry', '<path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path>', 'shop?q=portable', '', 't-ic-amber'],
+        ['Budget Laptops', 'Under ৳15,000', '<path d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"></path><path d="M16 13h3"></path>', 'shop?budget=1', 't-mint', 't-ic-green'],
+        ['Premium Laptops', '৳40,000+', '<path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6l9-4z"></path>', 'shop?budget=4', '', 't-ic-rose'],
+      ] as [$name, $desc, $icon, $link, $accent, $iconTone]): ?>
+        <a class="tile<?= $accent ? ' ' . $accent : '' ?>" href="<?= e(url('/' . ltrim($link, '/'))) ?>">
           <span class="tile-mark" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><?= $icon ?></svg></span>
-          <span class="tile-name"><?= e($name) ?></span>
-          <span class="tile-desc <?= $accent ? '' : 'tile-desc--muted' ?>"><?= e($desc) ?></span>
-          <span class="tile-go mono">View laptops <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+          <span class="tile-ic <?= $iconTone ?>" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><?= $icon ?></svg></span>
+          <span class="tile-copy">
+            <span class="tile-name"><?= e($name) ?></span>
+            <span class="tile-desc <?= $accent ? '' : 'tile-desc--muted' ?>"><?= e($desc) ?></span>
+            <span class="tile-go mono">View laptops <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+          </span>
         </a>
       <?php endforeach; ?>
     </div>
@@ -272,7 +275,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <div>
         <span class="eyebrow mono">Ready to buy</span>
         <h2>Featured Laptops</h2>
-        <p class="sub">Every card shows the specs and condition of one exact unit.</p>
+        <p class="sub">Real specs, live prices, and honest stock counts — straight from our inspected inventory.</p>
       </div>
       <a class="btn btn-sm btn-ghost" href="<?= e(url('/shop')) ?>">View all laptops</a>
     </div>
@@ -286,34 +289,45 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
     <?php else: ?>
       <div class="pgrid">
         <?php foreach (array_slice($featured, 0, 8) as $p): ?>
+          <?php
+          $units = (int) ($p['available_units'] ?? 0);
+          $purl = url('/shop/' . $p['slug']);
+          $storage = isset($p['storage_capacity_gb']) && $p['storage_capacity_gb'] !== null && (int) $p['storage_capacity_gb'] > 0
+              ? (int) $p['storage_capacity_gb'] . ' GB ' . ($p['storage_type'] ?? '')
+              : '—';
+          $img = trim((string) ($p['image_path'] ?? ''));
+          $imgOk = $img !== '' && is_file(BASE_PATH . '/public/' . $img);
+          ?>
           <article class="pcard">
-            <a class="pcard-img" href="<?= e(url('/shop/' . $p['slug'])) ?>">
-              <div class="pcard-img-ph"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
-              <span class="qc-badge"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
-              <?php if ((int)($p['available_units'] ?? 0) <= 2 && (int)($p['available_units'] ?? 0) > 0): ?>
-                <span class="low-badge">Only <?= (int)$p['available_units'] ?> left</span>
-              <?php elseif ((int)($p['available_units'] ?? 0) === 0): ?>
-                <span class="oos-badge">Out of stock</span>
+            <a class="pcard-media" href="<?= e($purl) ?>" aria-label="<?= e(($p['brand_name'] ?? '') . ' ' . ($p['name'] ?? '')) ?>">
+              <?php if ($imgOk): ?>
+                <img src="<?= e(url($img)) ?>" alt="Illustrative image of <?= e(($p['brand_name'] ?? '') . ' ' . ($p['name'] ?? '')) ?> — not an actual unit photo" loading="lazy" class="pcard-img-el">
+              <?php else: ?>
+                <div class="pcard-media-ph"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
               <?php endif; ?>
+              <div class="pcard-badges">
+                <span class="badge-qc"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
+                <?php if ($units === 0): ?><span class="badge-oos">Out of stock</span>
+                <?php elseif ($units <= 2): ?><span class="badge-low">Only <?= $units ?> left</span><?php endif; ?>
+              </div>
             </a>
             <div class="pcard-body">
-              <p class="pcard-brand"><?= e($p['brand_name'] ?? '') ?></p>
-              <a class="pcard-name" href="<?= e(url('/shop/' . $p['slug'])) ?>"><?= e($p['name'] ?? '') ?></a>
-              <dl class="pcard-specs">
-                <div><dt>CPU</dt><dd><?= e($p['processor'] ?? '—') ?></dd></div>
-                <div><dt>RAM</dt><dd><?= isset($p['ram_gb']) ? (int)$p['ram_gb'] . ' GB' : '—' ?></dd></div>
-                <div><dt>Storage</dt><dd><?= isset($p['storage_capacity_gb']) ? (int)$p['storage_capacity_gb'] . ' GB ' . ($p['storage_type'] ?? '') : '—' ?></dd></div>
-                <?php if (!empty($p['display_size_inches'])): ?>
-                  <div><dt>Display</dt><dd><?= e(number_format((float)$p['display_size_inches'], 1)) ?>"</dd></div>
-                <?php endif; ?>
-              </dl>
-              <div class="pcard-foot">
-                <div><span class="price"><?= $p['from_price'] !== null ? money($p['from_price']) : '—' ?></span></div>
-                <span class="grade grade-a">In stock: <?= (int)($p['available_units'] ?? 0) ?></span>
+              <div class="pcard-top">
+                <span class="pcard-brand"><?= e($p['brand_name'] ?? '') ?></span>
+                <span class="pcard-stock<?= $units > 0 && $units <= 2 ? ' pcard-stock--low' : '' ?>">
+                  <i aria-hidden="true"></i><?= $units === 0 ? 'Out of stock' : ($units . ' in stock') ?>
+                </span>
               </div>
-              <div class="pcard-actions">
-                <a class="btn btn-sm btn-ghost" href="<?= e(url('/shop/' . $p['slug'])) ?>">View details</a>
-                <a class="btn btn-sm btn-primary" href="<?= e(url('/shop/' . $p['slug'])) ?>#units">Add to cart</a>
+              <a class="pcard-name" href="<?= e($purl) ?>"><?= e($p['name'] ?? '') ?></a>
+              <div class="spec-chips">
+                <span class="spec-chip" title="<?= e($p['processor'] ?? '—') ?>"><i>CPU</i><b><?= e($p['processor'] ?? '—') ?></b></span>
+                <span class="spec-chip"><i>RAM</i><b><?= isset($p['ram_gb']) && $p['ram_gb'] ? (int) $p['ram_gb'] . ' GB' : '—' ?></b></span>
+                <span class="spec-chip"><i>Storage</i><b><?= e($storage) ?></b></span>
+                <span class="spec-chip"><i>Display</i><b><?= !empty($p['display_size_inches']) ? e(number_format((float) $p['display_size_inches'], 1)) . '"' : '—' ?></b></span>
+              </div>
+              <div class="pcard-foot">
+                <p class="pcard-price"><small>From</small><strong><?= $p['from_price'] !== null ? money($p['from_price']) : '—' ?></strong></p>
+                <a class="btn btn-sm btn-primary pcard-cta" href="<?= e($purl) ?>">View &amp; Buy<svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
               </div>
             </div>
           </article>
@@ -385,12 +399,29 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <div>
         <span class="eyebrow mono">Brands</span>
         <h2>Popular Brands</h2>
-        <p class="sub">Only brands with available stock are shown.</p>
+        <p class="sub">Only brands with available stock are shown — counts update live.</p>
       </div>
+      <a class="btn btn-sm btn-ghost" href="<?= e(url('/shop?sort=brands')) ?>">Browse all brands</a>
     </div>
-    <div class="brand-logos">
+    <div class="brand-cards">
       <?php foreach ($brands as $b): ?>
-        <a class="brand" href="<?= e(url('/brands/' . $b['slug'])) ?>"><span><?= e($b['name']) ?></span></a>
+        <?php
+        $units = (int) ($b['available_units'] ?? 0);
+        $logo = trim((string) ($b['logo_path'] ?? ''));
+        $logoOk = $logo !== '' && is_file(BASE_PATH . '/public/' . $logo);
+        ?>
+        <a class="brand-card" href="<?= e(url('/brands/' . $b['slug'])) ?>">
+          <?php if ($logoOk): ?>
+            <span class="brand-logo"><img src="<?= e(url($logo)) ?>" alt="<?= e($b['name']) ?> logo" loading="lazy"></span>
+          <?php else: ?>
+            <span class="brand-mono" aria-hidden="true"><?= e(mb_strtoupper(mb_substr(trim((string) $b['name']), 0, 1))) ?></span>
+          <?php endif; ?>
+          <span class="brand-info">
+            <b class="brand-name"><?= e($b['name']) ?></b>
+            <small class="brand-sub"><?= $units === 1 ? '1 laptop in stock' : $units . ' laptops in stock' ?></small>
+          </span>
+          <svg class="ic brand-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </a>
       <?php endforeach; ?>
     </div>
   </div>
@@ -403,7 +434,7 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <div>
         <span class="eyebrow mono">Offers</span>
         <h2>Special Deals</h2>
-        <p class="sub">Promotions use live prices only.</p>
+        <p class="sub">Hand-picked picks at their live prices — no inflated discounts, ever.</p>
       </div>
       <a class="btn btn-sm btn-ghost" href="<?= e(url('/shop?budget=1')) ?>">Browse all deals</a>
     </div>
@@ -416,27 +447,45 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
         <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Browse all laptops</a>
       </div>
     <?php else: ?>
-      <div class="pgrid">
+      <div class="deal-grid">
         <?php foreach ($deals as $p): ?>
-          <article class="pcard deal">
-            <a class="pcard-img" href="<?= e(url('/shop/' . $p['slug'])) ?>">
-              <div class="pcard-img-ph"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
-              <span class="qc-badge"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Quality Checked</span>
+          <?php
+          $units = (int) ($p['available_units'] ?? 0);
+          $purl = url('/shop/' . $p['slug']);
+          $storage = isset($p['storage_capacity_gb']) && $p['storage_capacity_gb'] !== null && (int) $p['storage_capacity_gb'] > 0
+              ? (int) $p['storage_capacity_gb'] . ' GB ' . ($p['storage_type'] ?? '')
+              : '—';
+          $img = trim((string) ($p['image_path'] ?? ''));
+          $imgOk = $img !== '' && is_file(BASE_PATH . '/public/' . $img);
+          ?>
+          <article class="dcard">
+            <a class="dcard-media" href="<?= e($purl) ?>" aria-label="<?= e(($p['brand_name'] ?? '') . ' ' . ($p['name'] ?? '')) ?>">
+              <?php if ($imgOk): ?>
+                <img src="<?= e(url($img)) ?>" alt="Illustrative image of <?= e(($p['brand_name'] ?? '') . ' ' . ($p['name'] ?? '')) ?> — not an actual unit photo" loading="lazy" class="pcard-img-el">
+              <?php else: ?>
+                <div class="pcard-media-ph"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"></path><path d="M2 9v6l10 5 10-5V9"></path></svg></div>
+              <?php endif; ?>
+              <span class="dcard-pill"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6z"></path></svg>Deal</span>
             </a>
-            <div class="pcard-body">
-              <p class="pcard-brand"><?= e($p['brand_name'] ?? '') ?></p>
-              <a class="pcard-name" href="<?= e(url('/shop/' . $p['slug'])) ?>"><?= e($p['name'] ?? '') ?></a>
-              <dl class="pcard-specs">
-                <div><dt>CPU</dt><dd><?= e($p['processor'] ?? '—') ?></dd></div>
-                <div><dt>RAM</dt><dd><?= isset($p['ram_gb']) ? (int)$p['ram_gb'] . ' GB' : '—' ?></dd></div>
-              </dl>
-              <div class="pcard-foot">
-                <div><span class="price"><?= $p['from_price'] !== null ? money($p['from_price']) : '—' ?></span></div>
-                <span class="grade grade-a"><?= (int)($p['available_units'] ?? 0) ?> units</span>
+            <div class="dcard-body">
+              <div class="pcard-top">
+                <span class="pcard-brand"><?= e($p['brand_name'] ?? '') ?></span>
+                <span class="pcard-stock<?= $units > 0 && $units <= 2 ? ' pcard-stock--low' : '' ?>">
+                  <i aria-hidden="true"></i><?= $units === 0 ? 'Out of stock' : ($units . ' in stock') ?>
+                </span>
               </div>
-              <div class="pcard-actions">
-                <a class="btn btn-sm btn-ghost" href="<?= e(url('/shop/' . $p['slug'])) ?>">View</a>
-                <a class="btn btn-sm btn-primary" href="<?= e(url('/shop/' . $p['slug'])) ?>#units">Buy</a>
+              <a class="pcard-name" href="<?= e($purl) ?>"><?= e($p['name'] ?? '') ?></a>
+              <div class="spec-chips">
+                <span class="spec-chip" title="<?= e($p['processor'] ?? '—') ?>"><i>CPU</i><b><?= e($p['processor'] ?? '—') ?></b></span>
+                <span class="spec-chip"><i>RAM</i><b><?= isset($p['ram_gb']) && $p['ram_gb'] ? (int) $p['ram_gb'] . ' GB' : '—' ?></b></span>
+                <span class="spec-chip"><i>Storage</i><b><?= e($storage) ?></b></span>
+                <?php if (!empty($p['display_size_inches'])): ?>
+                  <span class="spec-chip"><i>Display</i><b><?= e(number_format((float) $p['display_size_inches'], 1)) . '"' ?></b></span>
+                <?php endif; ?>
+              </div>
+              <div class="pcard-foot">
+                <p class="pcard-price"><small>From</small><strong><?= $p['from_price'] !== null ? money($p['from_price']) : '—' ?></strong></p>
+                <a class="btn btn-sm btn-primary pcard-cta" href="<?= e($purl) ?>">Grab this deal<svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
               </div>
             </div>
           </article>
@@ -452,15 +501,48 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
       <div>
         <span class="eyebrow mono">Reviews</span>
         <h2>Customer Reviews</h2>
-        <p class="sub">Real feedback from confirmed buyers. Reviews appear here once published.</p>
+        <?php if (!empty($reviews) && array_filter($reviews, fn ($r) => (int) $r['is_demo'] === 1) !== []): ?>
+          <p class="sub">Sample reviews shown to preview the layout — real reviews appear only from confirmed orders.</p>
+        <?php else: ?>
+          <p class="sub">Real feedback from confirmed buyers. Reviews appear here once published.</p>
+        <?php endif; ?>
       </div>
     </div>
-    <div class="rv-empty">
-      <span class="rv-empty-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:28px;height:28px"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21l2.3-7.4-6-4.6h7.6z"/></svg></span>
-      <h3>No reviews yet</h3>
-      <p>Only reviews from real, confirmed orders are published here. Buy a laptop, receive it, and your honest feedback will appear in this section.</p>
-      <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Browse laptops</a>
-    </div>
+    <?php if (!empty($reviews)): ?>
+      <div class="rv-grid">
+        <?php foreach ($reviews as $r): ?>
+          <?php
+          $stars = max(1, min(5, (int) $r['rating']));
+          $isDemo = (int) $r['is_demo'] === 1;
+          ?>
+          <figure class="rv-card">
+            <div class="rv-stars" role="img" aria-label="<?= $stars ?> out of 5 stars">
+              <?php for ($s = 1; $s <= 5; $s++): ?>
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="rv-star<?= $s <= $stars ? ' rv-star--on' : '' ?>"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21l2.3-7.4-6-4.6h7.6z"/></svg>
+              <?php endfor; ?>
+            </div>
+            <?php if (!empty($r['title'])): ?><figcaption class="rv-title"><?= e($r['title']) ?></figcaption><?php endif; ?>
+            <blockquote class="rv-body"><?= e($r['body']) ?></blockquote>
+            <div class="rv-meta">
+              <span class="rv-who"><?= e($r['reviewer_name']) ?><?= !empty($r['city']) ? ' · ' . e($r['city']) : '' ?></span>
+              <?php if ($isDemo): ?>
+                <span class="rv-demo-badge">Demo review</span>
+              <?php endif; ?>
+            </div>
+            <?php if (!empty($r['product_slug'])): ?>
+              <a class="rv-product mono" href="<?= e(url('/shop/' . $r['product_slug'])) ?>">On <?= e($r['product_name']) ?> →</a>
+            <?php endif; ?>
+          </figure>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <div class="rv-empty">
+        <span class="rv-empty-ic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:28px;height:28px"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21l2.3-7.4-6-4.6h7.6z"/></svg></span>
+        <h3>No reviews yet</h3>
+        <p>Only reviews from real, confirmed orders are published here. Buy a laptop, receive it, and your honest feedback will appear in this section.</p>
+        <a class="btn btn-primary" href="<?= e(url('/shop')) ?>">Browse laptops</a>
+      </div>
+    <?php endif; ?>
   </div>
 </section>
 
@@ -574,13 +656,6 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
 <?php /* External modules only: the site CSP is script-src 'self', which blocks inline scripts. */ ?>
 <script type="module" src="<?= e(url('assets/js/storefront-home.js')) ?>"></script>
 <script type="module" src="<?= e(url('assets/js/hero-slider.js')) ?>"></script>
-
-<!-- Compare bar (fixed bottom) -->
-<div class="cmp-bar" data-cmp-bar>
-  <div class="cmp-items" data-cmp-items></div>
-  <div data-cmp-action></div>
-  <button class="cmp-close" onclick="document.querySelector('[data-cmp-bar]').classList.remove('open');compareItems=[];">×</button>
-</div>
 
 </body>
 </html>

@@ -16,6 +16,7 @@ require dirname(__DIR__) . '/bootstrap/app.php';
 
 use App\Database\Seeder;
 use App\Database\Seeders\BusinessProfileSeeder;
+use App\Database\Seeders\DemoCatalogSeeder;
 use App\Database\Seeders\DemoDataSeeder;
 use App\Database\Seeders\RolePermissionSeeder;
 use App\Support\Database\Connection;
@@ -29,6 +30,7 @@ try {
     ];
     if ($withDemo) {
         $classes[] = DemoDataSeeder::class;
+        $classes[] = DemoCatalogSeeder::class;
     }
 
     $seeder = new Seeder(Connection::pdo(), $classes);

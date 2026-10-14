@@ -57,9 +57,16 @@ final class ShopController
         $brandId = (int) $request->query('brand', 0);
         $categoryId = (int) $request->query('category', 0);
 
+        // Build filters array from query params (budget, grade, in_stock, sort).
+        $filters = [
+            'budget' => (int) $request->query('budget', 0),
+            'grade' => (array) $request->query('grade', []),
+            'sort' => (string) $request->query('sort', ''),
+        ];
+
         $perPage = 24;
-        $products = $catalog->publishedForStore($q, $brandId, $categoryId, $perPage, ($page - 1) * $perPage);
-        $total = $catalog->countPublishedForStore($q, $brandId, $categoryId);
+        $products = $catalog->publishedForStore($q, $brandId, $categoryId, $perPage, ($page - 1) * $perPage, $filters);
+        $total = $catalog->countPublishedForStore($q, $brandId, $categoryId, $filters);
         $pages = max(1, (int) ceil($total / $perPage));
 
         return Response::html(View::render('storefront/shop', [

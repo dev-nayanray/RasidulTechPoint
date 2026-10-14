@@ -36,8 +36,7 @@ section[id]{scroll-margin-top:16px}
 .announce.hide{max-height:0;opacity:0}
 .announce-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 16px;padding-block:8px;text-align:center}
 .announce a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:3px}
-.site-hdr{background:#fff;border-bottom:1px solid #D5DEE9;position:relative;z-index:40}
-@media(min-width:961px){.site-hdr{position:sticky;top:0}}
+.site-hdr{background:#fff;border-bottom:1px solid #D5DEE9;position:sticky;top:0;z-index:40}
 .hdr{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:12px}
 .burger{display:none}
 .logo{display:flex;align-items:center;gap:10px;flex:none}

@@ -608,10 +608,11 @@ final class CatalogRepository
      *
      * @return list<array<string,mixed>>
      */
-    public function publishedForStore(string $q = '', int $brandId = 0, int $categoryId = 0, int $limit = 24, int $offset = 0): array
+    public function publishedForStore(string $q = '', int $brandId = 0, int $categoryId = 0, int $limit = 24, int $offset = 0, array $filters = []): array
     {
         $where = ' WHERE pm.is_published = 1 AND pm.deleted_at IS NULL';
         $params = [];
+        $having = ' available_units > 0';
         if ($q !== '') {
             $where .= ' AND (pm.name LIKE ? OR pm.processor LIKE ?)';
             $params[] = '%' . $q . '%';
@@ -625,6 +626,41 @@ final class CatalogRepository
             $where .= ' AND pm.category_id = ?';
             $params[] = $categoryId;
         }
+
+        // Budget filter: maps budget=1..4 to price ranges on from_price.
+        if (!empty($filters['budget'])) {
+            $ranges = [
+                1 => [0, 15000],
+                2 => [15000, 25000],
+                3 => [25000, 40000],
+                4 => [40000, null],
+            ];
+            $b = (int) $filters['budget'];
+            if (isset($ranges[$b])) {
+                [$min, $max] = $ranges[$b];
+                $having .= ' AND from_price >= ' . (float) $min;
+                if ($max !== null) {
+                    $having .= ' AND from_price < ' . (float) $max;
+                }
+            }
+        }
+
+        // Grade filter: only show models that have at least one available unit
+        // with the selected condition grade(s).
+        if (!empty($filters['grade']) && is_array($filters['grade'])) {
+            $grades = array_values(array_filter($filters['grade'], fn($g) => in_array($g, ['A', 'B', 'C'], true)));
+            if ($grades !== []) {
+                $quoted = implode(',', array_map(fn($g) => $this->pdo->quote($g), $grades));
+                $having .= ' AND (SELECT COUNT(*) FROM inventory_units iu2 WHERE iu2.product_model_id = pm.id AND iu2.status = \'available\' AND iu2.condition_grade IN (' . $quoted . ')) > 0';
+            }
+        }
+
+        // Sort order.
+        $orderBy = 'pm.updated_at DESC';
+        $sort = $filters['sort'] ?? '';
+        if ($sort === 'price_asc') $orderBy = 'from_price ASC';
+        elseif ($sort === 'price_desc') $orderBy = 'from_price DESC';
+        elseif ($sort === 'name_asc') $orderBy = 'pm.name ASC';
 
         $sql = "SELECT pm.id, pm.name, pm.slug, pm.processor, pm.ram_gb, pm.storage_type, pm.storage_capacity_gb,
                        pm.display_size_inches, pm.resolution, pm.graphics,
@@ -637,8 +673,8 @@ final class CatalogRepository
                 FROM product_models pm
                 JOIN brands b ON b.id = pm.brand_id
                 {$where}
-                HAVING available_units > 0
-                ORDER BY pm.updated_at DESC
+                HAVING {$having}
+                ORDER BY {$orderBy}
                 LIMIT {$limit} OFFSET {$offset}";
 
         $stmt = $this->pdo->prepare($sql);
@@ -646,10 +682,11 @@ final class CatalogRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function countPublishedForStore(string $q = '', int $brandId = 0, int $categoryId = 0): int
+    public function countPublishedForStore(string $q = '', int $brandId = 0, int $categoryId = 0, array $filters = []): int
     {
         $where = ' WHERE pm.is_published = 1 AND pm.deleted_at IS NULL';
         $params = [];
+        $having = ' available_units > 0';
         if ($q !== '') {
             $where .= ' AND (pm.name LIKE ? OR pm.processor LIKE ?)';
             $params[] = '%' . $q . '%';
@@ -664,12 +701,38 @@ final class CatalogRepository
             $params[] = $categoryId;
         }
 
+        if (!empty($filters['budget'])) {
+            $ranges = [
+                1 => [0, 15000],
+                2 => [15000, 25000],
+                3 => [25000, 40000],
+                4 => [40000, null],
+            ];
+            $b = (int) $filters['budget'];
+            if (isset($ranges[$b])) {
+                [$min, $max] = $ranges[$b];
+                $having .= ' AND from_price >= ' . (float) $min;
+                if ($max !== null) {
+                    $having .= ' AND from_price < ' . (float) $max;
+                }
+            }
+        }
+
+        if (!empty($filters['grade']) && is_array($filters['grade'])) {
+            $grades = array_values(array_filter($filters['grade'], fn($g) => in_array($g, ['A', 'B', 'C'], true)));
+            if ($grades !== []) {
+                $quoted = implode(',', array_map(fn($g) => $this->pdo->quote($g), $grades));
+                $having .= ' AND (SELECT COUNT(*) FROM inventory_units iu2 WHERE iu2.product_model_id = pm.id AND iu2.status = \'available\' AND iu2.condition_grade IN (' . $quoted . ')) > 0';
+            }
+        }
+
         $stmt = $this->pdo->prepare(
             "SELECT COUNT(*) FROM (
                 SELECT pm.id,
-                       (SELECT COUNT(*) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS available_units
+                       (SELECT COUNT(*) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS available_units,
+                       (SELECT MIN(iu.selling_price) FROM inventory_units iu WHERE iu.product_model_id = pm.id AND iu.status = 'available') AS from_price
                 FROM product_models pm {$where}
-                HAVING available_units > 0
+                HAVING {$having}
              ) x"
         );
         $stmt->execute($params);

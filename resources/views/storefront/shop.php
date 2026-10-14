@@ -46,18 +46,18 @@ if ($categoryId > 0) $activeFilters[] = 'Category filter';
         <?php /* ====== Filters sidebar (desktop) / drawer (mobile) ====== */ ?>
         <aside class="lg:w-64 lg:shrink-0" data-filter-drawer>
             <div class="lg:sticky lg:top-24 rounded-xl border border-slate-200 bg-white p-5 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
-                <form method="get" action="<?= e(url('/shop')) ?>" id="shop-filters" class="space-y-5" role="search">
+                <form method="get" action="<?= e(url('/shop')) ?>" id="shop-filters" class="space-y-5" role="search" data-auto-submit>
                     <div>
                         <label for="shop-q" class="block text-sm font-medium text-navy-700">Search</label>
-                        <input id="shop-q" name="q" value="<?= e($q ?? '') ?>" class="input mt-1.5 text-sm" placeholder="Model or processor…">
+                        <input id="shop-q" name="q" value="<?= e($q ?? '') ?>" class="input mt-1.5 text-sm" placeholder="Model or processor…" onchange="this.form.submit()">
                     </div>
 
                     <fieldset>
                         <legend class="text-sm font-medium text-navy-700">Brand</legend>
                         <div class="mt-2 space-y-1.5 text-sm">
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="brand" value="" <?= $brandId === 0 ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> All brands</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="brand" value="" <?= $brandId === 0 ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> All brands</label>
                             <?php foreach ($brands as $b): ?>
-                                <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="brand" value="<?= (int) $b['id'] ?>" <?= $brandId === (int) $b['id'] ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> <?= e($b['name']) ?> <span class="text-xs text-slate-400">(<?= (int) $b['model_count'] ?? 0 ?>)</span></label>
+                                <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="brand" value="<?= (int) $b['id'] ?>" <?= $brandId === (int) $b['id'] ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> <?= e($b['name']) ?> <span class="text-xs text-slate-400">(<?= (int) $b['model_count'] ?? 0 ?>)</span></label>
                             <?php endforeach; ?>
                         </div>
                     </fieldset>
@@ -65,9 +65,9 @@ if ($categoryId > 0) $activeFilters[] = 'Category filter';
                     <fieldset>
                         <legend class="text-sm font-medium text-navy-700">Category</legend>
                         <div class="mt-2 space-y-1.5 text-sm">
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="category" value="" <?= $categoryId === 0 ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> All categories</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="category" value="" <?= $categoryId === 0 ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> All categories</label>
                             <?php foreach ($categories as $c): ?>
-                                <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="category" value="<?= (int) $c['id'] ?>" <?= $categoryId === (int) $c['id'] ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> <?= e($c['name']) ?></label>
+                                <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="category" value="<?= (int) $c['id'] ?>" <?= $categoryId === (int) $c['id'] ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> <?= e($c['name']) ?></label>
                             <?php endforeach; ?>
                         </div>
                     </fieldset>
@@ -75,32 +75,31 @@ if ($categoryId > 0) $activeFilters[] = 'Category filter';
                     <fieldset>
                         <legend class="text-sm font-medium text-navy-700">Budget</legend>
                         <div class="mt-2 space-y-1.5 text-sm">
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="" <?= (($_GET['budget'] ?? '') === '') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> Any price</label>
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="1" <?= (($_GET['budget'] ?? '') === '1') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> Under ৳15,000</label>
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="2" <?= (($_GET['budget'] ?? '') === '2') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> ৳15k – ৳25k</label>
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="3" <?= (($_GET['budget'] ?? '') === '3') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> ৳25k – ৳40k</label>
-                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="4" <?= (($_GET['budget'] ?? '') === '4') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue"> ৳40,000+</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="" <?= (($_GET['budget'] ?? '') === '') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> Any price</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="1" <?= (($_GET['budget'] ?? '') === '1') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> Under ৳15,000</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="2" <?= (($_GET['budget'] ?? '') === '2') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> ৳15k – ৳25k</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="3" <?= (($_GET['budget'] ?? '') === '3') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> ৳25k – ৳40k</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="radio" name="budget" value="4" <?= (($_GET['budget'] ?? '') === '4') ? 'checked' : '' ?> class="text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> ৳40,000+</label>
                         </div>
                     </fieldset>
 
                     <fieldset>
                         <legend class="text-sm font-medium text-navy-700">Condition</legend>
                         <div class="mt-2 space-y-1.5 text-sm">
-                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="grade[]" value="A" <?= in_array('A', $_GET['grade'] ?? [], true) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue"> Grade A (Like new)</label>
-                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="grade[]" value="B" <?= in_array('B', $_GET['grade'] ?? [], true) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue"> Grade B (Light wear)</label>
-                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="grade[]" value="C" <?= in_array('C', $_GET['grade'] ?? [], true) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue"> Grade C (Visible marks)</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="grade[]" value="A" <?= in_array('A', $_GET['grade'] ?? [], true) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> Grade A (Like new)</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="grade[]" value="B" <?= in_array('B', $_GET['grade'] ?? [], true) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> Grade B (Light wear)</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="grade[]" value="C" <?= in_array('C', $_GET['grade'] ?? [], true) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> Grade C (Visible marks)</label>
                         </div>
                     </fieldset>
 
                     <fieldset>
                         <legend class="text-sm font-medium text-navy-700">Availability</legend>
                         <div class="mt-2 space-y-1.5 text-sm">
-                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="in_stock" value="1" <?= !empty($_GET['in_stock']) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue"> In stock only</label>
+                            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" name="in_stock" value="1" <?= !empty($_GET['in_stock']) ? 'checked' : '' ?> class="rounded text-brand-blue focus:ring-brand-blue" onchange="this.form.submit()"> In stock only</label>
                         </div>
                     </fieldset>
 
-                    <div class="pt-2 border-t border-slate-100 space-y-2">
-                        <button type="submit" class="btn-primary w-full text-sm">Apply filters</button>
+                    <div class="pt-2 border-t border-slate-100">
                         <a href="<?= e(url('/shop')) ?>" class="block text-center text-xs text-slate-500 hover:text-slate-700">Reset filters</a>
                     </div>
                 </form>

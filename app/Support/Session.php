@@ -27,7 +27,9 @@ final class Session
 
         $name = (string) Config::get('session.name', 'rtp_session');
         $lifetime = (int) Config::get('session.lifetime', 7200);
-        $secure = (bool) Config::get('session.secure', false);
+        // Force Secure cookies in production even if SESSION_SECURE is not set.
+        $env = (string) Config::get('app.env', 'local');
+        $secure = $env === 'production' ? true : (bool) Config::get('session.secure', false);
 
         $savePath = BASE_PATH . '/storage/sessions';
         if (!is_dir($savePath)) {

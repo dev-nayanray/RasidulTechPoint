@@ -81,7 +81,7 @@ final class CartController
         }
         // Send back to the previous page so the customer can keep browsing.
         $referer = $request->header('referer');
-        if ($referer !== null && str_contains($referer, $_SERVER['HTTP_HOST'] ?? '')) {
+        if ($referer !== null && $this->isSameOriginRedirect($referer)) {
             return Response::redirect($referer);
         }
         return Response::redirect(url('/cart'));
@@ -115,5 +115,34 @@ final class CartController
             flash_success('Cart prices are up to date.');
         }
         return Response::redirect(url('/cart'));
+    }
+
+    /**
+     * Strict same-origin check for redirect targets.
+     * Prevents open-redirect via a crafted Referer header.
+     */
+    private function isSameOriginRedirect(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT);
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $expectedHost = $_SERVER['HTTP_HOST'] ?? '';
+        // Handle the case where HTTP_HOST includes a port (e.g. localhost:8080).
+        $expectedHostParts = explode(':', $expectedHost);
+        $expectedHostname = $expectedHostParts[0];
+        $expectedPort = $expectedHostParts[1] ?? null;
+
+        if ($host !== $expectedHostname) {
+            return false;
+        }
+        // If the redirect URL has a port, it must match the expected port.
+        if ($port !== null && $port !== ($expectedPort ?? '80')) {
+            return false;
+        }
+        // If the redirect URL has a scheme, only allow http/https.
+        if ($scheme !== null && !in_array($scheme, ['http', 'https'], true)) {
+            return false;
+        }
+        return true;
     }
 }

@@ -410,7 +410,7 @@ final class AccountController
             flash_success('Added to wishlist.');
         }
         $referer = $request->header('referer');
-        if ($referer !== null && str_contains($referer, $_SERVER['HTTP_HOST'] ?? '')) {
+        if ($referer !== null && $this->isSameOriginRedirect($referer)) {
             return Response::redirect($referer);
         }
         return Response::redirect(url('/account/wishlist'));
@@ -512,5 +512,30 @@ final class AccountController
             }
         }
         return $customer;
+    }
+
+    /**
+     * Strict same-origin check for redirect targets.
+     * Prevents open-redirect via a crafted Referer header.
+     */
+    private function isSameOriginRedirect(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT);
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $expectedHost = $_SERVER['HTTP_HOST'] ?? '';
+        $expectedHostParts = explode(':', $expectedHost);
+        $expectedHostname = $expectedHostParts[0];
+        $expectedPort = $expectedHostParts[1] ?? null;
+        if ($host !== $expectedHostname) {
+            return false;
+        }
+        if ($port !== null && $port !== ($expectedPort ?? '80')) {
+            return false;
+        }
+        if ($scheme !== null && !in_array($scheme, ['http', 'https'], true)) {
+            return false;
+        }
+        return true;
     }
 }

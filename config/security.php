@@ -25,7 +25,8 @@ return [
         // CSP: styles must be 'unsafe-inline' for Tailwind utility interplay
         // in a few dynamic elements; scripts are restricted to same-origin.
         'content_security_policy' => "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
-            . "script-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+            . "script-src 'self'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; "
+            . "object-src 'none'; upgrade-insecure-requests",
     ],
 
     'uploads' => [

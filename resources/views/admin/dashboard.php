@@ -66,7 +66,7 @@ $rangeOptions = ['today' => 'Today', '7d' => 'Last 7 days', '30d' => 'Last 30 da
 </p>
 
 <?php if ($inquiryStats !== null): ?>
-    <a href="<?= e(url('/admin/contact-inquiries')) ?>" class="block no-underline admin-card" style="margin-bottom:16px;padding:18px 20px;border-color:rgba(37,99,235,.25);background:linear-gradient(135deg,#fff 0%,#F8FAFF 100%)">
+    <a href="<?= e(url('/admin/contact-inquiries')) ?>" class="admin-inquiry-banner" style="display:block;text-decoration:none;margin-bottom:16px;padding:18px 20px;border-radius:var(--radius);border:1px solid rgba(99,102,241,.25);background:linear-gradient(135deg,var(--surface) 0%,var(--primary-light) 100%)">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <p class="admin-stat-card-label">Contact inquiries</p>

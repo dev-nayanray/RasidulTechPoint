@@ -99,22 +99,26 @@ body{
 ::-webkit-scrollbar-thumb:hover{background:rgba(15,23,42,.28);background-clip:padding-box}
 
 /* ============================================================
-   SIDEBAR — sticky, scrollable, premium dark chrome
+   SIDEBAR — uses CSS variables so it adapts to dark mode
    ============================================================ */
 aside[data-sidebar]{
-  background:linear-gradient(180deg,#14243A 0%,#0B1525 100%) !important;
+  background:linear-gradient(180deg,var(--sidebar-bg) 0%,var(--sidebar-surface) 100%) !important;
   box-shadow:inset -1px 0 0 rgba(255,255,255,.04),4px 0 24px rgba(0,0,0,.18);
   position:relative;
 }
 aside[data-sidebar]::before{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 30% 0%,rgba(37,99,235,.10),transparent 50%);
+  background:radial-gradient(circle at 30% 0%,rgba(99,102,241,.10),transparent 50%);
+}
+.dark aside[data-sidebar]{
+  background:linear-gradient(180deg,var(--sidebar-bg) 0%,#060B18 100%) !important;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.03),4px 0 24px rgba(0,0,0,.40);
 }
 
 /* Brand header — sticky at top of sidebar with subtle blur */
 aside[data-sidebar] > div:first-child{
   position:relative;z-index:2;
-  background:rgba(15,21,37,.55) !important;
+  background:rgba(0,0,0,.25) !important;
   backdrop-filter:saturate(180%) blur(8px);
   -webkit-backdrop-filter:saturate(180%) blur(8px);
 }
@@ -141,13 +145,13 @@ aside[data-sidebar] > div:first-child{
 }
 .rtp-nav-link::before{
   content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
-  width:3px;height:0;background:var(--blue);border-radius:0 3px 3px 0;
+  width:3px;height:0;background:var(--primary);border-radius:0 3px 3px 0;
   transition:height .2s ease;
 }
 .rtp-nav-link:hover::before,
 .rtp-nav-link.rtp-nav-active::before{height:60%}
 .rtp-nav-link.rtp-nav-active{
-  background:linear-gradient(90deg,rgba(37,99,235,.22) 0%,rgba(37,99,235,.06) 100%) !important;
+  background:linear-gradient(90deg,rgba(99,102,241,.22) 0%,rgba(99,102,241,.06) 100%) !important;
   color:#fff !important;
 }
 .rtp-nav-link.rtp-nav-active .rtp-nav-icon{opacity:1 !important;color:#7FA4F5 !important}
@@ -178,9 +182,9 @@ header.sticky-top{
 header.sticky-top h1{font-weight:700;letter-spacing:-.01em}
 /* Search input refinement */
 header.sticky-top .input{
-  border-radius:10px;background:#F8FAFC;border:1.5px solid transparent;transition:all .15s
+  border-radius:10px;background:var(--surface-2);border:1.5px solid transparent;transition:all .15s
 }
-header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+header.sticky-top .input:focus{background:var(--surface);border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
 
 /* ============================================================
    PAGE HEADER COMPONENT
@@ -207,15 +211,15 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
    ADMIN CARD — base surface
    ============================================================ */
 .admin-card{
-  background:#fff;border:1px solid var(--line);border-radius:14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
   box-shadow:var(--shadow-sm);overflow:hidden;
 }
 .admin-card-header{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:14px 18px;border-bottom:1px solid #F1F5F9;
+  padding:14px 18px;border-bottom:1px solid var(--border);
 }
 .admin-card-header h3{margin:0;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.005em}
-.admin-card-header a{font-size:13px;font-weight:600;color:var(--blue);text-decoration:none}
+.admin-card-header a{font-size:13px;font-weight:600;color:var(--primary);text-decoration:none}
 .admin-card-header a:hover{text-decoration:underline;text-underline-offset:2px}
 .admin-card-body{padding:18px}
 
@@ -225,14 +229,14 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
 .admin-table{width:100%;border-collapse:collapse;font-size:14px}
 .admin-table thead th{
   padding:10px 16px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--muted);background:#F8FAFC;border-bottom:1px solid var(--line);white-space:nowrap;
+  color:var(--muted);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap;
 }
-.admin-table tbody td{padding:12px 16px;border-bottom:1px solid #F1F5F9;color:#1E293B;vertical-align:middle}
+.admin-table tbody td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 .admin-table tbody tr:last-child td{border-bottom:0}
 .admin-table tbody tr{transition:background .12s}
-.admin-table tbody tr:hover{background:#F8FAFC}
+.admin-table tbody tr:hover{background:var(--surface-2)}
 .admin-table a{color:var(--ink);font-weight:600;text-decoration:none}
-.admin-table a:hover{color:var(--blue)}
+.admin-table a:hover{color:var(--primary)}
 .admin-table .num{text-align:right;font-variant-numeric:tabular-nums}
 .admin-table .mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:13px}
 /* Responsive wrapper to prevent horizontal overflow on small screens */
@@ -248,7 +252,7 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
 .admin-stat-card{
   position:relative;overflow:hidden;
   background:linear-gradient(180deg,#fff 0%,#FAFCFF 100%);
-  border:1px solid var(--line);border-radius:16px;padding:18px;
+  border:1px solid var(--border);border-radius:16px;padding:18px;
   box-shadow:var(--shadow-sm);
   transition:border-color .2s,box-shadow .2s,transform .2s cubic-bezier(.2,.7,.2,1);
   display:flex;flex-direction:column;gap:6px;min-height:120px;
@@ -277,19 +281,19 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
   font-variant-numeric:tabular-nums;margin:2px 0 0;line-height:1.05;
   transition:color .2s;
 }
-.admin-stat-card.is-link:hover .admin-stat-card-value{color:var(--blue)}
+.admin-stat-card.is-link:hover .admin-stat-card-value{color:var(--primary)}
 
 /* Label + hint */
 .admin-stat-card-label{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.01em;margin:0}
 .admin-stat-card-hint{font-size:11.5px;color:#94A3B8;margin:2px 0 0;line-height:1.4}
 
 /* Tone tiles — icon background */
-.admin-stat-ic-blue{background:rgba(37,99,235,.10);color:var(--blue)}
-.admin-stat-ic-green{background:rgba(22,163,74,.10);color:var(--green)}
-.admin-stat-ic-amber{background:rgba(217,119,6,.12);color:var(--amber)}
-.admin-stat-ic-red{background:rgba(220,38,38,.10);color:var(--red)}
-.admin-stat-ic-navy{background:rgba(20,36,58,.10);color:var(--navy)}
-.admin-stat-ic-slate{background:#F1F5F9;color:var(--muted)}
+.admin-stat-ic-blue{background:var(--primary-light);color:var(--primary)}
+.admin-stat-ic-green{background:var(--green-light);color:var(--green)}
+.admin-stat-ic-amber{background:var(--amber-light);color:var(--amber)}
+.admin-stat-ic-red{background:var(--red-light);color:var(--red)}
+.admin-stat-ic-navy{background:var(--surface-hover);color:var(--ink)}
+.admin-stat-ic-slate{background:var(--surface-hover);color:var(--muted)}
 
 /* Tone-colored top accent stripe — animates from 0 → 1 width on hover */
 .admin-stat-card::before{
@@ -299,15 +303,15 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
   transition:transform .35s cubic-bezier(.2,.7,.2,1);
 }
 .admin-stat-card:hover::before{transform:scaleX(1)}
-.admin-stat-card.admin-stat-blue::before{background:linear-gradient(90deg,var(--blue),#7FA4F5)}
+.admin-stat-card.admin-stat-blue::before{background:linear-gradient(90deg,var(--primary),#7FA4F5)}
 .admin-stat-card.admin-stat-green::before{background:linear-gradient(90deg,var(--green),#4ADE80)}
 .admin-stat-card.admin-stat-amber::before{background:linear-gradient(90deg,var(--amber),#FBBF24)}
 .admin-stat-card.admin-stat-red::before{background:linear-gradient(90deg,var(--red),#F87171)}
-.admin-stat-card.admin-stat-navy::before{background:linear-gradient(90deg,var(--navy),#2B4869)}
+.admin-stat-card.admin-stat-navy::before{background:linear-gradient(90deg,var(--ink),#2B4869)}
 .admin-stat-card.admin-stat-slate::before{background:linear-gradient(90deg,#64748B,#94A3B8)}
 
 /* Tone-colored hover border */
-.admin-stat-card.admin-stat-blue:hover{border-color:rgba(37,99,235,.30)}
+.admin-stat-card.admin-stat-blue:hover{border-background:var(--primary,.30)}
 .admin-stat-card.admin-stat-green:hover{border-color:rgba(22,163,74,.30)}
 .admin-stat-card.admin-stat-amber:hover{border-color:rgba(217,119,6,.35)}
 .admin-stat-card.admin-stat-red:hover{border-color:rgba(220,38,38,.30)}
@@ -335,8 +339,8 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
 }
 .admin-quick-card{
   display:flex;flex-direction:column;gap:8px;padding:14px 16px;
-  background:linear-gradient(135deg,#fff 0%,#F8FAFF 100%);
-  border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(135deg,var(--surface) 0%,var(--surface-2) 100%);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
   text-decoration:none;color:var(--ink);
   transition:border-color .15s,box-shadow .15s,transform .15s;
   position:relative;overflow:hidden;
@@ -345,11 +349,11 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
   content:"→";position:absolute;right:14px;top:14px;color:var(--muted);font-size:18px;
   transition:transform .2s ease,color .15s;
 }
-.admin-quick-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md);transform:translateY(-2px);color:var(--ink)}
-.admin-quick-card:hover::after{transform:translateX(4px);color:var(--blue)}
+.admin-quick-card:hover{border-color:var(--primary);box-shadow:var(--shadow-md);transform:translateY(-2px);color:var(--ink)}
+.admin-quick-card:hover::after{transform:translateX(4px);color:var(--primary)}
 .admin-quick-card-ic{
   width:36px;height:36px;border-radius:9px;
-  background:rgba(37,99,235,.10);color:var(--blue);
+  background:var(--primary-light);color:var(--primary);
   display:flex;align-items:center;justify-content:center;
 }
 .admin-quick-card-title{font-size:14px;font-weight:700;color:var(--ink);margin:0}
@@ -359,8 +363,8 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
    ACTIVITY TABLE — modern hover + status pills
    ============================================================ */
 .admin-table tbody tr{transition:background .12s,transform .12s}
-.admin-table tbody tr:hover{background:#F8FAFC}
-.admin-table tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+.admin-table tbody tr:hover{background:var(--surface-2)}
+.admin-table tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
 .admin-table tbody td:first-child{transition:box-shadow .15s}
 
 /* ============================================================
@@ -371,7 +375,7 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
   padding:40px 20px;color:var(--muted);
 }
 .admin-empty-ic{
-  width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#F1F5F9 0%,#E3ECFD 100%);color:#64748B;
+  width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--surface-hover) 0%,var(--primary-light) 100%);color:var(--muted);
   display:flex;align-items:center;justify-content:center;flex:none;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
 }
@@ -386,7 +390,7 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
    FILTER BAR
    ============================================================ */
 .admin-filter-bar{
-  display:grid;gap:12px;background:#fff;border:1px solid var(--line);
+  display:grid;gap:12px;background:var(--surface);border:1px solid var(--border);
   border-radius:14px;padding:14px;box-shadow:var(--shadow-sm);
 }
 .admin-filter-bar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -411,17 +415,17 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
   border:1px solid transparent;
 }
 .admin-badge-ok{background:rgba(22,163,74,.12);color:var(--green);border-color:rgba(22,163,74,.20)}
-.admin-badge-info{background:rgba(37,99,235,.12);color:var(--blue);border-color:rgba(37,99,235,.20)}
+.admin-badge-info{background:rgba(99,102,241,.12);color:var(--primary);border-background:var(--primary,.20)}
 .admin-badge-wait{background:rgba(217,119,6,.12);color:var(--amber);border-color:rgba(217,119,6,.22)}
-.admin-badge-off{background:#F1F5F9;color:var(--muted);border-color:var(--line)}
+.admin-badge-off{background:var(--surface-hover);color:var(--muted);border-color:var(--border)}
 .admin-badge-bad{background:rgba(220,38,38,.10);color:var(--red);border-color:rgba(220,38,38,.20)}
 
 /* ============================================================
    BUTTON POLISH — enhance the existing .btn-primary / .btn-secondary
    ============================================================ */
 .btn{transition:background .15s,border-color .15s,box-shadow .15s,transform .1s}
-.btn-primary{box-shadow:0 1px 2px rgba(37,99,235,.20),0 4px 12px rgba(37,99,235,.18)}
-.btn-primary:hover{box-shadow:0 2px 4px rgba(37,99,235,.25),0 6px 18px rgba(37,99,235,.25)}
+.btn-primary{box-shadow:0 1px 2px rgba(99,102,241,.20),0 4px 12px rgba(99,102,241,.18)}
+.btn-primary:hover{box-shadow:0 2px 4px rgba(99,102,241,.25),0 6px 18px rgba(99,102,241,.25)}
 .btn-primary:active{transform:translateY(1px)}
 .btn-secondary:hover{box-shadow:var(--shadow-sm)}
 .btn-danger{box-shadow:0 1px 2px rgba(220,38,38,.15)}
@@ -432,12 +436,12 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
    FORM INPUT POLISH
    ============================================================ */
 .input{
-  background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
   font-size:14px;color:var(--ink);transition:border-color .15s,box-shadow .15s,background .15s;
 }
 .input::placeholder{color:#94A3B8}
 .input:hover{border-color:#CBD5E1}
-.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.14);background:#fff}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.14);background:var(--surface)}
 .input[aria-invalid="true"]{border-color:var(--red) !important;box-shadow:0 0 0 3px rgba(220,38,38,.12) !important}
 
 /* ============================================================
@@ -445,7 +449,7 @@ header.sticky-top .input:focus{background:#fff;border-color:var(--blue);box-shad
    ============================================================ */
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,
 .btn:focus-visible,.icon-btn:focus-visible,[data-dropdown-toggle]:focus-visible{
-  outline:2px solid var(--blue);outline-offset:2px;border-radius:8px;
+  outline:2px solid var(--primary);outline-offset:2px;border-radius:8px;
 }
 
 /* ============================================================
@@ -453,7 +457,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
    ============================================================ */
 .avatar{
   display:inline-flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  background:linear-gradient(135deg,var(--ink) 0%,var(--navy-3) 100%);
   color:#fff;font-weight:700;letter-spacing:.02em;
   border-radius:50%;flex:none;
 }
@@ -462,7 +466,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
    RANGE TOGGLE (dashboard filter)
    ============================================================ */
 .admin-range-toggle{
-  display:inline-flex;gap:2px;padding:3px;background:#F1F5F9;border:1px solid var(--line);border-radius:10px;
+  display:inline-flex;gap:2px;padding:3px;background:var(--surface-hover);border:1px solid var(--border);border-radius:10px;
 }
 .admin-range-toggle button{
   padding:6px 12px;border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:600;
@@ -470,7 +474,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 }
 .admin-range-toggle button:hover{color:var(--ink)}
 .admin-range-toggle button.active{
-  background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);
+  background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm);
 }
 
 /* ============================================================
@@ -543,8 +547,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .dark .hover\:bg-white\/10:hover{background-color:rgba(255,255,255,.06) !important}
 .dark .hover\:bg-white\/5:hover{background-color:rgba(255,255,255,.03) !important}
 .dark .hover\:bg-slate-50:hover{background-color:var(--surface-hover) !important}
-/* Header sticky bar in dark mode */
-.dark header.sticky-top{background:rgba(17,24,39,.92) !important;border-bottom-color:var(--border) !important}
+/* Header sticky bar in dark mode — handles bg-white/95 and bg-white/100 */
+.dark header[class*="shrink-0"]{background:rgba(15,23,42,.95) !important;border-bottom-color:var(--border) !important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.dark header[class*="shrink-0"] h1{color:var(--ink) !important}
+.dark header[class*="shrink-0"] .text-slate-600{color:var(--muted) !important}
+.dark header[class*="shrink-0"] .hover\:bg-slate-100:hover{background-color:var(--surface-hover) !important}
+.dark header[class*="shrink-0"] .border-slate-200{border-color:var(--border) !important}
+.dark header[class*="shrink-0"] kbd{background:var(--surface-2) !important;border-color:var(--border) !important;color:var(--faint) !important}
 /* Admin-specific component overrides for dark mode */
 .dark .admin-card{background:var(--surface);border-color:var(--border)}
 .dark .admin-card-header{border-bottom-color:var(--border)}

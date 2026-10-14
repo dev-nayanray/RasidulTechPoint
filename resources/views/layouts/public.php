@@ -68,17 +68,77 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
                     </div>
                 </form>
                 <div class="icons">
-                    <a class="icon-btn hide-xs" href="<?= e(url($auth ? '/account' : '/login')) ?>" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>">
-                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
-                    </a>
-                    <a class="icon-btn" href="<?= e(url('/account/wishlist')) ?>" aria-label="Wishlist">
-                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>
-                        <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
-                    </a>
-                    <a class="icon-btn" href="<?= e(url('/cart')) ?>" aria-label="Shopping cart">
-                        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>
-                        <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
-                    </a>
+                    <div class="dd-wrap" data-dd-wrap>
+                        <button class="icon-btn hide-xs" aria-label="<?= $auth ? 'My account' : 'Sign in' ?>" data-dd-toggle="account-dd">
+                            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
+                        </button>
+                        <div class="dd-panel" id="account-dd">
+                            <?php if ($auth): ?>
+                                <div class="dd-head">Signed in as <?= e(explode(' ', $auth['name'])[0]) ?></div>
+                                <a class="dd-item" href="<?= e(url('/account')) ?>">
+                                    <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>
+                                    <div><div class="dd-item-name">Dashboard</div></div>
+                                </a>
+                                <a class="dd-item" href="<?= e(url('/account/orders')) ?>">
+                                    <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path></svg>
+                                    <div><div class="dd-item-name">My Orders</div></div>
+                                </a>
+                                <a class="dd-item" href="<?= e(url('/account/warranty')) ?>">
+                                    <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 4v6c0 5-4 8-9 10-5-2-9-5-9-10V6z"></path></svg>
+                                    <div><div class="dd-item-name">Warranty</div></div>
+                                </a>
+                                <a class="dd-item" href="<?= e(url('/account/profile')) ?>">
+                                    <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>
+                                    <div><div class="dd-item-name">Profile</div></div>
+                                </a>
+                                <div class="dd-foot">
+                                    <form method="post" action="<?= e(url('/logout')) ?>" style="flex:1">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="dd-link ghost" style="width:100%;color:#dc2626">Sign out</button>
+                                    </form>
+                                </div>
+                            <?php else: ?>
+                                <div class="dd-head">Welcome</div>
+                                <div class="dd-foot" style="flex-direction:column;gap:8px">
+                                    <a href="<?= e(url('/login')) ?>" class="dd-link primary">Sign in</a>
+                                    <a href="<?= e(url('/register')) ?>" class="dd-link ghost">Create account</a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="dd-wrap" data-dd-wrap>
+                        <a class="icon-btn" href="<?= e(url('/account/wishlist')) ?>" aria-label="Wishlist" data-dd-toggle="wishlist-dd">
+                            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 3.7 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.3 0 5.2 3.1 4 6.3C19 15.6 12 20 12 20z"></path></svg>
+                            <?php if ($wishlistCount > 0): ?><span class="count"><?= (int) $wishlistCount ?></span><?php endif; ?>
+                        </a>
+                        <div class="dd-panel" id="wishlist-dd">
+                            <div class="dd-head">Wishlist <?php if ($wishlistCount > 0): ?><span style="color:#7AFB01">(<?= $wishlistCount ?>)</span><?php endif; ?></div>
+                            <div class="dd-empty">
+                                <?php if ($wishlistCount > 0): ?>You have <?= $wishlistCount ?> saved item(s).<?php else: ?>Your wishlist is empty. Save laptops you're interested in.<?php endif; ?>
+                            </div>
+                            <div class="dd-foot">
+                                <a href="<?= e(url('/account/wishlist')) ?>" class="dd-link ghost" style="flex:1">View all</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dd-wrap" data-dd-wrap>
+                        <a class="icon-btn" href="<?= e(url('/cart')) ?>" aria-label="Shopping cart" data-dd-toggle="cart-dd">
+                            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2 11h11l2-8H6.5"></path><circle cx="9" cy="20" r="1.3"></circle><circle cx="17" cy="20" r="1.3"></circle></svg>
+                            <?php if ($cartCount > 0): ?><span class="count"><?= (int) $cartCount ?></span><?php endif; ?>
+                        </a>
+                        <div class="dd-panel" id="cart-dd">
+                            <div class="dd-head">Shopping Cart <?php if ($cartCount > 0): ?><span style="color:#7AFB01">(<?= $cartCount ?>)</span><?php endif; ?></div>
+                            <div class="dd-empty">
+                                <?php if ($cartCount > 0): ?>You have <?= $cartCount ?> item(s) in your cart.<?php else: ?>Your cart is empty. <a href="<?= e(url('/shop')) ?>" style="color:#2563EB;font-weight:700">Browse laptops</a><?php endif; ?>
+                            </div>
+                            <?php if ($cartCount > 0): ?>
+                            <div class="dd-foot">
+                                <a href="<?= e(url('/cart')) ?>" class="dd-link ghost" style="flex:1">View cart</a>
+                                <a href="<?= e(url('/checkout')) ?>" class="dd-link primary" style="flex:1">Checkout</a>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -257,6 +317,54 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
             var open = nav.classList.toggle('open');
             t.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
+
+        // Dropdown panels: open/close for account, wishlist, cart icons.
+        // Each .dd-wrap is the positioning context; .dd-panel opens below its icon.
+        (function () {
+            document.addEventListener('click', function (e) {
+                var toggle = e.target.closest('[data-dd-toggle]');
+                // Close all open panels except the one being toggled.
+                document.querySelectorAll('.dd-panel.open').forEach(function (p) {
+                    if (!toggle || p.id !== toggle.getAttribute('data-dd-toggle')) {
+                        p.classList.remove('open');
+                    }
+                });
+                if (toggle) {
+                    e.preventDefault();
+                    var panel = document.getElementById(toggle.getAttribute('data-dd-toggle'));
+                    if (panel) {
+                        panel.classList.toggle('open');
+                        // Reposition: if the panel would overflow the right edge of the
+                        // viewport, shift it left so it stays inside.
+                        if (panel.classList.contains('open')) {
+                            var rect = panel.getBoundingClientRect();
+                            if (rect.right > window.innerWidth - 8) {
+                                panel.style.right = 'auto';
+                                panel.style.left = '0';
+                            } else if (rect.left < 8) {
+                                panel.style.right = '0';
+                                panel.style.left = 'auto';
+                            }
+                        } else {
+                            // Reset inline position when closed.
+                            panel.style.right = '';
+                            panel.style.left = '';
+                        }
+                    }
+                }
+            });
+
+            // Close on Escape.
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.dd-panel.open').forEach(function (p) {
+                        p.classList.remove('open');
+                        p.style.right = '';
+                        p.style.left = '';
+                    });
+                }
+            });
+        })();
     </script>
     <script type="module" src="<?= e(url('assets/js/app.js')) ?>"></script>
 </body>

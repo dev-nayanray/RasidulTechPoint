@@ -329,6 +329,24 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
                 <p class="pcard-price"><small>From</small><strong><?= $p['from_price'] !== null ? money($p['from_price']) : '—' ?></strong></p>
                 <a class="btn btn-sm btn-primary pcard-cta" href="<?= e($purl) ?>">View &amp; Buy<svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
               </div>
+              <button type="button" class="compare-toggle" data-compare-toggle="<?= e($p['slug']) ?>" aria-pressed="false">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+                <span data-compare-label>Compare</span>
+              </button>
+              <script type="application/json" data-compare-data="<?= e($p['slug']) ?>"><?= json_encode([
+                  'slug' => (string) $p['slug'],
+                  'name' => (string) ($p['name'] ?? ''),
+                  'brand' => (string) ($p['brand_name'] ?? ''),
+                  'price' => $p['from_price'] !== null ? money($p['from_price']) : '—',
+                  'processor' => (string) ($p['processor'] ?? '—'),
+                  'ram' => !empty($p['ram_gb']) ? $p['ram_gb'] . ' GB' : '—',
+                  'storage' => $storage,
+                  'display' => !empty($p['display_size_inches']) ? number_format((float) $p['display_size_inches'], 1) . '"' . (!empty($p['resolution']) ? ' ' . $p['resolution'] : '') : '—',
+                  'graphics' => (string) ($p['graphics'] ?? '—'),
+                  'units' => $units,
+                  'image' => $imgOk ? url($img) : null,
+                  'url' => $purl,
+              ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
             </div>
           </article>
         <?php endforeach; ?>
@@ -487,6 +505,24 @@ $heroAnnounce = !empty($heroSettings['announcement_enabled']) ? ($heroSettings['
                 <p class="pcard-price"><small>From</small><strong><?= $p['from_price'] !== null ? money($p['from_price']) : '—' ?></strong></p>
                 <a class="btn btn-sm btn-primary pcard-cta" href="<?= e($purl) ?>">Grab this deal<svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
               </div>
+              <button type="button" class="compare-toggle" data-compare-toggle="<?= e($p['slug']) ?>" aria-pressed="false">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+                <span data-compare-label>Compare</span>
+              </button>
+              <script type="application/json" data-compare-data="<?= e($p['slug']) ?>"><?= json_encode([
+                  'slug' => (string) $p['slug'],
+                  'name' => (string) ($p['name'] ?? ''),
+                  'brand' => (string) ($p['brand_name'] ?? ''),
+                  'price' => $p['from_price'] !== null ? money($p['from_price']) : '—',
+                  'processor' => (string) ($p['processor'] ?? '—'),
+                  'ram' => !empty($p['ram_gb']) ? $p['ram_gb'] . ' GB' : '—',
+                  'storage' => !empty($p['storage_capacity_gb']) ? $p['storage_capacity_gb'] . ' GB ' . ($p['storage_type'] ?? '') : '—',
+                  'display' => !empty($p['display_size_inches']) ? number_format((float) $p['display_size_inches'], 1) . '"' . (!empty($p['resolution']) ? ' ' . $p['resolution'] : '') : '—',
+                  'graphics' => (string) ($p['graphics'] ?? '—'),
+                  'units' => (int) ($p['available_units'] ?? 0),
+                  'image' => null,
+                  'url' => $purl,
+              ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
             </div>
           </article>
         <?php endforeach; ?>

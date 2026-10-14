@@ -1,3 +1,4 @@
+import { initCompare } from './compare.js';
 /**
  * Homepage header behavior: mobile menu, header dropdown panels, live search.
  *
@@ -17,16 +18,46 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Dropdown panels (account, wishlist, cart).
+// Dropdown panels (account, wishlist, cart) — with viewport-overflow protection.
 document.addEventListener('click', (e) => {
   const tg = e.target.closest('[data-dd-toggle]');
   document.querySelectorAll('.dd-panel.open').forEach((p) => {
-    if (!tg || p.id !== tg.getAttribute('data-dd-toggle')) p.classList.remove('open');
+    if (!tg || p.id !== tg.getAttribute('data-dd-toggle')) {
+      p.classList.remove('open');
+      p.style.right = '';
+      p.style.left = '';
+    }
   });
   if (tg) {
     e.preventDefault();
     const p = document.getElementById(tg.getAttribute('data-dd-toggle'));
-    if (p) p.classList.toggle('open');
+    if (p) {
+      p.classList.toggle('open');
+      if (p.classList.contains('open')) {
+        var rect = p.getBoundingClientRect();
+        if (rect.right > window.innerWidth - 8) {
+          p.style.right = 'auto';
+          p.style.left = '0';
+        } else if (rect.left < 8) {
+          p.style.right = '0';
+          p.style.left = 'auto';
+        }
+      } else {
+        p.style.right = '';
+        p.style.left = '';
+      }
+    }
+  }
+});
+
+// Close dropdowns on Escape.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.dd-panel.open').forEach((p) => {
+      p.classList.remove('open');
+      p.style.right = '';
+      p.style.left = '';
+    });
   }
 });
 
@@ -89,3 +120,6 @@ document.addEventListener('click', (e) => {
     }
   });
 })();
+
+// Initialize compare system on the homepage.
+initCompare();

@@ -56,14 +56,19 @@ function toast(msg) {
 export function initCompare() {
   const bar = document.querySelector('[data-cmp-bar]');
   const modal = document.querySelector('[data-cmp-modal]');
-  if (!bar || !modal) {
-    return; // page has no compare UI (e.g. homepage)
-  }
-  const itemsEl = bar.querySelector('[data-cmp-items]');
-  const actionEl = bar.querySelector('[data-cmp-action]');
-  const barClose = bar.querySelector('[data-cmp-close]');
-  const modalClose = modal.querySelector('[data-cmp-modal-close]');
-  const tableEl = modal.querySelector('[data-cmp-table]');
+  // The compare bar + modal live in layouts/public.php (shop/product/etc.).
+  // The homepage has product cards with compare toggles but NO bar/modal —
+  // the user can select items on the homepage and see the compare bar when
+  // they navigate to any /shop page. So we must NOT return early when
+  // bar/modal are absent; we still need to wire up the toggle buttons and
+  // persist the selection in sessionStorage.
+  const hasBar = !!bar;
+  const hasModal = !!modal;
+  const itemsEl = hasBar ? bar.querySelector('[data-cmp-items]') : null;
+  const actionEl = hasBar ? bar.querySelector('[data-cmp-action]') : null;
+  const barClose = hasBar ? bar.querySelector('[data-cmp-close]') : null;
+  const modalClose = hasModal ? modal.querySelector('[data-cmp-modal-close]') : null;
+  const tableEl = hasModal ? modal.querySelector('[data-cmp-table]') : null;
 
   // slug -> full spec payload (session store keeps values alive across pages)
   const selection = {};
@@ -83,6 +88,7 @@ export function initCompare() {
   };
 
   const renderBar = () => {
+    if (!hasBar) return; // no compare bar on this page (e.g. homepage)
     const slugs = Object.keys(selection);
     if (slugs.length === 0) {
       bar.classList.remove('open');
@@ -99,6 +105,7 @@ export function initCompare() {
   };
 
   const renderTable = () => {
+    if (!hasModal) return;
     const slugs = Object.keys(selection);
     const rows = [
       ['Price', (d) => '<b class="cmp-price">' + esc(d.price) + '</b>'],
@@ -171,30 +178,32 @@ export function initCompare() {
         return;
       }
       renderTable();
-      modal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      if (hasModal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
       return;
     }
     if (target.closest('[data-cmp-close]')) {
-      bar.classList.remove('open');
+      if (hasBar) bar.classList.remove('open');
       return;
     }
-    if (target.closest('[data-cmp-modal-close]') || target === modal) {
+    if (hasModal && (target.closest('[data-cmp-modal-close]') || target === modal)) {
       modal.classList.remove('open');
       document.body.style.overflow = '';
     }
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('open')) {
+    if (e.key === 'Escape' && hasModal && modal.classList.contains('open')) {
       modal.classList.remove('open');
       document.body.style.overflow = '';
     }
   });
 
-  if (barClose) barClose.addEventListener('click', () => bar.classList.remove('open'));
+  if (barClose) barClose.addEventListener('click', () => { if (hasBar) bar.classList.remove('open'); });
   if (modalClose) modalClose.addEventListener('click', () => {
-    modal.classList.remove('open');
+    if (hasModal) modal.classList.remove('open');
     document.body.style.overflow = '';
   });
 

@@ -7,6 +7,8 @@
     <meta name="theme-color" content="#14243A">
     <title><?= e($pageTitle ?? 'Welcome') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= e(url('assets/img/favicon-32.png')) ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= e(url('assets/img/apple-touch-icon.png')) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">

@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle ?? 'Error') ?> — <?= e(\App\Support\Config::get('app.name')) ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= e(url('assets/img/favicon-32.png')) ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= e(url('assets/img/apple-touch-icon.png')) ?>">
     <link rel="stylesheet" href="<?= e(url('assets/css/app.css')) ?>">
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 flex items-center justify-center p-6">

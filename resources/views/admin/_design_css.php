@@ -101,10 +101,13 @@ body{
 /* ============================================================
    SIDEBAR — uses CSS variables so it adapts to dark mode
    ============================================================ */
+/* NOTE: do not set `position` here. The layout uses Tailwind `fixed` (off-canvas
+   drawer) below 1024px and `lg:relative` above it. A blanket `position:relative`
+   used to override `fixed` on phones, so the hidden drawer still occupied 288px
+   of the flex row and squeezed the whole admin content into a narrow column. */
 aside[data-sidebar]{
   background:linear-gradient(180deg,var(--sidebar-bg) 0%,var(--sidebar-surface) 100%) !important;
   box-shadow:inset -1px 0 0 rgba(255,255,255,.04),4px 0 24px rgba(0,0,0,.18);
-  position:relative;
 }
 aside[data-sidebar]::before{
   content:"";position:absolute;inset:0;pointer-events:none;
@@ -158,14 +161,20 @@ aside[data-sidebar] > div:first-child{
 .rtp-nav-link:hover .rtp-nav-icon{opacity:1 !important;color:#fff !important;transform:translateX(2px)}
 .rtp-nav-icon{transition:transform .15s ease,color .15s ease}
 
-/* Collapsed state — tooltips via title attribute, hide labels */
-html.sidebar-collapsed aside[data-sidebar]{width:4.5rem !important}
-html.sidebar-collapsed aside[data-sidebar] [data-sidebar-label],
-html.sidebar-collapsed aside[data-sidebar] [data-sidebar-section]{display:none}
-html.sidebar-collapsed aside[data-sidebar] .rtp-nav-link{justify-content:center;padding-inline:0}
-html.sidebar-collapsed aside[data-sidebar] .rtp-nav-icon{margin-inline:auto}
-html.sidebar-collapsed aside[data-sidebar] .rtp-nav-section-label{padding-left:0;text-align:center;font-size:0}
-html.sidebar-collapsed aside[data-sidebar] .rtp-nav-section-label::before{display:none}
+/* Collapsed state — desktop only (icon rail). On phones the sidebar is always a
+   full-width drawer, so a persisted "collapsed" flag must never shrink it. */
+@media(min-width:1024px){
+  html.sidebar-collapsed aside[data-sidebar]{width:4.5rem !important}
+  html.sidebar-collapsed aside[data-sidebar] [data-sidebar-label],
+  html.sidebar-collapsed aside[data-sidebar] [data-sidebar-section]{display:none}
+  html.sidebar-collapsed aside[data-sidebar] .rtp-nav-link{justify-content:center;padding-inline:0}
+  html.sidebar-collapsed aside[data-sidebar] .rtp-nav-icon{margin-inline:auto}
+  html.sidebar-collapsed aside[data-sidebar] .rtp-nav-section-label{padding-left:0;text-align:center;font-size:0}
+  html.sidebar-collapsed aside[data-sidebar] .rtp-nav-section-label::before{display:none}
+}
+
+/* Viewport-height shell: 100dvh so the mobile browser toolbar never hides content. */
+.rtp-vh{height:100vh;height:100dvh}
 
 /* Sidebar footer — online indicator */
 .rtp-admin-foot{position:relative;z-index:2}
@@ -480,22 +489,133 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media(max-width:1024px){
+@media(max-width:1023.98px){
   .admin-page-header{align-items:flex-start}
+
+  /* Off-canvas drawer: never wider than the screen, keeps the notch/home-bar clear,
+     and the nav scrolls on its own without dragging the page behind it. */
+  aside[data-sidebar]{
+    width:min(20rem,86vw) !important;
+    padding-bottom:env(safe-area-inset-bottom);
+    box-shadow:8px 0 40px rgba(0,0,0,.45);
+  }
+  aside[data-sidebar].-translate-x-full{box-shadow:none}
+  .rtp-admin-nav{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  /* Roomier, thumb-friendly drawer links. */
+  .rtp-nav-link{min-height:44px;font-size:15px}
+  [data-sidebar-backdrop]{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
 }
+
 @media(max-width:720px){
-  .admin-page-header{margin-bottom:16px}
+  .admin-page-header{margin-bottom:16px;gap:10px}
+  .admin-page-header-sub{font-size:13px;overflow-wrap:anywhere}
   .admin-card-header{flex-direction:column;align-items:flex-start;gap:8px}
   .admin-card-body{padding:14px}
-  .admin-stat-card{padding:14px}
+  .admin-stat-card{padding:14px;min-height:0}
   .admin-stat-card-value{font-size:24px}
-  .admin-stat-card-ic{top:14px;right:14px;width:36px;height:36px}
+  .admin-stat-card-ic{width:36px;height:36px}
   .admin-table thead th,.admin-table tbody td{padding:10px 12px}
+  .admin-table{font-size:13px}
+  .admin-filter-bar{padding:12px}
+  .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-quick-card{padding:12px}
+  .admin-quick-card::after{display:none}
 }
-@media(max-width:480px){
+
+@media(max-width:640px){
+  /* ---- Top bar ---- */
+  header[class*="shrink-0"]{gap:.25rem;padding-inline:.5rem !important;padding-top:env(safe-area-inset-top);height:calc(3.5rem + env(safe-area-inset-top))}
+  header[class*="shrink-0"] > .ml-auto{gap:.125rem}
+  header[class*="shrink-0"] h1{font-size:15px}
+  header[class*="shrink-0"] button[data-nav-toggle],
+  header[class*="shrink-0"] #theme-toggle,
+  header[class*="shrink-0"] [data-mobile-search-toggle],
+  header[class*="shrink-0"] [data-dropdown-toggle]{min-width:42px;min-height:42px;justify-content:center}
+
+  /* ---- Header dropdowns become full-width sheets under the bar ---- */
+  header[class*="shrink-0"] [data-dropdown]{position:static !important}
+  header[class*="shrink-0"] [data-dropdown-menu]{
+    position:fixed !important;left:.5rem !important;right:.5rem !important;
+    top:calc(3.5rem + env(safe-area-inset-top) + .25rem) !important;
+    width:auto !important;max-height:calc(100dvh - 5.5rem);overflow-y:auto;z-index:60;
+  }
+
+  /* ---- Main content ---- */
+  main#main-content{padding:.875rem !important;padding-bottom:calc(1.25rem + env(safe-area-inset-bottom)) !important;overscroll-behavior-y:contain}
+  main#main-content nav[aria-label="Breadcrumb"]{margin-bottom:.625rem;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  main#main-content nav[aria-label="Breadcrumb"] ol{flex-wrap:nowrap}
+
+  /* ---- Page header: actions and filters span the full width ---- */
   .admin-page-header-actions{width:100%}
-  .admin-page-header-actions .btn{flex:1;min-width:0}
+  .admin-page-header-actions > form,
+  .admin-page-header-actions > a,
+  .admin-page-header-actions > button{width:100%}
+  .admin-page-header-actions form{display:flex;flex-direction:column;align-items:stretch;gap:.5rem}
+  .admin-page-header-actions .btn,
+  .admin-page-header-actions .btn-primary,
+  .admin-page-header-actions .btn-secondary{flex:1 1 auto;justify-content:center;text-align:center}
+  .admin-page-header-actions select,
+  .admin-page-header-actions .input{width:100%;max-width:100%}
+  /* Segmented range toggle (Today / 7 days / ...) scrolls sideways instead of wrapping. */
+  .admin-range-toggle{display:flex;width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .admin-range-toggle::-webkit-scrollbar{display:none}
+  .admin-range-toggle button{flex:1 0 auto;white-space:nowrap;min-height:38px;padding:6px 14px}
+
+  /* ---- Forms: 16px text stops iOS zooming on focus; 44px touch targets ---- */
+  main#main-content .input,
+  main#main-content select,
+  main#main-content textarea,
+  main#main-content input[type="text"],
+  main#main-content input[type="search"],
+  main#main-content input[type="email"],
+  main#main-content input[type="tel"],
+  main#main-content input[type="number"],
+  main#main-content input[type="password"],
+  main#main-content input[type="date"]{font-size:16px;min-height:44px}
+  main#main-content .btn,
+  main#main-content .btn-primary,
+  main#main-content .btn-secondary,
+  main#main-content .btn-danger{min-height:44px}
+  main#main-content .admin-table .btn,
+  main#main-content .admin-table .btn-primary,
+  main#main-content .admin-table .btn-secondary,
+  main#main-content .admin-table .btn-danger{min-height:36px}
+  .admin-filter-bar-actions{width:100%}
+  .admin-filter-bar-actions > *{flex:1 1 auto}
+
+  /* ---- Tables: scroll inside their own box, never the whole page ---- */
+  .admin-table-wrap,.rtp-table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .rtp-table-scroll{border-radius:var(--radius-sm)}
+  .rtp-table-scroll > table.rtp-table-wide,
+  .admin-table-wrap > table.rtp-table-wide{min-width:36rem}
+  .rtp-table-wide td:first-child,.rtp-table-wide td:first-child a{white-space:nowrap}
+  .rtp-table-scroll.has-more{background:
+    linear-gradient(to left,rgba(15,23,42,.10),transparent 18px) right/18px 100% no-repeat local,
+    linear-gradient(to left,rgba(15,23,42,.10),transparent 18px) right/18px 100% no-repeat scroll}
+
+  /* ---- Cards / stat tiles: two per row on phones (falls back to one where :has is unsupported) ---- */
+  main#main-content .grid:has(> .admin-stat-card){grid-template-columns:repeat(2,minmax(0,1fr));gap:.625rem}
+  .admin-stat-card{border-radius:14px;padding:12px;gap:4px}
+  .admin-stat-card-ic{width:32px;height:32px;border-radius:9px}
+  .admin-stat-card-value{font-size:20px;overflow-wrap:anywhere}
+  .admin-stat-card-label{font-size:12px}
+  .admin-stat-card-hint{display:none}
+  .admin-stat-card:hover{transform:none}
+  .admin-card{border-radius:12px}
+  .admin-empty{padding:28px 14px}
 }
+
+@media(max-width:380px){
+  .admin-quick-grid{grid-template-columns:minmax(0,1fr)}
+  .admin-stat-card-value{font-size:22px}
+}
+
+/* Horizontal safety net: page content may scroll inside components, but a stray
+   wide element must not make the whole admin canvas pan sideways. */
+main#main-content{min-width:0;overflow-x:hidden}
+main#main-content > *{max-width:100%}
+main#main-content img,main#main-content video,main#main-content canvas{max-width:100%;height:auto}
+main#main-content pre{max-width:100%;overflow-x:auto}
 
 /* ============================================================
    DARK MODE — override Tailwind utility classes via CSS vars.

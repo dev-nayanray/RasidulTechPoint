@@ -22,6 +22,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($metaTitle ?? 'Rasidul Tech Point — Dubai Imported Authentic Used Laptops') ?></title>
 <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
+<link rel="icon" type="image/png" sizes="32x32" href="<?= e(url('assets/img/favicon-32.png')) ?>">
+<link rel="apple-touch-icon" sizes="180x180" href="<?= e(url('assets/img/apple-touch-icon.png')) ?>">
 <meta name="description" content="<?= e($metaDescription ?? 'Authentic used laptops imported from Dubai. Tested and quality checked with warranty options. Shop online or visit our store.') ?>">
 <?php /* Fonts are self-hosted (see hero/_slider_css.php): the site CSP is font-src 'self', so Google Fonts is blocked. */ ?>
 <link rel="preload" href="<?= e(url('assets/fonts/bricolage-grotesque-latin-var.woff2')) ?>" as="font" type="font/woff2" crossorigin>

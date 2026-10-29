@@ -29,6 +29,8 @@ $businessHours = (string) App\Services\SettingService::get('business_hours', '')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($metaTitle ?? ($pageTitle ?? 'Welcome') . ' — ' . \App\Support\Config::get('app.name')) ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= e(url('assets/img/favicon.svg')) ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= e(url('assets/img/favicon-32.png')) ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= e(url('assets/img/apple-touch-icon.png')) ?>">
     <?php if (!empty($metaDescription)): ?><meta name="description" content="<?= e($metaDescription) ?>"><?php endif; ?>
     <meta name="theme-color" content="#14243A">
     <link rel="preconnect" href="https://fonts.googleapis.com">

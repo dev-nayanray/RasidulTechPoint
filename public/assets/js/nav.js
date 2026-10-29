@@ -143,6 +143,26 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+// Swipe the open drawer to the left to dismiss it (touch devices).
+let touchStartX = null;
+let touchStartY = null;
+document.addEventListener('touchstart', (event) => {
+    const sidebar = document.querySelector('[data-sidebar]');
+    if (!sidebar || sidebar.classList.contains('-translate-x-full') || !sidebar.contains(event.target)) {
+        touchStartX = null;
+        return;
+    }
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (event) => {
+    if (touchStartX === null) return;
+    const dx = event.changedTouches[0].clientX - touchStartX;
+    const dy = Math.abs(event.changedTouches[0].clientY - touchStartY);
+    touchStartX = null;
+    if (dx < -60 && dy < 40) setDrawer(false);
+}, { passive: true });
+
 // Close the drawer when the viewport grows past the mobile breakpoint
 // (otherwise a previously-toggled `-translate-x-full` removal can leave the
 // sidebar in a weird hybrid state on resize). Passive, runs once per resize.
